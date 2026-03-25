@@ -1,0 +1,32 @@
+{
+  "name": "nianming_nav",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
+  },
+  "keywords": [
+    "navigation",
+    "vue3",
+    "vite",
+    "tailwindcss",
+    "pinia"
+  ],
+  "author": "",
+  "license": "MIT",
+  "description": "个人导航站 - 简洁高效的网站导航管理工具",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.2.2",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "pinia": "^3.0.4",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2",
+    "vite": "^8.0.2",
+    "vue": "^3.5.31",
+    "vue-router": "^5.0.4"
+  }
+}
