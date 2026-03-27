@@ -12,6 +12,8 @@ const formData = ref({
   categoryId: '',
   pinned: false
 })
+const message = ref('')
+const messageType = ref('')
 
 const isEditing = computed(() => editingId.value !== null)
 
@@ -27,6 +29,7 @@ const startAdd = () => {
     categoryId: categories.value[0]?.id || '',
     pinned: false
   }
+  clearMessage()
 }
 
 const startEdit = (link) => {
@@ -38,22 +41,90 @@ const startEdit = (link) => {
     categoryId: link.categoryId,
     pinned: link.pinned || false
   }
+  clearMessage()
 }
 
 const cancelEdit = () => {
   editingId.value = null
+  clearMessage()
+}
+
+const showMessage = (text, type = 'success') => {
+  message.value = text
+  messageType.value = type
+  setTimeout(() => {
+    clearMessage()
+  }, 3000)
+}
+
+const clearMessage = () => {
+  message.value = ''
+  messageType.value = ''
+}
+
+const checkDuplicateLink = (url, categoryId, excludeId = null) => {
+  let processedUrl = url
+  if (processedUrl && !processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
+    processedUrl = 'https://' + processedUrl
+  }
+
+  // 检查当前分类中是否有重复链接
+  const sameCategoryDuplicate = links.value.some(link => 
+    link.id !== excludeId && 
+    link.categoryId === categoryId && 
+    link.url === processedUrl
+  )
+
+  if (sameCategoryDuplicate) {
+    return { duplicate: true, message: '当前分类中已存在相同链接' }
+  }
+
+  // 检查其他分类中是否有相同链接
+  const otherCategoryDuplicate = links.value.some(link => 
+    link.id !== excludeId && 
+    link.categoryId !== categoryId && 
+    link.url === processedUrl
+  )
+
+  if (otherCategoryDuplicate) {
+    return { duplicate: true, message: '该链接已在其他分类中添加过', otherCategory: true }
+  }
+
+  return { duplicate: false }
 }
 
 const saveLink = () => {
-  if (!formData.value.title.trim() || !formData.value.url.trim()) return
+  if (!formData.value.title.trim() || !formData.value.url.trim()) {
+    showMessage('请填写网站名称和地址', 'error')
+    return
+  }
 
+  const duplicateCheck = checkDuplicateLink(formData.value.url, formData.value.categoryId, editingId.value)
+  
+  if (duplicateCheck.duplicate) {
+    if (duplicateCheck.otherCategory) {
+      if (confirm(`${duplicateCheck.message}，确定要在当前分类中再次添加吗？`)) {
+        // 用户确认后继续添加
+        proceedSave()
+      }
+    } else {
+      showMessage(duplicateCheck.message, 'error')
+    }
+  } else {
+    proceedSave()
+  }
+}
+
+const proceedSave = () => {
   if (isEditing.value) {
     dataStore.updateLink({
       id: editingId.value,
       ...formData.value
     })
+    showMessage('网站更新成功')
   } else {
     dataStore.addLink(formData.value)
+    showMessage('网站添加成功')
   }
   cancelEdit()
 }
@@ -61,11 +132,14 @@ const saveLink = () => {
 const deleteLink = (id) => {
   if (confirm('确定要删除这个网站吗？')) {
     dataStore.deleteLink(id)
+    showMessage('网站删除成功')
   }
 }
 
 const togglePin = (id) => {
   dataStore.togglePin(id)
+  const link = links.value.find(l => l.id === id)
+  showMessage(link?.pinned ? '网站已置顶' : '已取消置顶')
 }
 
 const getCategoryName = (categoryId) => {
@@ -81,6 +155,11 @@ const getCategoryName = (categoryId) => {
       <button class="btn-primary" @click="startAdd" v-if="!isEditing">
         + 添加网站
       </button>
+    </div>
+
+    <!-- Message Display -->
+    <div v-if="message" :class="['message', messageType]">
+      {{ message }}
     </div>
 
     <!-- Add/Edit Form -->
@@ -372,6 +451,38 @@ const getCategoryName = (categoryId) => {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
+  }
+}
+
+.message {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+}
+
+.message.success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.message.error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>
