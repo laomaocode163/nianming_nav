@@ -42,3 +42,6 @@ coverage
 .cache
 .temp
 *.tsbuildinfo
+
+# Trae IDE
+.trae

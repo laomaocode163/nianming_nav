@@ -10,6 +10,7 @@ const dataStore = useDataStore()
 const searchQuery = ref('')
 const selectedCategoryId = ref('all')
 const sidebarOpen = ref(true)
+const sidebarCollapsed = ref(false)
 const isMobile = ref(false)
 
 const searchEngines = computed(() => {
@@ -54,6 +55,10 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
+const handleCollapse = (collapsed) => {
+  sidebarCollapsed.value = collapsed
+}
+
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 768
   if (isMobile.value) {
@@ -77,12 +82,14 @@ onUnmounted(() => {
     <Sidebar
       :selected-category="selectedCategoryId"
       :is-open="sidebarOpen"
+      :is-collapsed="sidebarCollapsed"
       @select="selectCategory"
       @toggle="toggleSidebar"
+      @collapse="handleCollapse"
     />
 
     <!-- Main Content -->
-    <div class="main-content" :class="{ 'sidebar-closed': !sidebarOpen }">
+    <div class="main-content" :class="{ 'sidebar-closed': !sidebarOpen, 'sidebar-collapsed': sidebarCollapsed }">
       <!-- Header -->
       <MainHeader 
         :title="pageTitle"
@@ -160,6 +167,10 @@ onUnmounted(() => {
 
 .main-content.sidebar-closed {
   margin-left: 0;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 60px;
 }
 
 .search-section {
