@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useDataStore } from '../../stores/data'
+import Dialog from '../ui/Dialog.vue'
 
 const dataStore = useDataStore()
 
@@ -14,6 +15,10 @@ const formData = ref({
 })
 const message = ref('')
 const messageType = ref('')
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const dialogContent = ref('')
+const dialogCallback = ref(null)
 
 const isEditing = computed(() => editingId.value !== null)
 
@@ -62,6 +67,26 @@ const clearMessage = () => {
   messageType.value = ''
 }
 
+const showDialog = (title, content, callback) => {
+  dialogTitle.value = title
+  dialogContent.value = content
+  dialogCallback.value = callback
+  dialogVisible.value = true
+}
+
+const handleDialogConfirm = () => {
+  if (dialogCallback.value) {
+    dialogCallback.value()
+  }
+  dialogVisible.value = false
+  dialogCallback.value = null
+}
+
+const handleDialogCancel = () => {
+  dialogVisible.value = false
+  dialogCallback.value = null
+}
+
 const checkDuplicateLink = (url, categoryId, excludeId = null) => {
   let processedUrl = url
   if (processedUrl && !processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
@@ -103,10 +128,11 @@ const saveLink = () => {
   
   if (duplicateCheck.duplicate) {
     if (duplicateCheck.otherCategory) {
-      if (confirm(`${duplicateCheck.message}，确定要在当前分类中再次添加吗？`)) {
-        // 用户确认后继续添加
-        proceedSave()
-      }
+      showDialog(
+        '确认添加',
+        `${duplicateCheck.message}，确定要在当前分类中再次添加吗？`,
+        proceedSave
+      )
     } else {
       showMessage(duplicateCheck.message, 'error')
     }
@@ -130,10 +156,14 @@ const proceedSave = () => {
 }
 
 const deleteLink = (id) => {
-  if (confirm('确定要删除这个网站吗？')) {
-    dataStore.deleteLink(id)
-    showMessage('网站删除成功')
-  }
+  showDialog(
+    '确认删除',
+    '确定要删除这个网站吗？',
+    () => {
+      dataStore.deleteLink(id)
+      showMessage('网站删除成功')
+    }
+  )
 }
 
 const togglePin = (id) => {
@@ -161,6 +191,16 @@ const getCategoryName = (categoryId) => {
     <div v-if="message" :class="['message', messageType]">
       {{ message }}
     </div>
+
+    <!-- Dialog Component -->
+    <Dialog
+      v-model:visible="dialogVisible"
+      :title="dialogTitle"
+      @confirm="handleDialogConfirm"
+      @cancel="handleDialogCancel"
+    >
+      {{ dialogContent }}
+    </Dialog>
 
     <!-- Add/Edit Form -->
     <div v-if="isEditing || editingId === null" class="form-card">
