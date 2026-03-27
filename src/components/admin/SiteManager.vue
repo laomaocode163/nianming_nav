@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useDataStore } from '../../stores/data'
 import Dialog from '../ui/Dialog.vue'
+import { fetchIcon, getSiteIcon, extractDomain } from '../../utils/faviconService'
 
 const dataStore = useDataStore()
 
@@ -11,8 +12,12 @@ const formData = ref({
   url: '',
   description: '',
   categoryId: '',
-  pinned: false
+  pinned: false,
+  icon: ''
 })
+const iconPreview = ref('')
+const isFetchingIcon = ref(false)
+const autoFetchIcon = ref(true)
 const message = ref('')
 const messageType = ref('')
 const dialogVisible = ref(false)
@@ -32,8 +37,11 @@ const startAdd = () => {
     url: '',
     description: '',
     categoryId: categories.value[0]?.id || '',
-    pinned: false
+    pinned: false,
+    icon: ''
   }
+  iconPreview.value = ''
+  autoFetchIcon.value = true
   clearMessage()
 }
 
@@ -44,9 +52,71 @@ const startEdit = (link) => {
     url: link.url,
     description: link.description || '',
     categoryId: link.categoryId,
-    pinned: link.pinned || false
+    pinned: link.pinned || false,
+    icon: link.icon || ''
   }
+  iconPreview.value = getSiteIcon(link.url, link.icon)
+  autoFetchIcon.value = false
   clearMessage()
+}
+
+// 自动获取图标
+const handleFetchIcon = async () => {
+  if (!formData.value.url) return
+  
+  isFetchingIcon.value = true
+  try {
+    const iconUrl = await fetchIcon(formData.value.url)
+    formData.value.icon = iconUrl
+    iconPreview.value = iconUrl
+  } catch (e) {
+    console.error('Failed to fetch icon:', e)
+  } finally {
+    isFetchingIcon.value = false
+  }
+}
+
+// 监听URL变化，自动获取图标
+watch(() => formData.value.url, (newUrl) => {
+  if (newUrl && autoFetchIcon.value && !editingId.value) {
+    // 延迟500ms执行，避免频繁请求
+    setTimeout(() => {
+      if (formData.value.url === newUrl) {
+        handleFetchIcon()
+      }
+    }, 500)
+  }
+})
+
+// 处理文件上传
+const handleFileUpload = (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  
+  // 验证文件类型
+  const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon']
+  if (!validTypes.includes(file.type)) {
+    showMessage('请上传 PNG、JPG、SVG 或 ICO 格式的图标', 'error')
+    return
+  }
+  
+  // 验证文件大小 (限制为 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    showMessage('图标文件大小不能超过 2MB', 'error')
+    return
+  }
+  
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const base64String = e.target?.result
+    formData.value.icon = base64String
+    iconPreview.value = base64String
+    showMessage('图标上传成功')
+  }
+  reader.onerror = () => {
+    showMessage('读取图标文件失败', 'error')
+  }
+  reader.readAsDataURL(file)
 }
 
 const cancelEdit = () => {
@@ -243,6 +313,59 @@ const getCategoryName = (categoryId) => {
           />
         </div>
       </div>
+      <!-- Icon Section -->
+      <div class="form-group">
+        <label>网站图标</label>
+        <div class="icon-section">
+          <div class="icon-preview">
+            <img v-if="iconPreview" :src="iconPreview" alt="图标预览" />
+            <div v-else class="icon-placeholder">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </div>
+          </div>
+          <div class="icon-controls">
+            <input
+              v-model="formData.icon"
+              type="text"
+              class="form-input icon-input"
+              placeholder="图标URL..."
+            />
+            <div class="icon-buttons">
+              <button
+                type="button"
+                class="btn-icon-action"
+                @click="handleFetchIcon"
+                :disabled="!formData.url || isFetchingIcon"
+                title="自动获取图标"
+              >
+                <span v-if="isFetchingIcon" class="spinner">⟳</span>
+                <span v-else>🪄</span>
+              </button>
+              <label class="btn-icon-action" title="上传图标">
+                <input
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.svg,.ico,image/png,image/jpeg,image/svg+xml,image/x-icon,image/vnd.microsoft.icon"
+                  @change="handleFileUpload"
+                  class="hidden"
+                />
+                <span>📤</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="icon-options">
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="autoFetchIcon" />
+            <span>输入链接时自动获取图标</span>
+          </label>
+          <span class="icon-hint">支持 PNG, JPG, SVG, ICO</span>
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="checkbox-label">
           <input type="checkbox" v-model="formData.pinned" />
@@ -482,6 +605,107 @@ const getCategoryName = (categoryId) => {
   background: #fee2e2;
 }
 
+/* Icon Section Styles */
+.icon-section {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.icon-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.icon-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.icon-placeholder {
+  color: var(--color-secondary);
+}
+
+.icon-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.icon-input {
+  font-size: 0.8125rem;
+}
+
+.icon-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon-action {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.btn-icon-action:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-card);
+}
+
+.btn-icon-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hidden {
+  display: none;
+}
+
+.icon-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.icon-hint {
+  font-size: 0.75rem;
+  color: var(--color-secondary);
+}
+
+.spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 768px) {
   .form-row {
     grid-template-columns: 1fr;
@@ -491,6 +715,11 @@ const getCategoryName = (categoryId) => {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
+  }
+
+  .icon-section {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 

@@ -1,4 +1,7 @@
 <script setup>
+import { computed } from 'vue'
+import { getSiteIcon, handleIconError, getDefaultIcon } from '../../utils/faviconService'
+
 const props = defineProps({
   site: {
     type: Object,
@@ -6,14 +9,12 @@ const props = defineProps({
   }
 })
 
-const getSiteIcon = (site) => {
-  if (site.icon) return site.icon
-  try {
-    const url = new URL(site.url)
-    return `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=32`
-  } catch {
-    return ''
-  }
+const siteIcon = computed(() => {
+  return getSiteIcon(props.site.url, props.site.icon)
+})
+
+const onIconError = (event) => {
+  handleIconError(event)
 }
 </script>
 
@@ -25,14 +26,13 @@ const getSiteIcon = (site) => {
     class="site-card"
   >
     <div class="site-icon-wrapper">
-      <img 
-        v-if="getSiteIcon(site)" 
-        :src="getSiteIcon(site)" 
-        :alt="site.title" 
+      <img
+        :src="siteIcon"
+        :alt="site.title"
         class="site-icon"
         loading="lazy"
+        @error="onIconError"
       />
-      <span v-else class="site-icon-placeholder">🔗</span>
     </div>
     <div class="site-info">
       <div class="site-name">{{ site.title }}</div>

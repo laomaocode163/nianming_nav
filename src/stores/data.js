@@ -6,6 +6,7 @@ import {
   DEFAULT_SITE_SETTINGS,
   DEFAULT_SEARCH_CONFIG
 } from '../utils/constants'
+import { preloadIcons, fetchIcon, extractDomain, setCachedIcon } from '../utils/faviconService'
 
 const LOCAL_STORAGE_KEY = 'nianming_nav_data'
 
@@ -59,6 +60,9 @@ export const useDataStore = defineStore('data', () => {
         categories.value.splice(commonIndex, 1)
         categories.value.unshift(commonCategory)
       }
+
+      // 预加载所有链接的图标到缓存
+      preloadIcons(links.value)
     } catch (e) {
       console.error('Failed to load data:', e)
       links.value = [...INITIAL_LINKS]
@@ -83,7 +87,7 @@ export const useDataStore = defineStore('data', () => {
     }
   }
 
-  const addLink = (data) => {
+  const addLink = async (data) => {
     let processedUrl = data.url
     if (processedUrl && !processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
       processedUrl = 'https://' + processedUrl
@@ -97,9 +101,20 @@ export const useDataStore = defineStore('data', () => {
       ? Math.max(...categoryLinks.map(link => link.order || 0))
       : -1
 
+    // 如果没有提供图标，自动获取
+    let icon = data.icon
+    if (!icon) {
+      try {
+        icon = await fetchIcon(processedUrl)
+      } catch (e) {
+        console.error('Failed to auto-fetch icon:', e)
+      }
+    }
+
     const newLink = {
       ...data,
       url: processedUrl,
+      icon,
       id: Date.now().toString(),
       createdAt: Date.now(),
       order: maxOrder + 1,
