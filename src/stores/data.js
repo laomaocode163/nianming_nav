@@ -32,10 +32,14 @@ export const useDataStore = defineStore('data', () => {
 
   const getLinksByCategory = computed(() => {
     return (categoryId) => {
+      let filteredLinks
       if (categoryId === 'all') {
-        return links.value.filter(link => !link.hidden)
+        filteredLinks = links.value.filter(link => !link.hidden)
+      } else {
+        filteredLinks = links.value.filter(link => link.categoryId === categoryId && !link.hidden)
       }
-      return links.value.filter(link => link.categoryId === categoryId && !link.hidden)
+      // 按order属性排序
+      return filteredLinks.sort((a, b) => (a.order || 0) - (b.order || 0))
     }
   })
 
@@ -452,9 +456,9 @@ export const useDataStore = defineStore('data', () => {
   const toggleLinkSelection = (linkId) => {
     const index = selectedLinks.value.indexOf(linkId)
     if (index === -1) {
-      selectedLinks.value.push(linkId)
+      selectedLinks.value = [...selectedLinks.value, linkId]
     } else {
-      selectedLinks.value.splice(index, 1)
+      selectedLinks.value = selectedLinks.value.filter(id => id !== linkId)
     }
   }
 
@@ -462,7 +466,7 @@ export const useDataStore = defineStore('data', () => {
     const categoryLinks = links.value.filter(link => 
       (categoryId === 'all' || link.categoryId === categoryId) && !link.hidden
     )
-    selectedLinks.value = categoryLinks.map(link => link.id)
+    selectedLinks.value = [...categoryLinks.map(link => link.id)]
   }
 
   const deselectAllLinks = () => {

@@ -4,15 +4,11 @@ import { useDataStore } from '../stores/data'
 import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
 import SiteCard from '../components/ui/SiteCard.vue'
-import Notification from '../components/ui/Notification.vue'
 import { useNotification } from '../hooks/useNotification'
-
-// 排序相关变量
-const draggedElement = ref(null)
-const overElement = ref(null)
+import { VueDraggable } from 'vue-draggable-plus'
 
 // 通知管理
-const { notifications, success, error, removeNotification } = useNotification()
+const { success } = useNotification()
 
 const dataStore = useDataStore()
 
@@ -22,6 +18,7 @@ const sidebarOpen = ref(true)
 const sidebarCollapsed = ref(false)
 const isMobile = ref(false)
 const searchInputRef = ref(null)
+const selectedMoveCategory = ref('')
 
 const searchEngines = computed(() => {
   return dataStore.searchConfig.externalSources.filter(s => s.enabled)
@@ -33,8 +30,15 @@ const selectedEngine = computed(() => {
 
 const categories = computed(() => dataStore.visibleCategories)
 
-const filteredLinks = computed(() => {
-  return dataStore.getLinksByCategory(selectedCategoryId.value)
+// 使用计算属性获取可排序的链接列表
+const sortableLinks = computed({
+  get: () => {
+    return dataStore.getLinksByCategory(selectedCategoryId.value)
+  },
+  set: (newList) => {
+    // 当拖拽排序后，更新链接顺序
+    updateLinksOrder(newList)
+  }
 })
 
 const pageTitle = computed(() => {
@@ -149,45 +153,27 @@ const handleBatchMove = (targetCategoryId) => {
     dataStore.batchMove(targetCategoryId)
     const categoryName = categories.value.find(c => c.id === targetCategoryId)?.name
     success(`批量移动到 ${categoryName} 完成`)
+    // 重置选择
+    selectedMoveCategory.value = ''
   }
 }
 
-// 拖拽排序相关方法
-const handleDragStart = (event, siteId) => {
-  draggedElement.value = siteId
-  event.dataTransfer.effectAllowed = 'move'
-  // 为拖拽元素添加视觉效果
-  event.target.classList.add('dragging')
-}
-
-const handleDragOver = (event, siteId) => {
-  event.preventDefault()
-  event.dataTransfer.dropEffect = 'move'
-  overElement.value = siteId
-  // 为目标元素添加视觉效果
-  event.target.classList.add('drag-over')
-}
-
-const handleDrop = (event, siteId) => {
-  event.preventDefault()
-  if (draggedElement.value && draggedElement.value !== siteId) {
-    dataStore.reorderLinks(draggedElement.value, siteId, selectedCategoryId.value)
-    success('排序已更新')
-  }
-  draggedElement.value = null
-  overElement.value = null
-  // 移除视觉效果
-  event.target.classList.remove('drag-over')
-  document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'))
-}
-
-const handleDragEnd = () => {
-  draggedElement.value = null
-  overElement.value = null
-  // 移除所有视觉效果
-  document.querySelectorAll('.dragging, .drag-over').forEach(el => {
-    el.classList.remove('dragging', 'drag-over')
+// 更新链接顺序
+const updateLinksOrder = (newList) => {
+  // 更新每个链接的order属性
+  newList.forEach((link, index) => {
+    const originalLink = dataStore.links.find(l => l.id === link.id)
+    if (originalLink) {
+      originalLink.order = index
+    }
   })
+  // 保存数据
+  dataStore.saveData()
+}
+
+// 拖拽排序结束回调
+const onSortEnd = () => {
+  success('排序已更新')
 }
 
 onMounted(() => {
@@ -275,31 +261,38 @@ onUnmounted(() => {
       <div v-if="dataStore.batchEditMode" class="batch-edit-toolbar">
         <div class="batch-edit-container">
           <div class="batch-edit-actions">
-            <button class="batch-btn" @click="handleSelectAll">
-              <span>全选</span>
+            <el-button type="primary" plain @click="handleSelectAll">
+              全选
               <span class="shortcut-hint">⌘A</span>
-            </button>
-            <button class="batch-btn" @click="handleDeselectAll">
-              <span>取消全选</span>
-            </button>
-            <button class="batch-btn" @click="handleBatchTogglePin">
-              <span>置顶/取消置顶</span>
-            </button>
-            <button class="batch-btn danger" @click="handleBatchDelete">
-              <span>删除</span>
-            </button>
+            </el-button>
+            <el-button type="info" plain @click="handleDeselectAll">
+              取消全选
+            </el-button>
+            <el-button type="success" plain @click="handleBatchTogglePin">
+              置顶/取消置顶
+            </el-button>
+            <el-button type="danger" plain @click="handleBatchDelete">
+              删除
+            </el-button>
             <div class="batch-move">
-              <select @change="handleBatchMove($event.target.value)" class="move-select">
-                <option value="">移动到...</option>
-                <option v-for="category in categories" :key="category.id" :value="category.id">
-                  {{ category.name }}
-                </option>
-              </select>
+              <el-select 
+                v-model="selectedMoveCategory" 
+                placeholder="移动到..."
+                @change="handleBatchMove"
+                class="move-select"
+              >
+                <el-option 
+                  v-for="category in categories" 
+                  :key="category.id" 
+                  :label="category.name" 
+                  :value="category.id"
+                />
+              </el-select>
             </div>
-            <button class="batch-btn close" @click="handleBatchEditClick">
-              <span>完成</span>
+            <el-button type="warning" @click="handleBatchEditClick">
+              完成
               <span class="shortcut-hint">Esc</span>
-            </button>
+            </el-button>
           </div>
           <div class="batch-edit-info">
             已选择 {{ dataStore.selectedLinks.length }} 个网站
@@ -313,28 +306,44 @@ onUnmounted(() => {
           <div class="sort-info">
             <span>排序模式：拖拽调整网站顺序</span>
           </div>
-          <button class="sort-btn close" @click="handleSortClick">
-            <span>完成排序</span>
+          <el-button type="primary" @click="handleSortClick">
+            完成排序
             <span class="shortcut-hint">Esc</span>
-          </button>
+          </el-button>
         </div>
       </div>
 
       <!-- Sites Grid -->
       <div class="sites-section">
-        <div class="sites-grid">
+        <!-- 普通模式：不使用拖拽 -->
+        <div v-if="!dataStore.sortMode" class="sites-grid">
           <SiteCard
-            v-for="site in filteredLinks"
+            v-for="site in sortableLinks"
             :key="site.id"
             :site="site"
-            :on-drag-start="handleDragStart"
-            :on-drag-over="handleDragOver"
-            :on-drop="handleDrop"
-            :on-drag-end="handleDragEnd"
           />
         </div>
 
-        <div v-if="filteredLinks.length === 0" class="empty-state">
+        <!-- 排序模式：使用vue-draggable-plus -->
+        <VueDraggable
+          v-else
+          v-model="sortableLinks"
+          class="sites-grid"
+          :animation="200"
+          :delay="0"
+          :delay-on-touch-only="true"
+          ghost-class="sortable-ghost"
+          drag-class="sortable-drag"
+          @end="onSortEnd"
+        >
+          <SiteCard
+            v-for="site in sortableLinks"
+            :key="site.id"
+            :site="site"
+          />
+        </VueDraggable>
+
+        <div v-if="sortableLinks.length === 0" class="empty-state">
           <span class="empty-icon">📭</span>
           <p>暂无网站数据</p>
         </div>
@@ -348,15 +357,6 @@ onUnmounted(() => {
       @click="sidebarOpen = false"
     ></div>
 
-    <!-- Notifications -->
-    <Notification
-      v-for="notification in notifications"
-      :key="notification.id"
-      :message="notification.message"
-      :type="notification.type"
-      :duration="notification.duration"
-      @close="removeNotification(notification.id)"
-    />
   </div>
 </template>
 
@@ -519,6 +519,7 @@ onUnmounted(() => {
   gap: 1rem;
   max-width: 1400px;
   margin: 0 auto;
+  min-height: 100px;
 }
 
 .empty-state {
@@ -562,7 +563,7 @@ onUnmounted(() => {
 
 .batch-edit-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
@@ -576,88 +577,12 @@ onUnmounted(() => {
   margin-bottom: 1.5rem;
 }
 
-.batch-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--color-text);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  min-width: 120px;
-  justify-content: center;
-}
-
-.batch-btn:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.batch-btn.danger {
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.05);
-}
-
-.batch-btn.danger:hover {
-  background: #ef4444;
-  color: white;
-  border-color: #ef4444;
-}
-
-.batch-btn.close {
-  margin-left: auto;
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: rgba(14, 165, 233, 0.05);
-}
-
-.batch-btn.close:hover {
-  background: var(--color-primary);
-  color: white;
-}
-
 .batch-move {
   margin-left: 0;
 }
 
 .move-select {
-  padding: 0.75rem 1.5rem;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--color-text);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
   min-width: 150px;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 16px;
-}
-
-.move-select:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230ea5e9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-}
-
-.move-select:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
 }
 
 .batch-edit-info {
@@ -687,30 +612,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
 }
 
 .sort-info {
   font-size: 0.875rem;
   color: var(--color-text);
-}
-
-.sort-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--color-primary);
-  border-radius: 8px;
-  background: var(--color-primary);
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-}
-
-.sort-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
 }
 
 @media (max-width: 768px) {
@@ -740,14 +647,6 @@ onUnmounted(() => {
     align-items: stretch;
   }
 
-  .batch-btn {
-    justify-content: center;
-  }
-
-  .batch-btn.close {
-    margin-left: 0;
-  }
-
   .batch-move {
     margin-left: 0;
     width: 100%;
@@ -767,9 +666,32 @@ onUnmounted(() => {
     gap: 0.5rem;
     align-items: stretch;
   }
+}
 
-  .sort-btn {
-    justify-content: center;
-  }
+/* Element Plus 样式调整 */
+.batch-edit-actions :deep(.el-button) {
+  margin: 0 4px;
+}
+
+.batch-edit-actions :deep(.el-select) {
+  margin: 0 4px;
+}
+
+/* vue-draggable-plus 样式 */
+:deep(.sortable-ghost) {
+  opacity: 0.4;
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px dashed #10b981;
+  border-radius: 12px;
+}
+
+:deep(.sortable-drag) {
+  opacity: 0.9;
+  transform: scale(1.05) rotate(2deg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  background: var(--color-card);
+  border: 2px solid #10b981;
+  border-radius: 12px;
 }
 </style>

@@ -10,6 +10,18 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  
+  /* Element Plus 主题变量 */
+  --el-color-primary: var(--color-primary);
+  --el-color-success: #22c55e;
+  --el-color-warning: #f59e0b;
+  --el-color-danger: #ef4444;
+  --el-color-info: #64748b;
+  --el-bg-color: var(--color-bg);
+  --el-text-color-primary: var(--color-text);
+  --el-text-color-secondary: var(--color-secondary);
+  --el-border-color: var(--color-border);
+  --el-card-bg-color: var(--color-card);
 }
 
 .dark {
@@ -19,6 +31,18 @@
   --color-secondary: #94a3b8;
   --color-border: #334155;
   --color-card: #1e293b;
+  
+  /* Element Plus 暗黑主题变量 */
+  --el-color-primary: var(--color-primary);
+  --el-color-success: #22c55e;
+  --el-color-warning: #f59e0b;
+  --el-color-danger: #ef4444;
+  --el-color-info: #64748b;
+  --el-bg-color: var(--color-bg);
+  --el-text-color-primary: var(--color-text);
+  --el-text-color-secondary: var(--color-secondary);
+  --el-border-color: var(--color-border);
+  --el-card-bg-color: var(--color-card);
 }
 
 * {
