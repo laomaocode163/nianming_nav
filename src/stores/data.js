@@ -18,6 +18,11 @@ export const useDataStore = defineStore('data', () => {
   const searchConfig = ref({ ...DEFAULT_SEARCH_CONFIG })
   const iconMap = ref({}) // 域名 -> 图标URL的映射表
   const isLoaded = ref(false)
+  
+  // 批量编辑模式状态
+  const batchEditMode = ref(false)
+  const selectedLinks = ref([])
+  const sortMode = ref(false)
 
   const pinnedLinks = computed(() => {
     return links.value
@@ -331,8 +336,9 @@ export const useDataStore = defineStore('data', () => {
   const reorderLinks = (activeId, overId, categoryId) => {
     if (activeId === overId) return
 
+    // 只处理非置顶的链接
     const categoryLinks = links.value
-      .filter(link => categoryId === 'all' || link.categoryId === categoryId)
+      .filter(link => !link.pinned && (categoryId === 'all' || link.categoryId === categoryId))
       .slice()
       .sort((a, b) => (a.order || 0) - (b.order || 0))
 
@@ -415,6 +421,92 @@ export const useDataStore = defineStore('data', () => {
     settings.value = { ...DEFAULT_SITE_SETTINGS }
     searchConfig.value = { ...DEFAULT_SEARCH_CONFIG }
     iconMap.value = {}
+    batchEditMode.value = false
+    selectedLinks.value = []
+    sortMode.value = false
+    saveData()
+  }
+
+  // ========== 批量编辑功能 ==========
+
+  const toggleBatchEditMode = () => {
+    if (sortMode.value) {
+      // 如果当前是排序模式，先退出排序模式
+      sortMode.value = false
+    }
+    batchEditMode.value = !batchEditMode.value
+    if (!batchEditMode.value) {
+      selectedLinks.value = []
+    }
+  }
+
+  const toggleSortMode = () => {
+    if (batchEditMode.value) {
+      // 如果当前是批量编辑模式，先退出批量编辑模式
+      batchEditMode.value = false
+      selectedLinks.value = []
+    }
+    sortMode.value = !sortMode.value
+  }
+
+  const toggleLinkSelection = (linkId) => {
+    const index = selectedLinks.value.indexOf(linkId)
+    if (index === -1) {
+      selectedLinks.value.push(linkId)
+    } else {
+      selectedLinks.value.splice(index, 1)
+    }
+  }
+
+  const selectAllLinks = (categoryId) => {
+    const categoryLinks = links.value.filter(link => 
+      (categoryId === 'all' || link.categoryId === categoryId) && !link.hidden
+    )
+    selectedLinks.value = categoryLinks.map(link => link.id)
+  }
+
+  const deselectAllLinks = () => {
+    selectedLinks.value = []
+  }
+
+  const batchTogglePin = () => {
+    selectedLinks.value.forEach(id => {
+      const link = links.value.find(l => l.id === id)
+      if (link) {
+        if (link.pinned) {
+          // 取消置顶
+          link.pinned = false
+          link.pinnedOrder = undefined
+          // 重新计算其他置顶链接的顺序
+          const pinnedLinks = links.value.filter(l => l.pinned)
+          pinnedLinks.forEach((l, index) => {
+            l.pinnedOrder = index + 1
+          })
+        } else {
+          // 置顶
+          link.pinned = true
+          link.pinnedOrder = links.value.filter(l => l.pinned).length
+        }
+      }
+    })
+    saveData()
+  }
+
+  const batchDelete = () => {
+    links.value = links.value.filter(link => !selectedLinks.value.includes(link.id))
+    cleanupUnusedIcons()
+    selectedLinks.value = []
+    saveData()
+  }
+
+  const batchMove = (targetCategoryId) => {
+    selectedLinks.value.forEach(id => {
+      const link = links.value.find(l => l.id === id)
+      if (link) {
+        link.categoryId = targetCategoryId
+      }
+    })
+    selectedLinks.value = []
     saveData()
   }
 
@@ -425,6 +517,9 @@ export const useDataStore = defineStore('data', () => {
     searchConfig,
     iconMap,
     isLoaded,
+    batchEditMode,
+    selectedLinks,
+    sortMode,
     pinnedLinks,
     getLinksByCategory,
     visibleCategories,
@@ -443,6 +538,15 @@ export const useDataStore = defineStore('data', () => {
     importData,
     exportData,
     resetData,
+    // 批量编辑方法
+    toggleBatchEditMode,
+    toggleSortMode,
+    toggleLinkSelection,
+    selectAllLinks,
+    deselectAllLinks,
+    batchTogglePin,
+    batchDelete,
+    batchMove,
     // 图标管理方法
     getLinkIcon,
     setDomainIcon,

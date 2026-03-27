@@ -8,7 +8,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['menu-click'])
+const emit = defineEmits(['menu-click', 'batch-edit-click', 'sort-click'])
 
 const themeStore = useThemeStore()
 </script>
@@ -23,6 +23,20 @@ const themeStore = useThemeStore()
     </div>
 
     <div class="header-right">
+      <button 
+        class="action-btn" 
+        @click="emit('batch-edit-click')"
+        title="批量编辑"
+      >
+        <span>📋</span>
+      </button>
+      <button 
+        class="action-btn" 
+        @click="emit('sort-click')"
+        title="排序"
+      >
+        <span>🔄</span>
+      </button>
       <button 
         class="theme-btn" 
         @click="themeStore.toggleTheme"
@@ -87,7 +101,7 @@ const themeStore = useThemeStore()
   gap: 0.5rem;
 }
 
-.theme-btn {
+.action-btn, .theme-btn {
   width: 40px;
   height: 40px;
   border: 1px solid var(--color-border);
@@ -101,7 +115,7 @@ const themeStore = useThemeStore()
   transition: all 0.2s ease;
 }
 
-.theme-btn:hover {
+.action-btn:hover, .theme-btn:hover {
   border-color: var(--color-primary);
   transform: scale(1.05);
 }
