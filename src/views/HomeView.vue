@@ -12,6 +12,7 @@ const selectedCategoryId = ref('all')
 const sidebarOpen = ref(true)
 const sidebarCollapsed = ref(false)
 const isMobile = ref(false)
+const searchInputRef = ref(null)
 
 const searchEngines = computed(() => {
   return dataStore.searchConfig.externalSources.filter(s => s.enabled)
@@ -66,13 +67,37 @@ const checkMobile = () => {
   }
 }
 
+// 聚焦搜索框
+const focusSearchInput = () => {
+  if (searchInputRef.value) {
+    searchInputRef.value.focus()
+    // 如果有内容，选中所有文本
+    if (searchQuery.value) {
+      searchInputRef.value.select()
+    }
+  }
+}
+
+// 键盘事件处理
+const handleKeydown = (event) => {
+  // 检测 ⌘K (Mac) 或 Ctrl+K (Windows/Linux)
+  if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+    event.preventDefault()
+    focusSearchInput()
+  }
+}
+
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
+  // 添加键盘事件监听
+  document.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
+  // 移除键盘事件监听
+  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -99,25 +124,43 @@ onUnmounted(() => {
       <!-- Search Section -->
       <div class="search-section">
         <div class="search-container">
+          <!-- Search Box -->
           <div class="search-box">
-            <select 
-              :value="selectedEngine?.id" 
-              class="engine-select"
-              @change="selectEngine($event.target.value)"
-            >
-              <option v-for="engine in searchEngines" :key="engine.id" :value="engine.id">
-                {{ engine.name }}
-              </option>
-            </select>
+            <div class="search-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </div>
             <input
+              ref="searchInputRef"
               v-model="searchQuery"
               type="text"
               class="search-input"
-              placeholder="输入搜索内容..."
+              :placeholder="`在 ${selectedEngine?.name || '必应'} 搜索...`"
               @keyup.enter="handleSearch"
             />
-            <button class="search-btn" @click="handleSearch">
-              <span>🔍</span>
+            <div class="search-shortcut">
+              <span class="shortcut-key">⌘</span>
+              <span class="shortcut-key">K</span>
+            </div>
+            <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6 6 18M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Engine Selector -->
+          <div class="engine-selector">
+            <button
+              v-for="engine in searchEngines.slice(0, 4)"
+              :key="engine.id"
+              class="engine-tag"
+              :class="{ active: selectedEngine?.id === engine.id }"
+              @click="selectEngine(engine.id)"
+            >
+              {{ engine.name }}
             </button>
           </div>
         </div>
@@ -181,7 +224,10 @@ onUnmounted(() => {
 
 .search-container {
   width: 100%;
-  max-width: 600px;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .search-box {
@@ -190,53 +236,108 @@ onUnmounted(() => {
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  padding: 0.5rem;
+  padding: 0.75rem 1rem;
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .search-box:focus-within {
   box-shadow: var(--shadow-md), 0 0 0 3px rgba(14, 165, 233, 0.1);
+  border-color: var(--color-primary);
 }
 
-.engine-select {
-  padding: 0.75rem 1rem;
-  border: none;
-  background: transparent;
-  color: var(--color-text);
-  font-size: 0.875rem;
-  cursor: pointer;
-  outline: none;
-  border-right: 1px solid var(--color-border);
+.search-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-secondary);
+  margin-right: 0.75rem;
+  flex-shrink: 0;
 }
 
 .search-input {
   flex: 1;
-  padding: 0.75rem 1rem;
   border: none;
   background: transparent;
   color: var(--color-text);
-  font-size: 1rem;
+  font-size: 0.9375rem;
   outline: none;
+  padding: 0;
 }
 
 .search-input::placeholder {
   color: var(--color-secondary);
 }
 
-.search-btn {
-  padding: 0.75rem 1.25rem;
-  border: none;
-  background: var(--color-primary);
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1.25rem;
-  transition: background-color 0.2s ease;
+.search-shortcut {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: 0.5rem;
 }
 
-.search-btn:hover {
-  background-color: #0284c7;
+.shortcut-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+}
+
+.search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--color-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.search-clear:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.engine-selector {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.engine-tag {
+  padding: 0.375rem 0.875rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-secondary);
+  font-size: 0.8125rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.engine-tag:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.engine-tag.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
 }
 
 .sites-section {
