@@ -1,165 +1,176 @@
 <script setup>
-import { ref } from 'vue'
-import { useThemeStore } from '../stores/theme'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useDataStore } from '../stores/data'
+import Sidebar from '../components/layout/Sidebar.vue'
+import MainHeader from '../components/layout/MainHeader.vue'
+import SiteCard from '../components/ui/SiteCard.vue'
 
-const themeStore = useThemeStore()
+const dataStore = useDataStore()
+
 const searchQuery = ref('')
-const searchEngine = ref('google')
+const selectedCategoryId = ref('all')
+const sidebarOpen = ref(true)
+const isMobile = ref(false)
 
-const searchEngines = [
-  { key: 'google', name: 'Google', url: 'https://www.google.com/search?q=' },
-  { key: 'bing', name: 'Bing', url: 'https://www.bing.com/search?q=' },
-  { key: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd=' },
-]
+const searchEngines = computed(() => {
+  return dataStore.searchConfig.externalSources.filter(s => s.enabled)
+})
+
+const selectedEngine = computed(() => {
+  return searchEngines.value.find(e => e.id === dataStore.searchConfig.selectedSourceId) || searchEngines.value[0]
+})
+
+const categories = computed(() => dataStore.visibleCategories)
+
+const filteredLinks = computed(() => {
+  return dataStore.getLinksByCategory(selectedCategoryId.value)
+})
+
+const pageTitle = computed(() => {
+  if (selectedCategoryId.value === 'all') return '全部网站'
+  const category = categories.value.find(c => c.id === selectedCategoryId.value)
+  return category?.name || '全部网站'
+})
 
 const handleSearch = () => {
   if (!searchQuery.value.trim()) return
-  const engine = searchEngines.find(e => e.key === searchEngine.value)
-  if (engine) {
-    window.open(engine.url + encodeURIComponent(searchQuery.value), '_blank')
+  if (selectedEngine.value) {
+    window.open(selectedEngine.value.url + encodeURIComponent(searchQuery.value), '_blank')
   }
 }
 
-const categories = ref([
-  {
-    id: 1,
-    name: '开发工具',
-    icon: '💻',
-    sites: [
-      { id: 1, name: 'GitHub', url: 'https://github.com', desc: '代码托管平台' },
-      { id: 2, name: 'Stack Overflow', url: 'https://stackoverflow.com', desc: '开发者问答社区' },
-    ],
-  },
-  {
-    id: 2,
-    name: '设计资源',
-    icon: '🎨',
-    sites: [
-      { id: 3, name: 'Figma', url: 'https://figma.com', desc: '协作设计工具' },
-      { id: 4, name: 'Dribbble', url: 'https://dribbble.com', desc: '设计灵感社区' },
-    ],
-  },
-])
+const selectEngine = (engineId) => {
+  dataStore.updateSearchConfig({ selectedSourceId: engineId })
+}
+
+const selectCategory = (categoryId) => {
+  selectedCategoryId.value = categoryId
+  if (isMobile.value) {
+    sidebarOpen.value = false
+  }
+}
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+  if (isMobile.value) {
+    sidebarOpen.value = false
+  }
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
+})
 </script>
 
 <template>
-  <div class="home-view">
-    <!-- Header -->
-    <header class="header">
-      <div class="header-content">
-        <h1 class="logo">nianming_nav</h1>
-        <button class="theme-toggle" @click="themeStore.toggleTheme" :title="themeStore.isDark ? '切换到亮色模式' : '切换到暗色模式'">
-          <span v-if="themeStore.isDark">☀️</span>
-          <span v-else>🌙</span>
-        </button>
-      </div>
-    </header>
+  <div class="home-layout">
+    <!-- Sidebar -->
+    <Sidebar
+      :selected-category="selectedCategoryId"
+      :is-open="sidebarOpen"
+      @select="selectCategory"
+      @toggle="toggleSidebar"
+    />
 
-    <!-- Search Section -->
-    <div class="search-section">
-      <div class="search-container">
-        <div class="search-box">
-          <select v-model="searchEngine" class="engine-select">
-            <option v-for="engine in searchEngines" :key="engine.key" :value="engine.key">
-              {{ engine.name }}
-            </option>
-          </select>
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="search-input"
-            placeholder="输入搜索内容..."
-            @keyup.enter="handleSearch"
-          />
-          <button class="search-btn" @click="handleSearch">
-            <span>🔍</span>
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Main Content -->
+    <div class="main-content" :class="{ 'sidebar-closed': !sidebarOpen }">
+      <!-- Header -->
+      <MainHeader 
+        :title="pageTitle"
+        @menu-click="toggleSidebar"
+      />
 
-    <!-- Categories Section -->
-    <div class="categories-section">
-      <div class="categories-container">
-        <div v-for="category in categories" :key="category.id" class="category-card">
-          <div class="category-header">
-            <span class="category-icon">{{ category.icon }}</span>
-            <h3 class="category-name">{{ category.name }}</h3>
-          </div>
-          <div class="sites-grid">
-            <a
-              v-for="site in category.sites"
-              :key="site.id"
-              :href="site.url"
-              target="_blank"
-              class="site-card"
+      <!-- Search Section -->
+      <div class="search-section">
+        <div class="search-container">
+          <div class="search-box">
+            <select 
+              :value="selectedEngine?.id" 
+              class="engine-select"
+              @change="selectEngine($event.target.value)"
             >
-              <div class="site-name">{{ site.name }}</div>
-              <div class="site-desc">{{ site.desc }}</div>
-            </a>
+              <option v-for="engine in searchEngines" :key="engine.id" :value="engine.id">
+                {{ engine.name }}
+              </option>
+            </select>
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="search-input"
+              placeholder="输入搜索内容..."
+              @keyup.enter="handleSearch"
+            />
+            <button class="search-btn" @click="handleSearch">
+              <span>🔍</span>
+            </button>
           </div>
         </div>
       </div>
+
+      <!-- Sites Grid -->
+      <div class="sites-section">
+        <div class="sites-grid">
+          <SiteCard
+            v-for="site in filteredLinks"
+            :key="site.id"
+            :site="site"
+          />
+        </div>
+
+        <div v-if="filteredLinks.length === 0" class="empty-state">
+          <span class="empty-icon">📭</span>
+          <p>暂无网站数据</p>
+        </div>
+      </div>
     </div>
+
+    <!-- Mobile Overlay -->
+    <div 
+      v-if="isMobile && sidebarOpen" 
+      class="sidebar-overlay"
+      @click="sidebarOpen = false"
+    ></div>
   </div>
 </template>
 
 <style scoped>
-.home-view {
+.home-layout {
+  display: flex;
   min-height: 100vh;
-  padding: 2rem;
 }
 
-/* Header */
-.header {
-  max-width: 1200px;
-  margin: 0 auto 1rem;
-  padding: 0 0.5rem;
-}
-
-.header-content {
+.main-content {
+  flex: 1;
+  margin-left: 260px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-bg);
+  transition: margin-left 0.3s ease;
 }
 
-.logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.theme-toggle {
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  background: var(--color-card);
-  cursor: pointer;
-  font-size: 1.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.theme-toggle:hover {
-  border-color: var(--color-primary);
-  transform: scale(1.05);
+.main-content.sidebar-closed {
+  margin-left: 0;
 }
 
 .search-section {
   display: flex;
   justify-content: center;
-  padding: 4rem 1rem;
+  padding: 2rem 1rem;
 }
 
 .search-container {
   width: 100%;
-  max-width: 700px;
+  max-width: 600px;
 }
 
 .search-box {
@@ -169,12 +180,12 @@ const categories = ref([
   border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 0.5rem;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   transition: box-shadow 0.3s ease;
 }
 
 .search-box:focus-within {
-  box-shadow: var(--shadow-lg), 0 0 0 3px rgba(14, 165, 233, 0.1);
+  box-shadow: var(--shadow-md), 0 0 0 3px rgba(14, 165, 233, 0.1);
 }
 
 .engine-select {
@@ -214,94 +225,54 @@ const categories = ref([
 }
 
 .search-btn:hover {
-  background-color: var(--color-primary-600, #0284c7);
+  background-color: #0284c7;
 }
 
-.categories-section {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.categories-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-
-.category-card {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.category-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.category-icon {
-  font-size: 1.5rem;
-}
-
-.category-name {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-text);
+.sites-section {
+  flex: 1;
+  padding: 0 1.5rem 2rem;
 }
 
 .sites-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.site-card {
-  display: block;
-  padding: 1rem;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.site-card:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.site-name {
-  font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: 0.25rem;
-}
-
-.site-desc {
-  font-size: 0.75rem;
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
   color: var(--color-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-@media (max-width: 640px) {
-  .home-view {
-    padding: 1rem;
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
   }
 
   .search-section {
-    padding: 2rem 0.5rem;
+    padding: 1rem;
   }
 
-  .categories-container {
-    grid-template-columns: 1fr;
+  .sites-section {
+    padding: 0 1rem 2rem;
   }
 
   .sites-grid {
