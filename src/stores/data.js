@@ -4,9 +4,10 @@ import {
   DEFAULT_CATEGORIES,
   INITIAL_LINKS,
   DEFAULT_SITE_SETTINGS,
-  DEFAULT_SEARCH_CONFIG
+  DEFAULT_SEARCH_CONFIG,
+  DEFAULT_ICON_PLACEHOLDER
 } from '../utils/constants'
-import { preloadIcons, fetchIcon, extractDomain, setCachedIcon } from '../utils/faviconService'
+import { extractDomain } from '../utils/faviconService'
 
 const LOCAL_STORAGE_KEY = 'nianming_nav_data'
 
@@ -15,6 +16,7 @@ export const useDataStore = defineStore('data', () => {
   const categories = ref([])
   const settings = ref({ ...DEFAULT_SITE_SETTINGS })
   const searchConfig = ref({ ...DEFAULT_SEARCH_CONFIG })
+  const iconMap = ref({}) // 域名 -> 图标URL的映射表
   const isLoaded = ref(false)
 
   const pinnedLinks = computed(() => {
@@ -36,6 +38,107 @@ export const useDataStore = defineStore('data', () => {
     return categories.value.filter(cat => !cat.hidden)
   })
 
+  // ========== 图标管理方法 ==========
+
+  /**
+   * 获取网站的图标URL
+   * @param {Object} link - 网站对象
+   * @returns {string} 图标URL
+   */
+  const getLinkIcon = (link) => {
+    if (!link || !link.url) return DEFAULT_ICON_PLACEHOLDER
+    
+    const domain = extractDomain(link.url)
+    // 优先使用映射表中的图标
+    if (iconMap.value[domain]) {
+      return iconMap.value[domain]
+    }
+    // 返回默认图标
+    return DEFAULT_ICON_PLACEHOLDER
+  }
+
+  /**
+   * 设置域名的图标
+   * @param {string} domain - 域名
+   * @param {string} iconUrl - 图标URL
+   */
+  const setDomainIcon = (domain, iconUrl) => {
+    iconMap.value[domain] = iconUrl
+    saveData()
+  }
+
+  /**
+   * 从API获取域名的图标
+   * @param {string} domain - 域名
+   * @returns {string} 图标URL
+   */
+  const fetchIconForDomain = (domain) => {
+    return `https://www.faviconextractor.com/favicon/${domain}?larger=true`
+  }
+
+  /**
+   * 同步网站图标（如果域名没有图标则自动获取）
+   * @param {Object} link - 网站对象
+   */
+  const syncLinkIcon = (link) => {
+    if (!link || !link.url) return
+    
+    const domain = extractDomain(link.url)
+    // 如果该域名还没有图标，自动生成图标URL
+    if (!iconMap.value[domain]) {
+      iconMap.value[domain] = fetchIconForDomain(domain)
+    }
+  }
+
+  /**
+   * 清理未使用的图标
+   */
+  const cleanupUnusedIcons = () => {
+    const usedDomains = new Set(
+      links.value.map(link => extractDomain(link.url))
+    )
+    
+    // 删除未使用的图标
+    Object.keys(iconMap.value).forEach(domain => {
+      if (!usedDomains.has(domain)) {
+        delete iconMap.value[domain]
+      }
+    })
+    
+    saveData()
+  }
+
+  /**
+   * 数据迁移：从旧格式迁移到新格式
+   * 将 link.icon 迁移到 iconMap
+   */
+  const migrateIconData = () => {
+    let hasMigration = false
+    
+    links.value.forEach(link => {
+      // 如果链接有自定义图标，迁移到 iconMap
+      if (link.icon && !link.icon.includes('faviconextractor.com')) {
+        const domain = extractDomain(link.url)
+        if (!iconMap.value[domain]) {
+          iconMap.value[domain] = link.icon
+          hasMigration = true
+        }
+        // 删除 link.icon 字段
+        delete link.icon
+      }
+      
+      // 为所有链接同步图标
+      syncLinkIcon(link)
+    })
+    
+    if (hasMigration) {
+      console.log('Icon data migration completed')
+      saveData()
+    }
+  }
+
+  // ========== 数据加载与保存 ==========
+
   const loadData = () => {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_KEY)
@@ -47,11 +150,13 @@ export const useDataStore = defineStore('data', () => {
           : [...DEFAULT_CATEGORIES]
         settings.value = { ...DEFAULT_SITE_SETTINGS, ...parsed.settings }
         searchConfig.value = { ...DEFAULT_SEARCH_CONFIG, ...parsed.searchConfig }
+        iconMap.value = parsed.iconMap || {}
       } else {
         links.value = [...INITIAL_LINKS]
         categories.value = [...DEFAULT_CATEGORIES]
         settings.value = { ...DEFAULT_SITE_SETTINGS }
         searchConfig.value = { ...DEFAULT_SEARCH_CONFIG }
+        iconMap.value = {}
       }
 
       const commonIndex = categories.value.findIndex(c => c.id === 'common')
@@ -61,14 +166,18 @@ export const useDataStore = defineStore('data', () => {
         categories.value.unshift(commonCategory)
       }
 
-      // 预加载所有链接的图标到缓存
-      preloadIcons(links.value)
+      // 数据迁移（从旧格式到新格式）
+      migrateIconData()
+      
+      // 清理未使用的图标
+      cleanupUnusedIcons()
     } catch (e) {
       console.error('Failed to load data:', e)
       links.value = [...INITIAL_LINKS]
       categories.value = [...DEFAULT_CATEGORIES]
       settings.value = { ...DEFAULT_SITE_SETTINGS }
       searchConfig.value = { ...DEFAULT_SEARCH_CONFIG }
+      iconMap.value = {}
     }
     isLoaded.value = true
   }
@@ -79,7 +188,8 @@ export const useDataStore = defineStore('data', () => {
         links: links.value,
         categories: categories.value,
         settings: settings.value,
-        searchConfig: searchConfig.value
+        searchConfig: searchConfig.value,
+        iconMap: iconMap.value
       }
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data))
     } catch (e) {
@@ -87,7 +197,9 @@ export const useDataStore = defineStore('data', () => {
     }
   }
 
-  const addLink = async (data) => {
+  // ========== 链接管理 ==========
+
+  const addLink = (data) => {
     let processedUrl = data.url
     if (processedUrl && !processedUrl.startsWith('http://') && !processedUrl.startsWith('https://')) {
       processedUrl = 'https://' + processedUrl
@@ -101,27 +213,23 @@ export const useDataStore = defineStore('data', () => {
       ? Math.max(...categoryLinks.map(link => link.order || 0))
       : -1
 
-    // 如果没有提供图标，自动获取
-    let icon = data.icon
-    if (!icon) {
-      try {
-        icon = await fetchIcon(processedUrl)
-      } catch (e) {
-        console.error('Failed to auto-fetch icon:', e)
-      }
-    }
-
     const newLink = {
       ...data,
       url: processedUrl,
-      icon,
       id: Date.now().toString(),
       createdAt: Date.now(),
       order: maxOrder + 1,
       pinnedOrder: data.pinned ? links.value.filter(l => l.pinned).length : undefined
     }
 
+    // 删除 icon 字段（不再存储在 link 中）
+    delete newLink.icon
+
     links.value.push(newLink)
+    
+    // 同步图标
+    syncLinkIcon(newLink)
+    
     saveData()
     return newLink
   }
@@ -134,7 +242,27 @@ export const useDataStore = defineStore('data', () => {
 
     const index = links.value.findIndex(l => l.id === data.id)
     if (index !== -1) {
-      links.value[index] = { ...links.value[index], ...data, url: processedUrl }
+      const oldLink = links.value[index]
+      const oldDomain = extractDomain(oldLink.url)
+      const newDomain = extractDomain(processedUrl)
+      
+      // 更新链接数据（不包含 icon 字段）
+      const { icon, ...dataWithoutIcon } = data
+      links.value[index] = { ...oldLink, ...dataWithoutIcon, url: processedUrl }
+      
+      // 如果域名变更，为新域名获取图标
+      if (oldDomain !== newDomain) {
+        syncLinkIcon(links.value[index])
+      }
+      
+      // 如果有自定义图标，更新映射表
+      if (icon && !icon.includes('faviconextractor.com')) {
+        iconMap.value[newDomain] = icon
+      }
+      
+      // 清理未使用的图标
+      cleanupUnusedIcons()
+      
       saveData()
     }
   }
@@ -143,6 +271,10 @@ export const useDataStore = defineStore('data', () => {
     const index = links.value.findIndex(l => l.id === id)
     if (index !== -1) {
       links.value.splice(index, 1)
+      
+      // 清理未使用的图标
+      cleanupUnusedIcons()
+      
       saveData()
     }
   }
@@ -155,6 +287,8 @@ export const useDataStore = defineStore('data', () => {
       saveData()
     }
   }
+
+  // ========== 分类管理 ==========
 
   const addCategory = (data) => {
     const newCategory = {
@@ -234,7 +368,16 @@ export const useDataStore = defineStore('data', () => {
     if (data.links && Array.isArray(data.links)) {
       data.links.forEach(newLink => {
         if (!links.value.some(l => l.id === newLink.id)) {
+          // 迁移导入数据的图标
+          if (newLink.icon) {
+            const domain = extractDomain(newLink.url)
+            if (!iconMap.value[domain]) {
+              iconMap.value[domain] = newLink.icon
+            }
+            delete newLink.icon
+          }
           links.value.push(newLink)
+          syncLinkIcon(newLink)
         }
       })
     }
@@ -246,6 +389,11 @@ export const useDataStore = defineStore('data', () => {
         }
       })
     }
+    
+    // 导入时合并 iconMap
+    if (data.iconMap && typeof data.iconMap === 'object') {
+      iconMap.value = { ...iconMap.value, ...data.iconMap }
+    }
 
     saveData()
   }
@@ -256,6 +404,7 @@ export const useDataStore = defineStore('data', () => {
       categories: categories.value,
       settings: settings.value,
       searchConfig: searchConfig.value,
+      iconMap: iconMap.value,
       exportedAt: Date.now()
     }
   }
@@ -265,6 +414,7 @@ export const useDataStore = defineStore('data', () => {
     categories.value = [...DEFAULT_CATEGORIES]
     settings.value = { ...DEFAULT_SITE_SETTINGS }
     searchConfig.value = { ...DEFAULT_SEARCH_CONFIG }
+    iconMap.value = {}
     saveData()
   }
 
@@ -273,6 +423,7 @@ export const useDataStore = defineStore('data', () => {
     categories,
     settings,
     searchConfig,
+    iconMap,
     isLoaded,
     pinnedLinks,
     getLinksByCategory,
@@ -291,6 +442,11 @@ export const useDataStore = defineStore('data', () => {
     updateSearchConfig,
     importData,
     exportData,
-    resetData
+    resetData,
+    // 图标管理方法
+    getLinkIcon,
+    setDomainIcon,
+    syncLinkIcon,
+    cleanupUnusedIcons
   }
 })

@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { getSiteIcon, handleIconError, getDefaultIcon } from '../../utils/faviconService'
+import { useDataStore } from '../../stores/data'
+import { getDefaultIcon } from '../../utils/constants'
 
 const props = defineProps({
   site: {
@@ -9,12 +10,16 @@ const props = defineProps({
   }
 })
 
+const dataStore = useDataStore()
+
 const siteIcon = computed(() => {
-  return getSiteIcon(props.site.url, props.site.icon)
+  return dataStore.getLinkIcon(props.site)
 })
 
 const onIconError = (event) => {
-  handleIconError(event)
+  const img = event.target
+  img.src = getDefaultIcon()
+  img.onerror = null
 }
 </script>
 

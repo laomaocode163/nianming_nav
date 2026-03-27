@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useDataStore } from '../../stores/data'
 import Dialog from '../ui/Dialog.vue'
-import { fetchIcon, getSiteIcon, extractDomain } from '../../utils/faviconService'
+import { extractDomain } from '../../utils/faviconService'
 
 const dataStore = useDataStore()
 
@@ -53,24 +53,31 @@ const startEdit = (link) => {
     description: link.description || '',
     categoryId: link.categoryId,
     pinned: link.pinned || false,
-    icon: link.icon || ''
+    icon: ''
   }
-  iconPreview.value = getSiteIcon(link.url, link.icon)
+  // 使用 dataStore.getLinkIcon 获取当前图标
+  iconPreview.value = dataStore.getLinkIcon(link)
   autoFetchIcon.value = false
   clearMessage()
 }
 
 // 自动获取图标
-const handleFetchIcon = async () => {
+const handleFetchIcon = () => {
   if (!formData.value.url) return
   
   isFetchingIcon.value = true
   try {
-    const iconUrl = await fetchIcon(formData.value.url)
+    const domain = extractDomain(formData.value.url)
+    // 使用 dataStore 的方法获取图标
+    const iconUrl = dataStore.fetchIconForDomain(domain)
     formData.value.icon = iconUrl
     iconPreview.value = iconUrl
+    // 更新映射表
+    dataStore.setDomainIcon(domain, iconUrl)
+    showMessage('图标获取成功')
   } catch (e) {
     console.error('Failed to fetch icon:', e)
+    showMessage('图标获取失败', 'error')
   } finally {
     isFetchingIcon.value = false
   }
@@ -111,6 +118,11 @@ const handleFileUpload = (event) => {
     const base64String = e.target?.result
     formData.value.icon = base64String
     iconPreview.value = base64String
+    // 同时更新映射表
+    if (formData.value.url) {
+      const domain = extractDomain(formData.value.url)
+      dataStore.setDomainIcon(domain, base64String)
+    }
     showMessage('图标上传成功')
   }
   reader.onerror = () => {
@@ -212,6 +224,12 @@ const saveLink = () => {
 }
 
 const proceedSave = () => {
+  // 如果有自定义图标，先保存到映射表
+  if (formData.value.icon && formData.value.url) {
+    const domain = extractDomain(formData.value.url)
+    dataStore.setDomainIcon(domain, formData.value.icon)
+  }
+
   if (isEditing.value) {
     dataStore.updateLink({
       id: editingId.value,
