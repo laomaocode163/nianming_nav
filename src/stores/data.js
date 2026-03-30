@@ -555,6 +555,7 @@ export const useDataStore = defineStore('data', () => {
     getLinkIcon,
     setDomainIcon,
     syncLinkIcon,
+    fetchIconForDomain,
     cleanupUnusedIcons
   }
 })

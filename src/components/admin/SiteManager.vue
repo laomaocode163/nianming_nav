@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useDataStore } from '../../stores/data'
-import Dialog from '../ui/Dialog.vue'
 import { extractDomain } from '../../utils/faviconService'
 
 const dataStore = useDataStore()
@@ -18,12 +18,6 @@ const formData = ref({
 const iconPreview = ref('')
 const isFetchingIcon = ref(false)
 const autoFetchIcon = ref(true)
-const message = ref('')
-const messageType = ref('')
-const dialogVisible = ref(false)
-const dialogTitle = ref('')
-const dialogContent = ref('')
-const dialogCallback = ref(null)
 
 const isEditing = computed(() => editingId.value !== null)
 
@@ -42,7 +36,6 @@ const startAdd = () => {
   }
   iconPreview.value = ''
   autoFetchIcon.value = true
-  clearMessage()
 }
 
 const startEdit = (link) => {
@@ -55,38 +48,31 @@ const startEdit = (link) => {
     pinned: link.pinned || false,
     icon: ''
   }
-  // 使用 dataStore.getLinkIcon 获取当前图标
   iconPreview.value = dataStore.getLinkIcon(link)
   autoFetchIcon.value = false
-  clearMessage()
 }
 
-// 自动获取图标
-const handleFetchIcon = () => {
+const handleFetchIcon = async () => {
   if (!formData.value.url) return
   
   isFetchingIcon.value = true
   try {
     const domain = extractDomain(formData.value.url)
-    // 使用 dataStore 的方法获取图标
     const iconUrl = dataStore.fetchIconForDomain(domain)
     formData.value.icon = iconUrl
     iconPreview.value = iconUrl
-    // 更新映射表
     dataStore.setDomainIcon(domain, iconUrl)
-    showMessage('图标获取成功')
+    ElMessage.success('图标获取成功')
   } catch (e) {
     console.error('Failed to fetch icon:', e)
-    showMessage('图标获取失败', 'error')
+    ElMessage.error('图标获取失败')
   } finally {
     isFetchingIcon.value = false
   }
 }
 
-// 监听URL变化，自动获取图标
 watch(() => formData.value.url, (newUrl) => {
   if (newUrl && autoFetchIcon.value && !editingId.value) {
-    // 延迟500ms执行，避免频繁请求
     setTimeout(() => {
       if (formData.value.url === newUrl) {
         handleFetchIcon()
@@ -95,21 +81,17 @@ watch(() => formData.value.url, (newUrl) => {
   }
 })
 
-// 处理文件上传
-const handleFileUpload = (event) => {
-  const file = event.target.files?.[0]
-  if (!file) return
+const handleFileUpload = (options) => {
+  const { file } = options
   
-  // 验证文件类型
   const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon']
   if (!validTypes.includes(file.type)) {
-    showMessage('请上传 PNG、JPG、SVG 或 ICO 格式的图标', 'error')
+    ElMessage.error('请上传 PNG、JPG、SVG 或 ICO 格式的图标')
     return
   }
   
-  // 验证文件大小 (限制为 2MB)
   if (file.size > 2 * 1024 * 1024) {
-    showMessage('图标文件大小不能超过 2MB', 'error')
+    ElMessage.error('图标文件大小不能超过 2MB')
     return
   }
   
@@ -118,55 +100,20 @@ const handleFileUpload = (event) => {
     const base64String = e.target?.result
     formData.value.icon = base64String
     iconPreview.value = base64String
-    // 同时更新映射表
     if (formData.value.url) {
       const domain = extractDomain(formData.value.url)
       dataStore.setDomainIcon(domain, base64String)
     }
-    showMessage('图标上传成功')
+    ElMessage.success('图标上传成功')
   }
   reader.onerror = () => {
-    showMessage('读取图标文件失败', 'error')
+    ElMessage.error('读取图标文件失败')
   }
   reader.readAsDataURL(file)
 }
 
 const cancelEdit = () => {
   editingId.value = null
-  clearMessage()
-}
-
-const showMessage = (text, type = 'success') => {
-  message.value = text
-  messageType.value = type
-  setTimeout(() => {
-    clearMessage()
-  }, 3000)
-}
-
-const clearMessage = () => {
-  message.value = ''
-  messageType.value = ''
-}
-
-const showDialog = (title, content, callback) => {
-  dialogTitle.value = title
-  dialogContent.value = content
-  dialogCallback.value = callback
-  dialogVisible.value = true
-}
-
-const handleDialogConfirm = () => {
-  if (dialogCallback.value) {
-    dialogCallback.value()
-  }
-  dialogVisible.value = false
-  dialogCallback.value = null
-}
-
-const handleDialogCancel = () => {
-  dialogVisible.value = false
-  dialogCallback.value = null
 }
 
 const checkDuplicateLink = (url, categoryId, excludeId = null) => {
@@ -175,7 +122,6 @@ const checkDuplicateLink = (url, categoryId, excludeId = null) => {
     processedUrl = 'https://' + processedUrl
   }
 
-  // 检查当前分类中是否有重复链接
   const sameCategoryDuplicate = links.value.some(link => 
     link.id !== excludeId && 
     link.categoryId === categoryId && 
@@ -186,7 +132,6 @@ const checkDuplicateLink = (url, categoryId, excludeId = null) => {
     return { duplicate: true, message: '当前分类中已存在相同链接' }
   }
 
-  // 检查其他分类中是否有相同链接
   const otherCategoryDuplicate = links.value.some(link => 
     link.id !== excludeId && 
     link.categoryId !== categoryId && 
@@ -200,9 +145,9 @@ const checkDuplicateLink = (url, categoryId, excludeId = null) => {
   return { duplicate: false }
 }
 
-const saveLink = () => {
+const saveLink = async () => {
   if (!formData.value.title.trim() || !formData.value.url.trim()) {
-    showMessage('请填写网站名称和地址', 'error')
+    ElMessage.error('请填写网站名称和地址')
     return
   }
 
@@ -210,13 +155,22 @@ const saveLink = () => {
   
   if (duplicateCheck.duplicate) {
     if (duplicateCheck.otherCategory) {
-      showDialog(
-        '确认添加',
-        `${duplicateCheck.message}，确定要在当前分类中再次添加吗？`,
-        proceedSave
-      )
+      try {
+        await ElMessageBox.confirm(
+          `${duplicateCheck.message}，确定要在当前分类中再次添加吗？`,
+          '确认添加',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        )
+        proceedSave()
+      } catch {
+        // 用户取消
+      }
     } else {
-      showMessage(duplicateCheck.message, 'error')
+      ElMessage.error(duplicateCheck.message)
     }
   } else {
     proceedSave()
@@ -224,7 +178,6 @@ const saveLink = () => {
 }
 
 const proceedSave = () => {
-  // 如果有自定义图标，先保存到映射表
   if (formData.value.icon && formData.value.url) {
     const domain = extractDomain(formData.value.url)
     dataStore.setDomainIcon(domain, formData.value.icon)
@@ -235,29 +188,36 @@ const proceedSave = () => {
       id: editingId.value,
       ...formData.value
     })
-    showMessage('网站更新成功')
+    ElMessage.success('网站更新成功')
   } else {
     dataStore.addLink(formData.value)
-    showMessage('网站添加成功')
+    ElMessage.success('网站添加成功')
   }
   cancelEdit()
 }
 
-const deleteLink = (id) => {
-  showDialog(
-    '确认删除',
-    '确定要删除这个网站吗？',
-    () => {
-      dataStore.deleteLink(id)
-      showMessage('网站删除成功')
-    }
-  )
+const deleteLink = async (id) => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要删除这个网站吗？',
+      '确认删除',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    dataStore.deleteLink(id)
+    ElMessage.success('网站删除成功')
+  } catch {
+    // 用户取消
+  }
 }
 
 const togglePin = (id) => {
   dataStore.togglePin(id)
   const link = links.value.find(l => l.id === id)
-  showMessage(link?.pinned ? '网站已置顶' : '已取消置顶')
+  ElMessage.success(link?.pinned ? '网站已置顶' : '已取消置顶')
 }
 
 const getCategoryName = (categoryId) => {
@@ -270,160 +230,141 @@ const getCategoryName = (categoryId) => {
   <div class="site-manager">
     <div class="manager-header">
       <h3>网站管理</h3>
-      <button class="btn-primary" @click="startAdd" v-if="!isEditing">
+      <el-button type="primary" @click="startAdd" v-if="!isEditing">
         + 添加网站
-      </button>
+      </el-button>
     </div>
-
-    <!-- Message Display -->
-    <div v-if="message" :class="['message', messageType]">
-      {{ message }}
-    </div>
-
-    <!-- Dialog Component -->
-    <Dialog
-      v-model:visible="dialogVisible"
-      :title="dialogTitle"
-      @confirm="handleDialogConfirm"
-      @cancel="handleDialogCancel"
-    >
-      {{ dialogContent }}
-    </Dialog>
 
     <!-- Add/Edit Form -->
-    <div v-if="isEditing || editingId === null" class="form-card">
-      <div class="form-row">
-        <div class="form-group">
-          <label>网站名称 *</label>
-          <input 
-            v-model="formData.title" 
-            type="text" 
-            placeholder="输入网站名称"
-            class="form-input"
-          />
-        </div>
-        <div class="form-group">
-          <label>网站地址 *</label>
-          <input 
-            v-model="formData.url" 
-            type="text" 
-            placeholder="https://example.com"
-            class="form-input"
-          />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>所属分类</label>
-          <select v-model="formData.categoryId" class="form-input">
-            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-              {{ cat.icon }} {{ cat.name }}
-            </option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>网站描述</label>
-          <input 
-            v-model="formData.description" 
-            type="text" 
-            placeholder="简短描述（可选）"
-            class="form-input"
-          />
-        </div>
-      </div>
-      <!-- Icon Section -->
-      <div class="form-group">
-        <label>网站图标</label>
-        <div class="icon-section">
-          <div class="icon-preview">
-            <img v-if="iconPreview" :src="iconPreview" alt="图标预览" />
-            <div v-else class="icon-placeholder">
-              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                <polyline points="21 15 16 10 5 21"></polyline>
-              </svg>
-            </div>
-          </div>
-          <div class="icon-controls">
-            <input
-              v-model="formData.icon"
-              type="text"
-              class="form-input icon-input"
-              placeholder="图标URL..."
-            />
-            <div class="icon-buttons">
-              <button
-                type="button"
-                class="btn-icon-action"
-                @click="handleFetchIcon"
-                :disabled="!formData.url || isFetchingIcon"
-                title="自动获取图标"
-              >
-                <span v-if="isFetchingIcon" class="spinner">⟳</span>
-                <span v-else>🪄</span>
-              </button>
-              <label class="btn-icon-action" title="上传图标">
-                <input
-                  type="file"
-                  accept=".png,.jpg,.jpeg,.svg,.ico,image/png,image/jpeg,image/svg+xml,image/x-icon,image/vnd.microsoft.icon"
-                  @change="handleFileUpload"
-                  class="hidden"
-                />
-                <span>📤</span>
-              </label>
-            </div>
-          </div>
-        </div>
-        <div class="icon-options">
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="autoFetchIcon" />
-            <span>输入链接时自动获取图标</span>
-          </label>
-          <span class="icon-hint">支持 PNG, JPG, SVG, ICO</span>
-        </div>
-      </div>
+    <el-card v-if="isEditing || editingId === null" class="form-card" shadow="never">
+      <el-form label-position="top">
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="网站名称" required>
+              <el-input 
+                v-model="formData.title" 
+                placeholder="输入网站名称"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="网站地址" required>
+              <el-input 
+                v-model="formData.url" 
+                placeholder="https://example.com"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" v-model="formData.pinned" />
-          <span>📌 置顶显示</span>
-        </label>
-      </div>
-      <div class="form-actions">
-        <button class="btn-secondary" @click="cancelEdit">取消</button>
-        <button class="btn-primary" @click="saveLink">
-          {{ isEditing ? '保存' : '添加' }}
-        </button>
-      </div>
-    </div>
+        <el-row :gutter="16">
+          <el-col :span="12">
+            <el-form-item label="所属分类">
+              <el-select v-model="formData.categoryId" placeholder="选择分类" style="width: 100%">
+                <el-option 
+                  v-for="cat in categories" 
+                  :key="cat.id" 
+                  :label="`${cat.icon} ${cat.name}`"
+                  :value="cat.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="网站描述">
+              <el-input 
+                v-model="formData.description" 
+                placeholder="简短描述（可选）"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <!-- Icon Section -->
+        <el-form-item label="网站图标">
+          <div class="icon-section">
+            <div class="icon-preview">
+              <img v-if="iconPreview" :src="iconPreview" alt="图标预览" />
+              <div v-else class="icon-placeholder">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+              </div>
+            </div>
+            <div class="icon-controls">
+              <el-input 
+                v-model="formData.icon"
+                placeholder="图标URL..."
+                size="small"
+              />
+              <div class="icon-buttons">
+                <el-button 
+                  size="small"
+                  @click="handleFetchIcon"
+                  :disabled="!formData.url || isFetchingIcon"
+                  :loading="isFetchingIcon"
+                >
+                  🪄 获取
+                </el-button>
+                <el-upload
+                  :show-file-list="false"
+                  :before-upload="() => false"
+                  :on-change="handleFileUpload"
+                  accept=".png,.jpg,.jpeg,.svg,.ico"
+                >
+                  <el-button size="small">📤 上传</el-button>
+                </el-upload>
+              </div>
+            </div>
+          </div>
+          <div class="icon-options">
+            <el-checkbox v-model="autoFetchIcon">输入链接时自动获取图标</el-checkbox>
+            <span class="icon-hint">支持 PNG, JPG, SVG, ICO</span>
+          </div>
+        </el-form-item>
+
+        <el-form-item>
+          <el-checkbox v-model="formData.pinned">📌 置顶显示</el-checkbox>
+        </el-form-item>
+
+        <el-form-item>
+          <el-button @click="cancelEdit">取消</el-button>
+          <el-button type="primary" @click="saveLink">
+            {{ isEditing ? '保存' : '添加' }}
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
     <!-- Site List -->
     <div class="site-list">
-      <div 
+      <el-card 
         v-for="link in links" 
         :key="link.id" 
         class="site-item"
         :class="{ pinned: link.pinned }"
+        shadow="never"
       >
         <div class="site-info">
           <span class="site-title">{{ link.title }}</span>
           <span class="site-url">{{ link.url }}</span>
-          <span class="site-category">{{ getCategoryName(link.categoryId) }}</span>
+          <el-tag size="small" type="info">{{ getCategoryName(link.categoryId) }}</el-tag>
         </div>
         <div class="site-actions">
-          <button 
-            class="btn-icon" 
-            :class="{ active: link.pinned }"
+          <el-button 
+            :type="link.pinned ? 'primary' : 'default'"
+            size="small"
             @click="togglePin(link.id)"
             :title="link.pinned ? '取消置顶' : '置顶'"
           >
             📌
-          </button>
-          <button class="btn-icon" @click="startEdit(link)">✏️</button>
-          <button class="btn-icon btn-danger" @click="deleteLink(link.id)">🗑️</button>
+          </el-button>
+          <el-button size="small" @click="startEdit(link)">✏️</el-button>
+          <el-button size="small" type="danger" @click="deleteLink(link.id)">🗑️</el-button>
         </div>
-      </div>
+      </el-card>
     </div>
   </div>
 </template>
@@ -447,97 +388,7 @@ const getCategoryName = (categoryId) => {
 }
 
 .form-card {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 1.25rem;
   margin-bottom: 1.5rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-text);
-  margin-bottom: 0.5rem;
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-size: 0.9375rem;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.form-input:focus {
-  border-color: var(--color-primary);
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-}
-
-.checkbox-label input {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.form-actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
-  margin-top: 1rem;
-}
-
-.btn-primary {
-  padding: 0.625rem 1.25rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn-primary:hover {
-  background-color: #0284c7;
-}
-
-.btn-secondary {
-  padding: 0.625rem 1.25rem;
-  background: var(--color-bg);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  border-color: var(--color-primary);
 }
 
 .site-list {
@@ -550,11 +401,6 @@ const getCategoryName = (categoryId) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  transition: all 0.2s ease;
 }
 
 .site-item.pinned {
@@ -585,42 +431,9 @@ const getCategoryName = (categoryId) => {
   flex: 1;
 }
 
-.site-category {
-  font-size: 0.75rem;
-  color: var(--color-secondary);
-  padding: 0.125rem 0.5rem;
-  background: var(--color-bg);
-  border-radius: 10px;
-}
-
 .site-actions {
   display: flex;
   gap: 0.5rem;
-}
-
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 1rem;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-  opacity: 0.6;
-}
-
-.btn-icon:hover {
-  background: var(--color-bg);
-  opacity: 1;
-}
-
-.btn-icon.active {
-  opacity: 1;
-}
-
-.btn-icon.btn-danger:hover {
-  background: #fee2e2;
 }
 
 /* Icon Section Styles */
@@ -661,41 +474,9 @@ const getCategoryName = (categoryId) => {
   gap: 0.5rem;
 }
 
-.icon-input {
-  font-size: 0.8125rem;
-}
-
 .icon-buttons {
   display: flex;
   gap: 0.5rem;
-}
-
-.btn-icon-action {
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-}
-
-.btn-icon-action:hover:not(:disabled) {
-  border-color: var(--color-primary);
-  background: var(--color-card);
-}
-
-.btn-icon-action:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.hidden {
-  display: none;
 }
 
 .icon-options {
@@ -710,25 +491,7 @@ const getCategoryName = (categoryId) => {
   color: var(--color-secondary);
 }
 
-.spinner {
-  display: inline-block;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
   .site-info {
     flex-direction: column;
     align-items: flex-start;
@@ -738,38 +501,6 @@ const getCategoryName = (categoryId) => {
   .icon-section {
     flex-direction: column;
     align-items: flex-start;
-  }
-}
-
-.message {
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  animation: slideDown 0.3s ease;
-}
-
-.message.success {
-  background: #dcfce7;
-  color: #166534;
-  border: 1px solid #bbf7d0;
-}
-
-.message.error {
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 </style>

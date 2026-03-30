@@ -45,38 +45,37 @@ const handleCollapse = () => {
     <div class="sidebar-header">
       <h2 v-if="!isCollapsed" class="sidebar-title">导航分类</h2>
       <div class="sidebar-actions">
-        <button v-if="!isCollapsed" class="sidebar-toggle" @click="emit('toggle')">
-          <span>☰</span>
-        </button>
-        <button class="collapse-btn" @click="handleCollapse">
+        <el-button class="collapse-btn" @click="handleCollapse" text>
           <span v-if="!isCollapsed">«</span>
           <span v-else>»</span>
-        </button>
+        </el-button>
       </div>
     </div>
 
     <nav class="sidebar-nav">
-      <button
+      <el-button
         class="nav-item"
         :class="{ active: selectedCategory === 'all' }"
         @click="handleSelect('all')"
+        text
       >
         <span class="nav-icon">📋</span>
         <span v-if="!isCollapsed" class="nav-name">全部</span>
         <span v-if="!isCollapsed" class="nav-count">{{ allLinksCount }}</span>
-      </button>
+      </el-button>
 
-      <button
+      <el-button
         v-for="category in categories"
         :key="category.id"
         class="nav-item"
         :class="{ active: selectedCategory === category.id }"
         @click="handleSelect(category.id)"
+        text
       >
         <span class="nav-icon">{{ category.icon }}</span>
         <span v-if="!isCollapsed" class="nav-name">{{ category.name }}</span>
         <span v-if="!isCollapsed" class="nav-count">{{ getCategoryCount(category.id) }}</span>
-      </button>
+      </el-button>
     </nav>
 
     <div class="sidebar-footer">
@@ -112,35 +111,64 @@ const handleCollapse = () => {
   width: 60px;
 }
 
-.sidebar.sidebar-collapsed .nav-name,
-.sidebar.sidebar-collapsed .nav-count,
+.sidebar.sidebar-collapsed .sidebar-header {
+  padding: 0.75rem 0;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .sidebar.sidebar-collapsed .sidebar-title {
   display: none;
-}
-
-.sidebar.sidebar-collapsed .nav-item {
-  justify-content: center;
-  padding: 0.75rem 0;
-  gap: 0;
-}
-
-.sidebar.sidebar-collapsed .admin-link {
-  justify-content: center;
-  padding: 0.75rem 0;
-  gap: 0;
-}
-
-.sidebar.sidebar-collapsed .sidebar-header {
-  padding: 1rem 0.5rem;
-  justify-content: center;
 }
 
 .sidebar.sidebar-collapsed .sidebar-actions {
   justify-content: center;
 }
 
-.sidebar.sidebar-collapsed .sidebar-toggle {
+.sidebar.sidebar-collapsed .collapse-btn {
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 1rem !important;
+  border-radius: 50% !important;
+  background: var(--color-bg) !important;
+}
+
+.sidebar.sidebar-collapsed .nav-name,
+.sidebar.sidebar-collapsed .nav-count {
   display: none;
+}
+
+.sidebar.sidebar-collapsed .sidebar-nav {
+  padding: 0.5rem 0.25rem;
+}
+
+.sidebar.sidebar-collapsed .nav-item {
+  justify-content: center;
+  padding: 0.875rem 0 !important;
+  margin: 0.125rem 0;
+  border-radius: 12px !important;
+}
+
+.sidebar.sidebar-collapsed .nav-icon {
+  width: 28px;
+  font-size: 1.25rem;
+}
+
+.sidebar.sidebar-collapsed .sidebar-footer {
+  padding: 0.5rem 0.25rem;
+}
+
+.sidebar.sidebar-collapsed .admin-link {
+  justify-content: center;
+  padding: 0.875rem 0;
+  gap: 0;
+  border-radius: 12px;
+}
+
+.sidebar.sidebar-collapsed .admin-link .nav-icon {
+  width: 28px;
+  font-size: 1.25rem;
 }
 
 .sidebar-header {
@@ -166,40 +194,19 @@ const handleCollapse = () => {
   transition: justify-content 0.3s ease;
 }
 
-.sidebar-toggle {
-  display: none;
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 1.25rem;
-  color: var(--color-text);
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.sidebar-toggle:hover {
-  background: var(--color-bg);
-}
-
 .collapse-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 1.25rem;
-  color: var(--color-text);
-  border-radius: 8px;
-  display: flex;
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 1.25rem !important;
+  color: var(--color-text) !important;
+  border-radius: 8px !important;
+  display: flex !important;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .collapse-btn:hover {
-  background: var(--color-bg);
+  background: var(--color-bg) !important;
   transform: scale(1.1);
 }
 
@@ -218,31 +225,30 @@ const handleCollapse = () => {
 }
 
 .nav-item {
-  display: flex;
+  display: flex !important;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border: none;
-  background: transparent;
-  color: var(--color-secondary);
-  font-size: 0.9375rem;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  padding: 0.75rem 1rem !important;
+  color: var(--color-secondary) !important;
+  font-size: 0.9375rem !important;
+  border-radius: 10px !important;
   text-align: left;
   width: 100%;
   white-space: nowrap;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .nav-item:hover {
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--color-bg) !important;
+  color: var(--color-text) !important;
   transform: translateX(2px);
 }
 
 .nav-item.active {
-  background: var(--color-primary);
-  color: white;
+  background: var(--color-primary) !important;
+  color: white !important;
   transform: none;
 }
 
@@ -314,12 +320,6 @@ const handleCollapse = () => {
 
   .sidebar.sidebar-collapsed {
     width: 60px;
-  }
-
-  .sidebar-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .sidebar:not(.sidebar-open) {

@@ -4,11 +4,11 @@ import { useThemeStore } from '../../stores/theme'
 const props = defineProps({
   title: {
     type: String,
-    default: 'nianming_nav'
+    default: '全部网站'
   }
 })
 
-const emit = defineEmits(['menu-click', 'batch-edit-click', 'sort-click'])
+const emit = defineEmits(['batch-edit-click', 'sort-click'])
 
 const themeStore = useThemeStore()
 </script>
@@ -16,35 +16,35 @@ const themeStore = useThemeStore()
 <template>
   <header class="main-header">
     <div class="header-left">
-      <button class="menu-btn" @click="emit('menu-click')">
-        <span>☰</span>
-      </button>
       <h1 class="header-title">{{ title }}</h1>
     </div>
 
     <div class="header-right">
-      <button 
+      <el-button 
         class="action-btn" 
         @click="emit('batch-edit-click')"
-        title="批量编辑"
+        :title="'批量编辑'"
+        text
       >
         <span>📋</span>
-      </button>
-      <button 
+      </el-button>
+      <el-button 
         class="action-btn" 
         @click="emit('sort-click')"
-        title="排序"
+        :title="'排序'"
+        text
       >
         <span>🔄</span>
-      </button>
-      <button 
+      </el-button>
+      <el-button 
         class="theme-btn" 
         @click="themeStore.toggleTheme"
         :title="themeStore.isDark ? '切换到亮色模式' : '切换到暗色模式'"
+        text
       >
         <span v-if="themeStore.isDark">☀️</span>
         <span v-else>🌙</span>
-      </button>
+      </el-button>
     </div>
   </header>
 </template>
@@ -68,24 +68,6 @@ const themeStore = useThemeStore()
   gap: 1rem;
 }
 
-.menu-btn {
-  display: none;
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 1.25rem;
-  color: var(--color-text);
-  border-radius: 10px;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu-btn:hover {
-  background: var(--color-bg);
-}
-
 .header-title {
   font-size: 1.25rem;
   font-weight: 700;
@@ -107,11 +89,7 @@ const themeStore = useThemeStore()
   border: 1px solid var(--color-border);
   border-radius: 10px;
   background: var(--color-bg);
-  cursor: pointer;
   font-size: 1.125rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transition: all 0.2s ease;
 }
 
@@ -123,10 +101,6 @@ const themeStore = useThemeStore()
 @media (max-width: 768px) {
   .main-header {
     padding: 0.75rem 1rem;
-  }
-
-  .menu-btn {
-    display: flex;
   }
 }
 </style>

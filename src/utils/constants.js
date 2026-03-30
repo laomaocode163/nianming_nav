@@ -79,6 +79,8 @@ export const DEFAULT_CATEGORIES = [
   { id: 'ai', name: '人工智能', icon: '🤖' },
 ]
 
+export const CATEGORY_ICONS = ['📁', '⭐', '💻', '🎨', '📖', '🎮', '🤖', '🔧', '📱', '🌐', '💼', '🎵', '🎬', '📚', '🛒']
+
 export const INITIAL_LINKS = [
   { id: '1', title: 'GitHub', url: 'https://github.com', categoryId: 'dev', createdAt: Date.now(), description: '代码托管平台', pinned: true, icon: '' },
   { id: '2', title: 'Vue.js', url: 'https://vuejs.org', categoryId: 'dev', createdAt: Date.now(), description: '渐进式JavaScript框架', pinned: true, icon: '' },

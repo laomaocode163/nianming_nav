@@ -1,14 +1,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useDataStore } from '../stores/data'
 import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
 import SiteCard from '../components/ui/SiteCard.vue'
-import { useNotification } from '../hooks/useNotification'
 import { VueDraggable } from 'vue-draggable-plus'
-
-// 通知管理
-const { success } = useNotification()
 
 const dataStore = useDataStore()
 
@@ -19,6 +16,7 @@ const sidebarCollapsed = ref(false)
 const isMobile = ref(false)
 const searchInputRef = ref(null)
 const selectedMoveCategory = ref('')
+const batchLoading = ref(false)
 
 const searchEngines = computed(() => {
   return dataStore.searchConfig.externalSources.filter(s => s.enabled)
@@ -30,13 +28,11 @@ const selectedEngine = computed(() => {
 
 const categories = computed(() => dataStore.visibleCategories)
 
-// 使用计算属性获取可排序的链接列表
 const sortableLinks = computed({
   get: () => {
     return dataStore.getLinksByCategory(selectedCategoryId.value)
   },
   set: (newList) => {
-    // 当拖拽排序后，更新链接顺序
     updateLinksOrder(newList)
   }
 })
@@ -60,13 +56,6 @@ const selectEngine = (engineId) => {
 
 const selectCategory = (categoryId) => {
   selectedCategoryId.value = categoryId
-  if (isMobile.value) {
-    sidebarOpen.value = false
-  }
-}
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
 }
 
 const handleCollapse = (collapsed) => {
@@ -80,25 +69,20 @@ const checkMobile = () => {
   }
 }
 
-// 聚焦搜索框
 const focusSearchInput = () => {
   if (searchInputRef.value) {
     searchInputRef.value.focus()
-    // 如果有内容，选中所有文本
     if (searchQuery.value) {
       searchInputRef.value.select()
     }
   }
 }
 
-// 键盘事件处理
 const handleKeydown = (event) => {
-  // 检测 ⌘K (Mac) 或 Ctrl+K (Windows/Linux)
   if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
     event.preventDefault()
     focusSearchInput()
   }
-  // 批量编辑模式快捷键
   if (dataStore.batchEditMode) {
     if (event.key === 'Escape') {
       dataStore.toggleBatchEditMode()
@@ -107,85 +91,107 @@ const handleKeydown = (event) => {
       dataStore.selectAllLinks(selectedCategoryId.value)
     }
   }
-  // 排序模式快捷键
   if (dataStore.sortMode && event.key === 'Escape') {
     dataStore.toggleSortMode()
   }
 }
 
-// 批量编辑相关方法
 const handleBatchEditClick = () => {
   if (dataStore.sortMode) {
-    success('已退出排序模式，进入批量编辑模式')
+    ElMessage.info('已退出排序模式，进入批量编辑模式')
   }
   dataStore.toggleBatchEditMode()
 }
 
 const handleSortClick = () => {
   if (dataStore.batchEditMode) {
-    success('已退出批量编辑模式，进入排序模式')
+    ElMessage.info('已退出批量编辑模式，进入排序模式')
   }
   dataStore.toggleSortMode()
 }
 
 const handleSelectAll = () => {
   dataStore.selectAllLinks(selectedCategoryId.value)
+  ElMessage.success(`已选择 ${dataStore.selectedLinks.length} 个网站`)
 }
 
 const handleDeselectAll = () => {
   dataStore.deselectAllLinks()
+  ElMessage.info('已取消全选')
 }
 
 const handleBatchTogglePin = () => {
+  if (dataStore.selectedLinks.length === 0) {
+    ElMessage.warning('请先选择要操作的网站')
+    return
+  }
+  batchLoading.value = true
   dataStore.batchTogglePin()
-  success('批量置顶操作完成')
+  batchLoading.value = false
+  ElMessage.success('批量置顶操作完成')
 }
 
-const handleBatchDelete = () => {
-  if (confirm('确定要删除选中的网站吗？')) {
+const handleBatchDelete = async () => {
+  if (dataStore.selectedLinks.length === 0) {
+    ElMessage.warning('请先选择要删除的网站')
+    return
+  }
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${dataStore.selectedLinks.length} 个网站吗？`,
+      '确认删除',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    batchLoading.value = true
     dataStore.batchDelete()
-    success('批量删除操作完成')
+    batchLoading.value = false
+    ElMessage.success('批量删除操作完成')
+  } catch {
+    // 用户取消
   }
 }
 
 const handleBatchMove = (targetCategoryId) => {
-  if (targetCategoryId) {
-    dataStore.batchMove(targetCategoryId)
-    const categoryName = categories.value.find(c => c.id === targetCategoryId)?.name
-    success(`批量移动到 ${categoryName} 完成`)
-    // 重置选择
+  if (!targetCategoryId) return
+  if (dataStore.selectedLinks.length === 0) {
+    ElMessage.warning('请先选择要移动的网站')
     selectedMoveCategory.value = ''
+    return
   }
+  batchLoading.value = true
+  dataStore.batchMove(targetCategoryId)
+  batchLoading.value = false
+  const categoryName = categories.value.find(c => c.id === targetCategoryId)?.name
+  ElMessage.success(`已移动 ${dataStore.selectedLinks.length} 个网站到 ${categoryName}`)
+  selectedMoveCategory.value = ''
 }
 
-// 更新链接顺序
 const updateLinksOrder = (newList) => {
-  // 更新每个链接的order属性
   newList.forEach((link, index) => {
     const originalLink = dataStore.links.find(l => l.id === link.id)
     if (originalLink) {
       originalLink.order = index
     }
   })
-  // 保存数据
   dataStore.saveData()
 }
 
-// 拖拽排序结束回调
 const onSortEnd = () => {
-  success('排序已更新')
+  ElMessage.success('排序已更新')
 }
 
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
-  // 添加键盘事件监听
   document.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', checkMobile)
-  // 移除键盘事件监听
   document.removeEventListener('keydown', handleKeydown)
 })
 </script>
@@ -198,7 +204,6 @@ onUnmounted(() => {
       :is-open="sidebarOpen"
       :is-collapsed="sidebarCollapsed"
       @select="selectCategory"
-      @toggle="toggleSidebar"
       @collapse="handleCollapse"
     />
 
@@ -207,7 +212,6 @@ onUnmounted(() => {
       <!-- Header -->
       <MainHeader 
         :title="pageTitle"
-        @menu-click="toggleSidebar"
         @batch-edit-click="handleBatchEditClick"
         @sort-click="handleSortClick"
       />
@@ -215,87 +219,85 @@ onUnmounted(() => {
       <!-- Search Section -->
       <div class="search-section" v-if="!dataStore.batchEditMode && !dataStore.sortMode">
         <div class="search-container">
-          <!-- Search Box -->
-          <div class="search-box">
-            <div class="search-icon">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="m21 21-4.35-4.35"></path>
-              </svg>
-            </div>
-            <input
-              ref="searchInputRef"
-              v-model="searchQuery"
-              type="text"
-              class="search-input"
-              :placeholder="`在 ${selectedEngine?.name || '必应'} 搜索...`"
-              @keyup.enter="handleSearch"
-            />
-            <div class="search-shortcut">
-              <span class="shortcut-key">⌘</span>
-              <span class="shortcut-key">K</span>
-            </div>
-            <button v-if="searchQuery" class="search-clear" @click="searchQuery = ''">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 6 6 18M6 6l12 12"></path>
-              </svg>
-            </button>
-          </div>
+          <!-- Search Box using Element Plus -->
+          <el-input
+            ref="searchInputRef"
+            v-model="searchQuery"
+            :placeholder="`在 ${selectedEngine?.name || '必应'} 搜索...`"
+            size="large"
+            clearable
+            class="search-input-wrapper"
+            @keyup.enter="handleSearch"
+          >
+            <template #prefix>
+              <el-icon><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg></el-icon>
+            </template>
+            <template #suffix>
+              <div class="search-shortcut">
+                <el-tag size="small" type="info">⌘</el-tag>
+                <el-tag size="small" type="info">K</el-tag>
+              </div>
+            </template>
+          </el-input>
           
-          <!-- Engine Selector -->
-          <div class="engine-selector">
-            <button
-              v-for="engine in searchEngines.slice(0, 4)"
-              :key="engine.id"
-              class="engine-tag"
-              :class="{ active: selectedEngine?.id === engine.id }"
-              @click="selectEngine(engine.id)"
+          <!-- Engine Selector using Element Plus -->
+          <el-radio-group 
+            v-model="dataStore.searchConfig.selectedSourceId" 
+            class="engine-selector"
+            @change="selectEngine"
+          >
+            <el-radio-button 
+              v-for="engine in searchEngines.slice(0, 4)" 
+              :key="engine.id" 
+              :value="engine.id"
             >
               {{ engine.name }}
-            </button>
-          </div>
+            </el-radio-button>
+          </el-radio-group>
         </div>
       </div>
 
       <!-- Batch Edit Toolbar -->
       <div v-if="dataStore.batchEditMode" class="batch-edit-toolbar">
         <div class="batch-edit-container">
-          <div class="batch-edit-actions">
-            <el-button type="primary" plain @click="handleSelectAll">
-              全选
-              <span class="shortcut-hint">⌘A</span>
+          <el-button-group class="batch-edit-actions">
+            <el-button type="primary" @click="handleSelectAll">
+              全选 <el-tag size="small" type="info" class="shortcut-tag">⌘A</el-tag>
             </el-button>
-            <el-button type="info" plain @click="handleDeselectAll">
+            <el-button type="info" @click="handleDeselectAll">
               取消全选
             </el-button>
-            <el-button type="success" plain @click="handleBatchTogglePin">
+            <el-button type="success" @click="handleBatchTogglePin" :loading="batchLoading">
               置顶/取消置顶
             </el-button>
-            <el-button type="danger" plain @click="handleBatchDelete">
+            <el-button type="danger" @click="handleBatchDelete" :loading="batchLoading">
               删除
             </el-button>
-            <div class="batch-move">
-              <el-select 
-                v-model="selectedMoveCategory" 
-                placeholder="移动到..."
-                @change="handleBatchMove"
-                class="move-select"
-              >
-                <el-option 
-                  v-for="category in categories" 
-                  :key="category.id" 
-                  :label="category.name" 
-                  :value="category.id"
-                />
-              </el-select>
-            </div>
+          </el-button-group>
+          
+          <div class="batch-edit-secondary">
+            <el-select 
+              v-model="selectedMoveCategory" 
+              placeholder="移动到..."
+              @change="handleBatchMove"
+              class="move-select"
+              :disabled="batchLoading"
+            >
+              <el-option 
+                v-for="category in categories" 
+                :key="category.id" 
+                :label="`${category.icon} ${category.name}`" 
+                :value="category.id"
+              />
+            </el-select>
+            
             <el-button type="warning" @click="handleBatchEditClick">
-              完成
-              <span class="shortcut-hint">Esc</span>
+              完成 <el-tag size="small" type="info" class="shortcut-tag">Esc</el-tag>
             </el-button>
           </div>
+          
           <div class="batch-edit-info">
-            已选择 {{ dataStore.selectedLinks.length }} 个网站
+            <el-tag type="primary">已选择 {{ dataStore.selectedLinks.length }} 个网站</el-tag>
           </div>
         </div>
       </div>
@@ -304,11 +306,10 @@ onUnmounted(() => {
       <div v-if="dataStore.sortMode" class="sort-toolbar">
         <div class="sort-container">
           <div class="sort-info">
-            <span>排序模式：拖拽调整网站顺序</span>
+            <el-tag type="success">排序模式：拖拽调整网站顺序</el-tag>
           </div>
           <el-button type="primary" @click="handleSortClick">
-            完成排序
-            <span class="shortcut-hint">Esc</span>
+            完成排序 <el-tag size="small" type="info" class="shortcut-tag">Esc</el-tag>
           </el-button>
         </div>
       </div>
@@ -343,10 +344,7 @@ onUnmounted(() => {
           />
         </VueDraggable>
 
-        <div v-if="sortableLinks.length === 0" class="empty-state">
-          <span class="empty-icon">📭</span>
-          <p>暂无网站数据</p>
-        </div>
+        <el-empty v-if="sortableLinks.length === 0" description="暂无网站数据" />
       </div>
     </div>
 
@@ -398,114 +396,66 @@ onUnmounted(() => {
   gap: 0.75rem;
 }
 
-.search-box {
-  display: flex;
-  align-items: center;
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 0.75rem 1rem;
+.search-input-wrapper {
+  --el-input-border-radius: 12px;
+}
+
+.search-input-wrapper :deep(.el-input__wrapper) {
+  padding: 0.5rem 1rem;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
 }
 
-.search-box:focus-within {
+.search-input-wrapper :deep(.el-input__wrapper:focus-within) {
   box-shadow: var(--shadow-md), 0 0 0 3px rgba(14, 165, 233, 0.1);
-  border-color: var(--color-primary);
-}
-
-.search-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-secondary);
-  margin-right: 0.75rem;
-  flex-shrink: 0;
-}
-
-.search-input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  color: var(--color-text);
-  font-size: 0.9375rem;
-  outline: none;
-  padding: 0;
-}
-
-.search-input::placeholder {
-  color: var(--color-secondary);
 }
 
 .search-shortcut {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  margin-right: 0.5rem;
 }
 
-.shortcut-key {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 4px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
+.search-shortcut .el-tag {
   font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--color-secondary);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
-}
-
-.search-clear {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: transparent;
-  color: var(--color-secondary);
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.search-clear:hover {
-  background: var(--color-bg);
-  color: var(--color-text);
+  padding: 0 4px;
+  height: 20px;
+  line-height: 18px;
 }
 
 .engine-selector {
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
-.engine-tag {
-  padding: 0.375rem 0.875rem;
+.engine-selector :deep(.el-radio-button__inner) {
+  border-radius: 20px !important;
   border: 1px solid var(--color-border);
   background: var(--color-card);
   color: var(--color-secondary);
+  padding: 0.375rem 0.875rem;
   font-size: 0.8125rem;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.engine-tag:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.engine-tag.active {
+.engine-selector :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
+  box-shadow: none;
+}
+
+.engine-selector :deep(.el-radio-button:first-child .el-radio-button__inner) {
+  border-radius: 20px !important;
+}
+
+.engine-selector :deep(.el-radio-button:last-child .el-radio-button__inner) {
+  border-radius: 20px !important;
+}
+
+.engine-selector :deep(.el-radio-button__inner:hover) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .sites-section {
@@ -522,20 +472,6 @@ onUnmounted(() => {
   min-height: 100px;
 }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
-  color: var(--color-secondary);
-}
-
-.empty-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
 .sidebar-overlay {
   position: fixed;
   inset: 0;
@@ -546,11 +482,8 @@ onUnmounted(() => {
 /* Batch Edit Toolbar */
 .batch-edit-toolbar {
   padding: 1.5rem 1.5rem;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .batch-edit-container {
@@ -559,44 +492,34 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  align-items: center;
 }
 
 .batch-edit-actions {
   display: flex;
-  gap: 0.5rem;
   flex-wrap: wrap;
-  align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 1.25rem;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1.5rem;
 }
 
-.batch-move {
-  margin-left: 0;
+.batch-edit-secondary {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .move-select {
   min-width: 150px;
 }
 
-.batch-edit-info {
-  font-size: 0.875rem;
-  color: var(--color-secondary);
+.shortcut-tag {
+  margin-left: 0.25rem;
+  font-size: 0.6875rem;
 }
 
-.shortcut-hint {
-  font-size: 0.75rem;
-  color: var(--color-secondary);
-  background: var(--color-bg);
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
-  border: 1px solid var(--color-border);
+.batch-edit-info {
+  font-size: 0.875rem;
 }
 
 /* Sort Toolbar */
@@ -617,7 +540,6 @@ onUnmounted(() => {
 
 .sort-info {
   font-size: 0.875rem;
-  color: var(--color-text);
 }
 
 @media (max-width: 768px) {
@@ -637,26 +559,23 @@ onUnmounted(() => {
     grid-template-columns: 1fr;
   }
 
-  /* Batch Edit Toolbar - Mobile */
   .batch-edit-toolbar {
     padding: 0.75rem 1rem;
   }
 
   .batch-edit-actions {
-    flex-direction: column;
-    align-items: stretch;
+    width: 100%;
   }
 
-  .batch-move {
-    margin-left: 0;
+  .batch-edit-secondary {
     width: 100%;
+    flex-direction: column;
   }
 
   .move-select {
     width: 100%;
   }
 
-  /* Sort Toolbar - Mobile */
   .sort-toolbar {
     padding: 0.75rem 1rem;
   }
@@ -666,15 +585,6 @@ onUnmounted(() => {
     gap: 0.5rem;
     align-items: stretch;
   }
-}
-
-/* Element Plus 样式调整 */
-.batch-edit-actions :deep(.el-button) {
-  margin: 0 4px;
-}
-
-.batch-edit-actions :deep(.el-select) {
-  margin: 0 4px;
 }
 
 /* vue-draggable-plus 样式 */

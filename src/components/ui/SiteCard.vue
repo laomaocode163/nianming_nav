@@ -18,7 +18,6 @@ const siteIcon = computed(() => {
 
 const isSelected = ref(false)
 
-// 监听selectedLinks的变化
 watch(
   () => dataStore.selectedLinks,
   (newSelectedLinks) => {
@@ -33,10 +32,12 @@ const onIconError = (event) => {
   img.onerror = null
 }
 
-const handleSelect = (event) => {
-  event.preventDefault()
-  event.stopPropagation()
+const handleCheckboxChange = (value) => {
   dataStore.toggleLinkSelection(props.site.id)
+}
+
+const handleCheckboxClick = (event) => {
+  event.stopPropagation()
 }
 
 const handleClick = (event) => {
@@ -63,7 +64,6 @@ const handleClick = (event) => {
     }"
     @click="handleClick"
   >
-    <!-- 拖拽手柄 - 仅在排序模式下显示 -->
     <div v-if="dataStore.sortMode" class="drag-handle">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="9" cy="6" r="1.5" fill="currentColor"/>
@@ -76,10 +76,10 @@ const handleClick = (event) => {
     </div>
 
     <div v-if="dataStore.batchEditMode" class="select-checkbox">
-      <input
-        type="checkbox"
-        :checked="isSelected"
-        @click.stop="handleSelect"
+      <el-checkbox
+        v-model="isSelected"
+        @change="handleCheckboxChange"
+        @click.stop="handleCheckboxClick"
       />
     </div>
 
@@ -124,7 +124,6 @@ const handleClick = (event) => {
   box-shadow: var(--shadow-md);
 }
 
-/* 排序模式样式 */
 .site-card.sort-mode {
   cursor: grab;
   border: 2px solid #10b981;
@@ -143,7 +142,6 @@ const handleClick = (event) => {
   transform: scale(0.98);
 }
 
-/* 拖拽手柄 */
 .drag-handle {
   display: flex;
   align-items: center;
@@ -168,7 +166,6 @@ const handleClick = (event) => {
   opacity: 0.7;
 }
 
-/* 拖拽时的样式 - 由vue-draggable-plus自动添加 */
 :global(.sortable-drag) {
   opacity: 0.95;
   transform: scale(1.03) rotate(1deg) !important;
@@ -183,7 +180,6 @@ const handleClick = (event) => {
   cursor: grabbing;
 }
 
-/* 拖拽占位符样式 */
 :global(.sortable-ghost) {
   opacity: 0.35;
   background: rgba(16, 185, 129, 0.08);
@@ -261,18 +257,6 @@ const handleClick = (event) => {
   justify-content: center;
 }
 
-.select-checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--color-primary);
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.select-checkbox input[type="checkbox"]:hover {
-  transform: scale(1.1);
-}
-
 .site-card.selected {
   border-color: var(--color-primary);
   background: rgba(14, 165, 233, 0.08);
@@ -300,11 +284,6 @@ const handleClick = (event) => {
 
   .drag-handle {
     padding: 0.375rem;
-  }
-
-  .select-checkbox input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
   }
 }
 </style>
