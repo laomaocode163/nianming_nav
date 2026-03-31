@@ -328,7 +328,7 @@ const handleClose = () => {
   font-size: 0.9375rem !important;
   border-radius: 14px !important;
   text-align: left;
-  width: 100%;
+  width: 100% !important;
   white-space: nowrap;
   background: transparent !important;
   border: 1px solid transparent !important;
@@ -339,6 +339,8 @@ const handleClose = () => {
   justify-content: flex-start;
   min-height: 48px;
   cursor: pointer;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .sidebar-collapsed .nav-item {
@@ -589,7 +591,7 @@ const handleClose = () => {
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar {
-    width: 280px;
+    width: 240px;
   }
 
   .sidebar:not(.sidebar-open) {
@@ -619,7 +621,7 @@ const handleClose = () => {
 
 @media (max-width: 480px) {
   .sidebar {
-    width: 260px;
+    width: 220px;
   }
 
   .sidebar-logo-section {
