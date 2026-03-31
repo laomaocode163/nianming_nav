@@ -1,22 +1,38 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, ArrowDown } from '@element-plus/icons-vue'
 import { useDataStore } from '../stores/data'
+import { useThemeStore } from '../stores/theme'
+import { useResponsive } from '../hooks/useResponsive'
 import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
 import SiteCard from '../components/ui/SiteCard.vue'
 import { VueDraggable } from 'vue-draggable-plus'
 
 const dataStore = useDataStore()
+const themeStore = useThemeStore()
+const { isMobile, isSmallMobile } = useResponsive()
 
 const searchQuery = ref('')
 const selectedCategoryId = ref('all')
 const sidebarOpen = ref(true)
 const sidebarCollapsed = ref(false)
-const isMobile = ref(false)
 const searchInputRef = ref(null)
 const selectedMoveCategory = ref('')
 const batchLoading = ref(false)
+
+const toggleSidebarCollapse = () => {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+}
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
+const closeSidebar = () => {
+  sidebarOpen.value = false
+}
 
 const searchEngines = computed(() => {
   return dataStore.searchConfig.externalSources.filter(s => s.enabled)
@@ -43,6 +59,10 @@ const pageTitle = computed(() => {
   return category?.name || '全部网站'
 })
 
+const currentCategory = computed(() => {
+  return categories.value.find(c => c.id === selectedCategoryId.value)
+})
+
 const handleSearch = () => {
   if (!searchQuery.value.trim()) return
   if (selectedEngine.value) {
@@ -56,17 +76,6 @@ const selectEngine = (engineId) => {
 
 const selectCategory = (categoryId) => {
   selectedCategoryId.value = categoryId
-}
-
-const handleCollapse = (collapsed) => {
-  sidebarCollapsed.value = collapsed
-}
-
-const checkMobile = () => {
-  isMobile.value = window.innerWidth < 768
-  if (isMobile.value) {
-    sidebarOpen.value = false
-  }
 }
 
 const focusSearchInput = () => {
@@ -185,13 +194,14 @@ const onSortEnd = () => {
 }
 
 onMounted(() => {
-  checkMobile()
-  window.addEventListener('resize', checkMobile)
+  // 初始化侧边栏状态
+  if (isMobile.value) {
+    sidebarOpen.value = false
+  }
   document.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkMobile)
   document.removeEventListener('keydown', handleKeydown)
 })
 </script>
@@ -202,58 +212,79 @@ onUnmounted(() => {
     <Sidebar
       :selected-category="selectedCategoryId"
       :is-open="sidebarOpen"
-      :is-collapsed="sidebarCollapsed"
+      :collapsed="sidebarCollapsed"
       @select="selectCategory"
-      @collapse="handleCollapse"
+      @toggle-collapse="toggleSidebarCollapse"
+      @close="closeSidebar"
     />
 
     <!-- Main Content -->
-    <div class="main-content" :class="{ 'sidebar-closed': !sidebarOpen, 'sidebar-collapsed': sidebarCollapsed }">
+    <div class="main-content" :class="{ 'sidebar-closed': !sidebarOpen, 'is-mobile': isMobile }">
       <!-- Header -->
-      <MainHeader 
+      <MainHeader
         :title="pageTitle"
         @batch-edit-click="handleBatchEditClick"
         @sort-click="handleSortClick"
+        @toggle-sidebar="toggleSidebar"
       />
 
       <!-- Search Section -->
-      <div class="search-section" v-if="!dataStore.batchEditMode && !dataStore.sortMode">
+      <div class="search-section" v-if="!dataStore.batchEditMode && !dataStore.sortMode" :class="{ 'is-mobile': isMobile }">
         <div class="search-container">
-          <!-- Search Box using Element Plus -->
-          <el-input
-            ref="searchInputRef"
-            v-model="searchQuery"
-            :placeholder="`在 ${selectedEngine?.name || '必应'} 搜索...`"
-            size="large"
-            clearable
-            class="search-input-wrapper"
-            @keyup.enter="handleSearch"
-          >
-            <template #prefix>
-              <el-icon><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg></el-icon>
-            </template>
-            <template #suffix>
-              <div class="search-shortcut">
-                <el-tag size="small" type="info">⌘</el-tag>
-                <el-tag size="small" type="info">K</el-tag>
-              </div>
-            </template>
-          </el-input>
-          
-          <!-- Engine Selector using Element Plus -->
-          <el-radio-group 
-            v-model="dataStore.searchConfig.selectedSourceId" 
-            class="engine-selector"
-            @change="selectEngine"
-          >
-            <el-radio-button 
-              v-for="engine in searchEngines.slice(0, 4)" 
-              :key="engine.id" 
-              :value="engine.id"
+          <div class="search-wrapper">
+            <!-- Search Engine Selector -->
+            <el-dropdown
+              class="search-engine-dropdown"
+              trigger="click"
             >
-              {{ engine.name }}
-            </el-radio-button>
-          </el-radio-group>
+              <div class="search-engine-selector">
+                <span class="engine-name">{{ selectedEngine?.name || 'Bing' }}</span>
+                <el-icon class="el-icon--right"><arrow-down /></el-icon>
+              </div>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item
+                    v-for="engine in searchEngines"
+                    :key="engine.id"
+                    :command="engine.id"
+                    :class="{ active: dataStore.searchConfig.selectedSourceId === engine.id }"
+                    @click="selectEngine(engine.id)"
+                  >
+                    {{ engine.name }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+
+            <!-- Search Input -->
+            <el-input
+              ref="searchInputRef"
+              v-model="searchQuery"
+              :placeholder="isMobile ? `在 ${selectedEngine?.name || '必应'} 搜索...` : `在 ${selectedEngine?.name || '必应'} 搜索... (点 logo 切换搜索引擎)`"
+              :size="isMobile ? 'default' : 'large'"
+              clearable
+              class="search-input"
+              @keyup.enter="handleSearch"
+            >
+              <template #suffix>
+                <el-button type="primary" @click="handleSearch" class="search-button">
+                  <el-icon><Search /></el-icon>
+                </el-button>
+              </template>
+            </el-input>
+          </div>
+
+          <!-- Theme Toggle - 小屏幕手机隐藏 -->
+          <el-button
+            v-if="!isSmallMobile"
+            class="theme-toggle-btn"
+            @click="themeStore.toggleTheme"
+            text
+            :size="isMobile ? 'default' : 'large'"
+          >
+            <span v-if="themeStore.isDark">☀️</span>
+            <span v-else>🌙</span>
+          </el-button>
         </div>
       </div>
 
@@ -274,28 +305,28 @@ onUnmounted(() => {
               删除
             </el-button>
           </el-button-group>
-          
+
           <div class="batch-edit-secondary">
-            <el-select 
-              v-model="selectedMoveCategory" 
+            <el-select
+              v-model="selectedMoveCategory"
               placeholder="移动到..."
               @change="handleBatchMove"
               class="move-select"
               :disabled="batchLoading"
             >
-              <el-option 
-                v-for="category in categories" 
-                :key="category.id" 
-                :label="`${category.icon} ${category.name}`" 
+              <el-option
+                v-for="category in categories"
+                :key="category.id"
+                :label="`${category.icon} ${category.name}`"
                 :value="category.id"
               />
             </el-select>
-            
+
             <el-button type="warning" @click="handleBatchEditClick">
               完成 <el-tag size="small" type="info" class="shortcut-tag">Esc</el-tag>
             </el-button>
           </div>
-          
+
           <div class="batch-edit-info">
             <el-tag type="primary">已选择 {{ dataStore.selectedLinks.length }} 个网站</el-tag>
           </div>
@@ -316,16 +347,23 @@ onUnmounted(() => {
 
       <!-- Sites Grid -->
       <div class="sites-section">
+        <!-- Category Header -->
+        <div v-if="selectedCategoryId !== 'all'" class="category-header">
+          <span class="category-icon">{{ currentCategory?.icon || '🌐' }}</span>
+          <h2 class="category-title">{{ currentCategory?.name || '未知分类' }}</h2>
+          <span class="site-count">{{ sortableLinks.length }} 个网站</span>
+        </div>
+
         <!-- 普通模式：不使用拖拽 -->
-        <div v-if="!dataStore.sortMode" class="sites-grid">
+        <TransitionGroup v-if="!dataStore.sortMode" name="card-list" class="sites-grid" tag="div">
           <SiteCard
             v-for="site in sortableLinks"
             :key="site.id"
             :site="site"
           />
-        </div>
+        </TransitionGroup>
 
-        <!-- 排序模式：使用vue-draggable-plus -->
+        <!-- 排序模式：使用 vue-draggable-plus -->
         <VueDraggable
           v-else
           v-model="sortableLinks"
@@ -349,10 +387,10 @@ onUnmounted(() => {
     </div>
 
     <!-- Mobile Overlay -->
-    <div 
-      v-if="isMobile && sidebarOpen" 
+    <div
+      v-if="isMobile && sidebarOpen"
       class="sidebar-overlay"
-      @click="sidebarOpen = false"
+      @click="closeSidebar"
     ></div>
 
   </div>
@@ -371,15 +409,15 @@ onUnmounted(() => {
   flex-direction: column;
   min-height: 100vh;
   background: var(--color-bg);
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 72px;
 }
 
 .main-content.sidebar-closed {
   margin-left: 0;
-}
-
-.main-content.sidebar-collapsed {
-  margin-left: 60px;
 }
 
 .search-section {
@@ -390,83 +428,237 @@ onUnmounted(() => {
 
 .search-container {
   width: 100%;
-  max-width: 640px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.search-input-wrapper {
-  --el-input-border-radius: 12px;
-}
-
-.search-input-wrapper :deep(.el-input__wrapper) {
-  padding: 0.5rem 1rem;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.3s ease;
-}
-
-.search-input-wrapper :deep(.el-input__wrapper:focus-within) {
-  box-shadow: var(--shadow-md), 0 0 0 3px rgba(14, 165, 233, 0.1);
-}
-
-.search-shortcut {
+  max-width: 800px;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 1rem;
 }
 
-.search-shortcut .el-tag {
-  font-size: 0.6875rem;
-  padding: 0 4px;
-  height: 20px;
-  line-height: 18px;
-}
-
-.engine-selector {
+.search-wrapper {
+  flex: 1;
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  background: linear-gradient(145deg, var(--color-card), var(--color-bg));
+  border: 2px solid var(--color-border);
+  border-radius: 18px;
+  padding: 0.5rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+  overflow: hidden;
 }
 
-.engine-selector :deep(.el-radio-button__inner) {
-  border-radius: 20px !important;
-  border: 1px solid var(--color-border);
-  background: var(--color-card);
-  color: var(--color-secondary);
-  padding: 0.375rem 0.875rem;
-  font-size: 0.8125rem;
+.search-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
-.engine-selector :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-  background: var(--color-primary);
+.search-wrapper:hover,
+.search-wrapper:focus-within {
   border-color: var(--color-primary);
-  color: white;
-  box-shadow: none;
+  box-shadow:
+    0 8px 24px rgba(14, 165, 233, 0.2),
+    0 4px 12px rgba(14, 165, 233, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateY(-3px);
 }
 
-.engine-selector :deep(.el-radio-button:first-child .el-radio-button__inner) {
-  border-radius: 20px !important;
+.search-wrapper:hover::before,
+.search-wrapper:focus-within::before {
+  opacity: 1;
 }
 
-.engine-selector :deep(.el-radio-button:last-child .el-radio-button__inner) {
-  border-radius: 20px !important;
+.search-engine-dropdown {
+  flex-shrink: 0;
 }
 
-.engine-selector :deep(.el-radio-button__inner:hover) {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+.search-engine-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  position: relative;
+  background: linear-gradient(145deg, var(--color-bg), transparent);
+  border: 1px solid transparent;
+}
+
+.search-engine-selector::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 14px;
+}
+
+.search-engine-selector:hover::before {
+  opacity: 1;
+}
+
+.search-engine-selector:hover {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.1);
+}
+
+.search-engine-selector:active {
+  transform: scale(0.98);
+}
+
+.engine-name {
+  white-space: nowrap;
+}
+
+.search-input {
+  flex: 1;
+}
+
+.search-input :deep(.el-input__wrapper) {
+  box-shadow: none !important;
+  padding: 0;
+}
+
+.search-input :deep(.el-input__inner) {
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.search-button {
+  border-radius: 14px !important;
+  padding: 0.75rem 1.5rem !important;
+  height: auto !important;
+  margin: 0.25rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  background: linear-gradient(135deg, var(--color-primary), #0d9488) !important;
+  border: none !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.search-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.search-button:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow:
+    0 8px 20px rgba(14, 165, 233, 0.3),
+    0 4px 8px rgba(14, 165, 233, 0.2) !important;
+}
+
+.search-button:hover::before {
+  opacity: 1;
+}
+
+.search-button:active {
+  transform: scale(0.98) translateY(0);
+}
+
+.search-button .el-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-button:hover .el-icon {
+  transform: scale(1.2) rotate(-10deg);
+}
+
+.theme-toggle-btn {
+  font-size: 1.5rem !important;
+  padding: 1rem !important;
+  border-radius: 16px !important;
+  flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  background: linear-gradient(145deg, var(--color-card), var(--color-bg)) !important;
+  border: 2px solid var(--color-border) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-toggle-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.12) rotate(180deg);
+  border-color: #8b5cf6 !important;
+  box-shadow:
+    0 8px 24px rgba(139, 92, 246, 0.25),
+    0 4px 12px rgba(139, 92, 246, 0.15) !important;
+}
+
+.theme-toggle-btn:hover::before {
+  opacity: 1;
+}
+
+.theme-toggle-btn:active {
+  transform: scale(1.05) rotate(180deg);
 }
 
 .sites-section {
   flex: 1;
-  padding: 1.5rem 1.5rem 2rem;
+  padding: 0 1.5rem 2rem;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0 1.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.category-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.category-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.site-count {
+  font-size: 0.875rem;
+  color: var(--color-secondary);
+  padding: 0.25rem 0.75rem;
+  background: var(--color-bg);
+  border-radius: 20px;
+  font-weight: 500;
 }
 
 .sites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
   max-width: 1400px;
   margin: 0 auto;
   min-height: 100px;
@@ -542,6 +734,7 @@ onUnmounted(() => {
   font-size: 0.875rem;
 }
 
+/* 移动端适配 */
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
@@ -551,12 +744,63 @@ onUnmounted(() => {
     padding: 1rem;
   }
 
+  .search-section.is-mobile .search-container {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .search-section.is-mobile .search-wrapper {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 16px;
+  }
+
+  .search-section.is-mobile .search-engine-selector {
+    width: 100%;
+    justify-content: center;
+    padding: 0.625rem 1rem;
+  }
+
+  .search-section.is-mobile .search-input :deep(.el-input__inner) {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+  }
+
+  .search-section.is-mobile .search-button {
+    padding: 0.625rem 1.25rem !important;
+  }
+
+  .search-section.is-mobile .theme-toggle-btn {
+    width: 100%;
+    padding: 0.75rem !important;
+  }
+
   .sites-section {
     padding: 0 1rem 2rem;
   }
 
+  .category-header {
+    flex-wrap: wrap;
+    padding: 1rem 0 0.75rem;
+  }
+
+  .category-icon {
+    font-size: 1.5rem;
+  }
+
+  .category-title {
+    font-size: 1.25rem;
+  }
+
+  .site-count {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
   .sites-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .batch-edit-toolbar {
@@ -567,9 +811,19 @@ onUnmounted(() => {
     width: 100%;
   }
 
+  .batch-edit-actions :deep(.el-button) {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+  }
+
   .batch-edit-secondary {
     width: 100%;
     flex-direction: column;
+  }
+
+  .batch-edit-secondary :deep(.el-button) {
+    width: 100%;
   }
 
   .move-select {
@@ -585,6 +839,59 @@ onUnmounted(() => {
     gap: 0.5rem;
     align-items: stretch;
   }
+
+  .sort-container :deep(.el-button) {
+    width: 100%;
+  }
+}
+
+/* 小屏幕手机适配 */
+@media (max-width: 480px) {
+  .search-section.is-mobile .search-wrapper {
+    padding: 0.625rem;
+  }
+
+  .search-section.is-mobile .search-engine-selector {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+  }
+
+  .search-section.is-mobile .search-input :deep(.el-input__inner) {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .search-section.is-mobile .search-button {
+    padding: 0.5rem 1rem !important;
+  }
+
+  .sites-grid {
+    gap: 0.75rem;
+  }
+}
+
+/* Card List Transitions */
+.card-list-enter-active,
+.card-list-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-list-enter-from {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+.card-list-leave-active {
+  position: absolute;
+}
+
+.card-list-leave-to {
+  opacity: 0;
+  transform: translateX(-30px) scale(0.95);
+}
+
+.card-list-move {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* vue-draggable-plus 样式 */
