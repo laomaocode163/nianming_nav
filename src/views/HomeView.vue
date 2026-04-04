@@ -219,7 +219,7 @@ onUnmounted(() => {
     />
 
     <!-- Main Content -->
-    <div class="main-content" :class="{ 'sidebar-closed': !sidebarOpen, 'is-mobile': isMobile }">
+    <div class="main-content" :class="{ 'sidebar-closed': !sidebarOpen, 'sidebar-collapsed': sidebarCollapsed, 'is-mobile': isMobile }">
       <!-- Header -->
       <MainHeader
         :title="pageTitle"
@@ -652,6 +652,12 @@ onUnmounted(() => {
   max-width: 1400px;
   margin: 0 auto;
   min-height: 100px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content.sidebar-collapsed .sites-grid {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.25rem;
 }
 
 .sidebar-overlay {
