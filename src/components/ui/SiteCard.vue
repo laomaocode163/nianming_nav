@@ -400,16 +400,52 @@ const handleClick = (event) => {
   justify-content: center;
 }
 
+.select-checkbox :deep(.el-checkbox) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .select-checkbox :deep(.el-checkbox__inner) {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--color-border);
+  background: linear-gradient(145deg, var(--color-bg), var(--color-card));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.select-checkbox :deep(.el-checkbox__inner:hover) {
+  border-color: var(--color-primary);
+  background: linear-gradient(145deg, rgba(14, 165, 233, 0.1), rgba(139, 92, 246, 0.1));
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.select-checkbox :deep(.el-checkbox.is-checked .el-checkbox__inner) {
+  background: linear-gradient(135deg, var(--color-primary), #0d9488);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
 }
 
 .select-checkbox :deep(.el-checkbox__inner::after) {
-  width: 5px;
-  height: 9px;
-  left: 6px;
+  width: 6px;
+  height: 11px;
+  left: 7px;
   top: 2px;
+  border-width: 0 2px 2px 0;
+  border-color: white;
+  border-style: solid;
+  transform: rotate(45deg);
+  transition: all 0.2s ease;
+}
+
+.select-checkbox :deep(.el-checkbox__inner:hover::after) {
+  border-color: var(--color-primary);
+}
+
+.select-checkbox :deep(.el-checkbox.is-checked .el-checkbox__inner::after) {
+  border-color: white;
 }
 
 .site-card.selected {
@@ -473,15 +509,36 @@ const handleClick = (event) => {
   }
 
   .select-checkbox :deep(.el-checkbox__inner) {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    border: 2px solid var(--color-border);
+    background: linear-gradient(145deg, var(--color-bg), var(--color-card));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .select-checkbox :deep(.el-checkbox__inner:hover) {
+    border-color: var(--color-primary);
+    background: linear-gradient(145deg, rgba(14, 165, 233, 0.1), rgba(139, 92, 246, 0.1));
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  }
+
+  .select-checkbox :deep(.el-checkbox.is-checked .el-checkbox__inner) {
+    background: linear-gradient(135deg, var(--color-primary), #0d9488);
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
   }
 
   .select-checkbox :deep(.el-checkbox__inner::after) {
-    width: 4px;
-    height: 8px;
-    left: 5px;
+    width: 5px;
+    height: 9px;
+    left: 6px;
     top: 2px;
+    border-width: 0 2px 2px 0;
+    border-color: white;
+    border-style: solid;
+    transform: rotate(45deg);
   }
 
   .pinned-badge {
@@ -547,15 +604,36 @@ const handleClick = (event) => {
   }
 
   .select-checkbox :deep(.el-checkbox__inner) {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 2px solid var(--color-border);
+    background: linear-gradient(145deg, var(--color-bg), var(--color-card));
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .select-checkbox :deep(.el-checkbox__inner:hover) {
+    border-color: var(--color-primary);
+    background: linear-gradient(145deg, rgba(14, 165, 233, 0.1), rgba(139, 92, 246, 0.1));
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  }
+
+  .select-checkbox :deep(.el-checkbox.is-checked .el-checkbox__inner) {
+    background: linear-gradient(135deg, var(--color-primary), #0d9488);
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
   }
 
   .select-checkbox :deep(.el-checkbox__inner::after) {
-    width: 3px;
+    width: 4px;
     height: 7px;
-    left: 4px;
+    left: 5px;
     top: 1px;
+    border-width: 0 2px 2px 0;
+    border-color: white;
+    border-style: solid;
+    transform: rotate(45deg);
   }
 
   .pinned-badge {

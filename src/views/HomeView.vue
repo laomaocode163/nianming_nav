@@ -281,22 +281,26 @@ onUnmounted(() => {
       <!-- Batch Edit Toolbar -->
       <div v-if="dataStore.batchEditMode" class="batch-edit-toolbar">
         <div class="batch-edit-container">
-          <el-button-group class="batch-edit-actions">
-            <el-button type="primary" @click="handleSelectAll">
-              全选 <el-tag size="small" type="info" class="shortcut-tag">⌘A</el-tag>
+          <div class="batch-edit-left">
+            <el-button class="edit-btn" @click="handleSelectAll">
+              <span class="btn-icon">✓</span>
+              <span class="btn-text">全选</span>
+              <el-tag size="small" class="shortcut-tag">⌘A</el-tag>
             </el-button>
-            <el-button type="info" @click="handleDeselectAll">
-              取消全选
+            <el-button class="edit-btn" @click="handleDeselectAll">
+              <span class="btn-icon">✕</span>
+              <span class="btn-text">取消全选</span>
             </el-button>
-            <el-button type="success" @click="handleBatchTogglePin" :loading="batchLoading">
-              置顶/取消置顶
+            <el-button class="edit-btn edit-btn--pin" @click="handleBatchTogglePin" :loading="batchLoading">
+              <span class="btn-icon">📌</span>
+              <span class="btn-text">置顶</span>
             </el-button>
-            <el-button type="danger" @click="handleBatchDelete" :loading="batchLoading">
-              删除
+            <el-button class="edit-btn edit-btn--delete" @click="handleBatchDelete" :loading="batchLoading">
+              <span class="btn-icon">🗑</span>
+              <span class="btn-text">删除</span>
             </el-button>
-          </el-button-group>
-
-          <div class="batch-edit-secondary">
+          </div>
+          <div class="batch-edit-center">
             <el-select
               v-model="selectedMoveCategory"
               placeholder="移动到..."
@@ -304,6 +308,9 @@ onUnmounted(() => {
               class="move-select"
               :disabled="batchLoading"
             >
+              <template #prefix>
+                <span class="select-prefix">📁</span>
+              </template>
               <el-option
                 v-for="category in categories"
                 :key="category.id"
@@ -311,14 +318,17 @@ onUnmounted(() => {
                 :value="category.id"
               />
             </el-select>
-
-            <el-button type="warning" @click="handleBatchEditClick">
-              完成 <el-tag size="small" type="info" class="shortcut-tag">Esc</el-tag>
-            </el-button>
           </div>
-
-          <div class="batch-edit-info">
-            <el-tag type="primary">已选择 {{ dataStore.selectedLinks.length }} 个网站</el-tag>
+          <div class="batch-edit-right">
+            <div class="batch-edit-info">
+              <span class="info-icon">📋</span>
+              <span class="info-text">已选择 <strong>{{ dataStore.selectedLinks.length }}</strong> 个网站</span>
+            </div>
+            <el-button class="edit-btn edit-btn--complete" @click="handleBatchEditClick">
+              <span class="btn-icon">✓</span>
+              <span class="btn-text">完成</span>
+              <el-tag size="small" class="shortcut-tag">Esc</el-tag>
+            </el-button>
           </div>
         </div>
       </div>
@@ -669,7 +679,7 @@ onUnmounted(() => {
 
 /* Batch Edit Toolbar */
 .batch-edit-toolbar {
-  padding: 1.5rem 1.5rem;
+  padding: 1rem 1.5rem;
   background: var(--color-card);
   border-bottom: 1px solid var(--color-border);
 }
@@ -677,37 +687,292 @@ onUnmounted(() => {
 .batch-edit-container {
   max-width: 1400px;
   margin: 0 auto;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: 1rem;
+}
+
+.batch-edit-container:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-color: rgba(14, 165, 233, 0.3);
+}
+
+.batch-edit-left {
+  display: flex;
   align-items: center;
-}
-
-.batch-edit-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.batch-edit-secondary {
-  display: flex;
   gap: 0.5rem;
-  align-items: center;
   flex-wrap: wrap;
+}
+
+.batch-edit-center {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
   justify-content: center;
+}
+
+.batch-edit-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+}
+
+.edit-btn {
+  height: 36px !important;
+  padding: 0 1rem !important;
+  border-radius: 10px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  border: 1px solid var(--color-border) !important;
+  background: var(--color-bg) !important;
+  color: var(--color-text) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.edit-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  border-color: var(--color-primary) !important;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(139, 92, 246, 0.08)) !important;
+}
+
+.edit-btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+}
+
+.edit-btn--pin:hover {
+  border-color: #10b981 !important;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.08)) !important;
+}
+
+.edit-btn--delete:hover {
+  border-color: #ef4444 !important;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.08)) !important;
+}
+
+.edit-btn--complete:hover {
+  border-color: #f59e0b !important;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.08)) !important;
+}
+
+.btn-icon {
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-text {
+  white-space: nowrap;
+}
+
+.edit-btn .shortcut-tag {
+  margin-left: 0.25rem;
+  font-size: 0.625rem !important;
+  border-radius: 4px !important;
+  padding: 0.125rem 0.375rem !important;
+  background: rgba(14, 165, 233, 0.1) !important;
+  color: var(--color-primary) !important;
+  border: none !important;
+  font-weight: 600 !important;
 }
 
 .move-select {
-  min-width: 150px;
+  min-width: 140px;
+  height: 36px !important;
 }
 
-.shortcut-tag {
-  margin-left: 0.25rem;
-  font-size: 0.6875rem;
+.move-select :deep(.el-select__wrapper) {
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  padding: 0 0.75rem !important;
+  border: 1px solid var(--color-border) !important;
+  background: var(--color-bg) !important;
+  height: 36px !important;
+  font-size: 0.875rem !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.move-select :deep(.el-select__placeholder) {
+  font-size: 0.875rem !important;
+  color: var(--color-text) !important;
+}
+
+.move-select:hover :deep(.el-select__wrapper) {
+  border-color: var(--color-primary) !important;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(139, 92, 246, 0.05)) !important;
+}
+
+.move-select :deep(.el-select__options) {
+  border-radius: 12px !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  background: var(--color-card) !important;
+  padding: 0.5rem !important;
+}
+
+.move-select :deep(.el-select__option) {
+  border-radius: 8px !important;
+  padding: 0.5rem 1rem !important;
+  font-size: 0.875rem !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.move-select :deep(.el-select__option:hover) {
+  background: rgba(14, 165, 233, 0.1) !important;
+}
+
+.move-select :deep(.el-select__option.is-selected) {
+  background: linear-gradient(135deg, var(--color-primary), #0d9488) !important;
+  color: white !important;
+}
+
+.select-prefix {
+  font-size: 0.875rem;
+  margin-right: 0.25rem;
 }
 
 .batch-edit-info {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(139, 92, 246, 0.08));
+  border-radius: 10px;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.875rem;
+  color: var(--color-text);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.batch-edit-info:hover {
+  border-color: var(--color-primary);
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(139, 92, 246, 0.12));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+}
+
+.info-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.info-text {
+  font-weight: 500;
+}
+
+.info-text strong {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .batch-edit-toolbar {
+    padding: 0.75rem 1rem;
+  }
+  
+  .batch-edit-container {
+    padding: 0.75rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  
+  .batch-edit-left,
+  .batch-edit-center,
+  .batch-edit-right {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .batch-edit-right {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .batch-edit-info {
+    width: 100%;
+    justify-content: center;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+  
+  .edit-btn {
+    height: 34px !important;
+    padding: 0 0.875rem !important;
+    font-size: 0.8125rem !important;
+  }
+  
+  .move-select {
+    min-width: 130px;
+  }
+  
+  .move-select :deep(.el-select__wrapper) {
+    height: 34px !important;
+    padding: 0 0.625rem !important;
+    font-size: 0.8125rem !important;
+  }
+  
+  .edit-btn .shortcut-tag {
+    font-size: 0.5625rem !important;
+    padding: 0.125rem 0.3125rem !important;
+  }
+}
+
+/* 小屏幕移动端适配 */
+@media (max-width: 480px) {
+  .batch-edit-toolbar {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .batch-edit-container {
+    padding: 0.625rem;
+  }
+  
+  .batch-edit-left {
+    gap: 0.375rem;
+  }
+  
+  .edit-btn {
+    height: 32px !important;
+    padding: 0 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .move-select {
+    min-width: 110px;
+  }
+  
+  .move-select :deep(.el-select__wrapper) {
+    height: 32px !important;
+    padding: 0 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .batch-edit-info {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.75rem;
+  }
+  
+  .edit-btn .shortcut-tag {
+    font-size: 0.5rem !important;
+    padding: 0.0625rem 0.25rem !important;
+  }
 }
 
 /* Sort Toolbar */
@@ -805,25 +1070,46 @@ onUnmounted(() => {
 
   .batch-edit-actions {
     width: 100%;
+    gap: 0.5rem;
   }
 
   .batch-edit-actions :deep(.el-button) {
     flex: 1;
     min-width: 0;
-    padding: 0.5rem 0.75rem;
+    padding: 0.625rem 0.875rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  .batch-edit-actions :deep(.el-button .shortcut-tag) {
+    font-size: 0.625rem !important;
+    padding: 0.125rem 0.25rem !important;
   }
 
   .batch-edit-secondary {
     width: 100%;
     flex-direction: column;
+    gap: 0.5rem;
   }
 
   .batch-edit-secondary :deep(.el-button) {
     width: 100%;
+    padding: 0.625rem 1rem !important;
   }
 
   .move-select {
     width: 100%;
+    min-width: unset;
+  }
+
+  .batch-edit-info {
+    width: 100%;
+    text-align: center;
+    padding: 0.5rem;
+  }
+
+  .batch-edit-container {
+    padding: 0.5rem;
+    gap: 1rem;
   }
 
   .sort-toolbar {
