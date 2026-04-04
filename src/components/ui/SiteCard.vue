@@ -180,7 +180,7 @@ const handleClick = (event) => {
 
 .site-card.sort-mode {
   cursor: grab;
-  border: 2px solid #10b981;
+  border: 2px solid var(--color-success);
   background: rgba(16, 185, 129, 0.05);
   padding-left: 0.75rem;
 }
@@ -206,7 +206,7 @@ const handleClick = (event) => {
   justify-content: center;
   padding: 0.5rem;
   margin-right: 0.25rem;
-  color: #10b981;
+  color: var(--color-success);
   cursor: grab;
   border-radius: 6px;
   transition: all 0.2s ease;
@@ -231,7 +231,7 @@ const handleClick = (event) => {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   background: var(--color-card);
-  border: 2px solid #10b981;
+  border: 2px solid var(--color-success);
   border-radius: 12px;
 }
 
@@ -242,7 +242,7 @@ const handleClick = (event) => {
 :global(.sortable-ghost) {
   opacity: 0.35;
   background: rgba(16, 185, 129, 0.08);
-  border: 2px dashed #10b981;
+  border: 2px dashed var(--color-success);
   border-radius: 12px;
 }
 
@@ -328,7 +328,7 @@ const handleClick = (event) => {
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--color-primary), #0d9488);
+  background: var(--gradient-primary);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -343,7 +343,7 @@ const handleClick = (event) => {
 
 .site-desc {
   font-size: 0.8125rem;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -357,7 +357,7 @@ const handleClick = (event) => {
 
 .site-url {
   font-size: 0.75rem;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   opacity: 0.8;
   white-space: nowrap;
   overflow: hidden;
@@ -432,7 +432,7 @@ const handleClick = (event) => {
   width: 6px;
   height: 11px;
   left: 7px;
-  top: 2px;
+  top: 4px;
   border-width: 0 2px 2px 0;
   border-color: white;
   border-style: solid;
@@ -531,15 +531,15 @@ const handleClick = (event) => {
   }
 
   .select-checkbox :deep(.el-checkbox__inner::after) {
-    width: 5px;
-    height: 9px;
-    left: 6px;
-    top: 2px;
-    border-width: 0 2px 2px 0;
-    border-color: white;
-    border-style: solid;
-    transform: rotate(45deg);
-  }
+  width: 5px;
+  height: 9px;
+  left: 6px;
+  top: 3px;
+  border-width: 0 2px 2px 0;
+  border-color: white;
+  border-style: solid;
+  transform: rotate(45deg);
+}
 
   .pinned-badge {
     top: 0.75rem;
@@ -626,15 +626,15 @@ const handleClick = (event) => {
   }
 
   .select-checkbox :deep(.el-checkbox__inner::after) {
-    width: 4px;
-    height: 7px;
-    left: 5px;
-    top: 1px;
-    border-width: 0 2px 2px 0;
-    border-color: white;
-    border-style: solid;
-    transform: rotate(45deg);
-  }
+  width: 4px;
+  height: 7px;
+  left: 5px;
+  top: 2px;
+  border-width: 0 2px 2px 0;
+  border-color: white;
+  border-style: solid;
+  transform: rotate(45deg);
+}
 
   .pinned-badge {
     top: 0.5rem;

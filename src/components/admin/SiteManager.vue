@@ -503,4 +503,10 @@ const getCategoryName = (categoryId) => {
     align-items: flex-start;
   }
 }
+
+/* 调整复选框对号位置 */
+:deep(.el-checkbox__inner::after) {
+  top: 4px !important;
+  left: 7px !important;
+}
 </style>

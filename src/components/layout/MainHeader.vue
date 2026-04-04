@@ -74,6 +74,8 @@ const { isMobile } = useResponsive()
   position: sticky;
   top: 0;
   z-index: 50;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .header-left {
@@ -85,10 +87,11 @@ const { isMobile } = useResponsive()
 .header-title {
   font-size: 1.25rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-right {
@@ -112,6 +115,7 @@ const { isMobile } = useResponsive()
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   gap: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .hamburger-btn:hover {
@@ -150,6 +154,7 @@ const { isMobile } = useResponsive()
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .action-btn::before, .theme-btn::before {
@@ -198,7 +203,7 @@ const { isMobile } = useResponsive()
 
 /* 批量编辑按钮特殊样式 */
 .action-btn:nth-child(1):hover {
-  border-color: #10b981;
+  border-color: var(--color-success);
   box-shadow:
     0 8px 20px rgba(16, 185, 129, 0.2),
     0 4px 8px rgba(16, 185, 129, 0.1);
@@ -210,7 +215,7 @@ const { isMobile } = useResponsive()
 
 /* 排序按钮特殊样式 */
 .action-btn:nth-child(2):hover {
-  border-color: #f59e0b;
+  border-color: var(--color-warning);
   box-shadow:
     0 8px 20px rgba(245, 158, 11, 0.2),
     0 4px 8px rgba(245, 158, 11, 0.1);
@@ -222,7 +227,7 @@ const { isMobile } = useResponsive()
 
 /* 主题按钮特殊样式 */
 .theme-btn:hover {
-  border-color: #8b5cf6;
+  border-color: var(--color-secondary);
   box-shadow:
     0 8px 20px rgba(139, 92, 246, 0.2),
     0 4px 8px rgba(139, 92, 246, 0.1);
@@ -262,9 +267,30 @@ const { isMobile } = useResponsive()
     height: 40px;
     font-size: 1.1rem;
   }
+
+  .hamburger-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .hamburger-line {
+    width: 18px;
+  }
 }
 
 @media (max-width: 480px) {
+  .main-header {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .header-left {
+    gap: 0.75rem;
+  }
+
+  .header-title {
+    font-size: 1rem;
+  }
+
   .header-right {
     gap: 0.5rem;
   }
@@ -273,6 +299,15 @@ const { isMobile } = useResponsive()
     width: 36px;
     height: 36px;
     font-size: 1rem;
+  }
+
+  .hamburger-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .hamburger-line {
+    width: 16px;
   }
 }
 </style>

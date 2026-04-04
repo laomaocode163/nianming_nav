@@ -339,7 +339,7 @@ onUnmounted(() => {
           <div class="sort-info">
             <el-tag type="success">排序模式：拖拽调整网站顺序</el-tag>
           </div>
-          <el-button type="primary" @click="handleSortClick">
+          <el-button type="primary" @click="handleSortClick" class="complete-sort-btn">
             完成排序 <el-tag size="small" type="info" class="shortcut-tag">Esc</el-tag>
           </el-button>
         </div>
@@ -544,7 +544,7 @@ onUnmounted(() => {
   height: auto !important;
   margin: 0.25rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  background: linear-gradient(135deg, var(--color-primary), #0d9488) !important;
+  background: var(--gradient-primary) !important;
   border: none !important;
   position: relative;
   overflow: hidden;
@@ -648,11 +648,12 @@ onUnmounted(() => {
 
 .site-count {
   font-size: 0.875rem;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   padding: 0.25rem 0.75rem;
   background: var(--color-bg);
   border-radius: 20px;
   font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .sites-grid {
@@ -753,17 +754,17 @@ onUnmounted(() => {
 }
 
 .edit-btn--pin:hover {
-  border-color: #10b981 !important;
+  border-color: var(--color-success) !important;
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.08)) !important;
 }
 
 .edit-btn--delete:hover {
-  border-color: #ef4444 !important;
+  border-color: var(--color-danger) !important;
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.08)) !important;
 }
 
 .edit-btn--complete:hover {
-  border-color: #f59e0b !important;
+  border-color: var(--color-warning) !important;
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.08)) !important;
 }
 
@@ -836,7 +837,7 @@ onUnmounted(() => {
 }
 
 .move-select :deep(.el-select__option.is-selected) {
-  background: linear-gradient(135deg, var(--color-primary), #0d9488) !important;
+  background: var(--gradient-primary) !important;
   color: white !important;
 }
 
@@ -993,6 +994,56 @@ onUnmounted(() => {
 
 .sort-info {
   font-size: 0.875rem;
+}
+
+.sort-container :deep(.el-button[type="primary"]) {
+  border-radius: 14px !important;
+  padding: 0.75rem 1.5rem !important;
+  height: auto !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  background: var(--gradient-primary) !important;
+  border: none !important;
+  position: relative;
+  overflow: hidden;
+  font-weight: 500 !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sort-container :deep(.el-button[type="primary"])::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sort-container :deep(.el-button[type="primary"]):hover {
+  transform: scale(1.08) translateY(-2px) !important;
+  box-shadow:
+    0 8px 20px rgba(14, 165, 233, 0.3),
+    0 4px 8px rgba(14, 165, 233, 0.2) !important;
+}
+
+.sort-container :deep(.el-button[type="primary"]):hover::before {
+  opacity: 1;
+}
+
+.sort-container :deep(.el-button[type="primary"]):active {
+  transform: scale(0.98) translateY(0) !important;
+}
+
+.sort-container :deep(.el-button[type="primary"] .shortcut-tag) {
+  margin-left: 0.25rem;
+  font-size: 0.625rem !important;
+  border-radius: 4px !important;
+  padding: 0.125rem 0.375rem !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
 }
 
 /* 移动端适配 */
@@ -1156,7 +1207,7 @@ onUnmounted(() => {
 :deep(.sortable-ghost) {
   opacity: 0.4;
   background: rgba(16, 185, 129, 0.1);
-  border: 2px dashed #10b981;
+  border: 2px dashed var(--color-success);
   border-radius: 12px;
 }
 
@@ -1166,7 +1217,7 @@ onUnmounted(() => {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   background: var(--color-card);
-  border: 2px solid #10b981;
+  border: 2px solid var(--color-success);
   border-radius: 12px;
 }
 </style>

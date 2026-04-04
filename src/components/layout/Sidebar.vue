@@ -133,6 +133,7 @@ const handleClose = () => {
   z-index: 100;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
   overflow: hidden;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
 }
 
 .sidebar:not(.sidebar-open) {
@@ -152,6 +153,7 @@ const handleClose = () => {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .logo-content {
@@ -274,10 +276,11 @@ const handleClose = () => {
   color: var(--color-text);
   white-space: nowrap;
   margin: 0;
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Navigation Section */
@@ -334,7 +337,7 @@ const handleClose = () => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem !important;
-  color: var(--color-secondary) !important;
+  color: var(--color-text-secondary) !important;
   font-size: 0.9375rem !important;
   border-radius: 14px !important;
   text-align: left;
@@ -376,6 +379,7 @@ const handleClose = () => {
   background: rgba(14, 165, 233, 0.08) !important;
   color: var(--color-primary) !important;
   border-color: transparent !important;
+  transform: translateX(4px);
 }
 
 .sidebar-collapsed .nav-item:hover {
@@ -462,6 +466,7 @@ const handleClose = () => {
   position: relative;
   z-index: 1;
   margin-right: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .nav-item:hover .nav-count {
@@ -493,7 +498,7 @@ const handleClose = () => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   text-decoration: none;
   font-size: 0.9375rem;
   border-radius: 14px;
@@ -505,6 +510,7 @@ const handleClose = () => {
   justify-content: flex-start;
   border: 1px solid transparent;
   min-height: 48px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .sidebar-collapsed .admin-link {
@@ -534,6 +540,8 @@ const handleClose = () => {
   background: rgba(14, 165, 233, 0.08);
   color: var(--color-primary);
   border-color: transparent;
+  transform: translateX(4px);
+  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.15);
 }
 
 .admin-link:active {
