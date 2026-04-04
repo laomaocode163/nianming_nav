@@ -123,7 +123,7 @@ export const DEFAULT_SITE_SETTINGS = {
 export const DEFAULT_SEARCH_CONFIG = {
   mode: 'internal',
   externalSources: DEFAULT_SEARCH_SOURCES,
-  selectedSourceId: 'google'
+  selectedSourceId: 'baidu'
 }
 
 // Favicon cache key for localStorage

@@ -108,11 +108,11 @@ const handleClick = (event) => {
 .site-card {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.25rem 1.5rem;
+  gap: 0.875rem;
+  padding: 1rem 1.25rem;
   background: linear-gradient(145deg, var(--color-card), var(--color-bg));
   border: 2px solid var(--color-border);
-  border-radius: 18px;
+  border-radius: 16px;
   text-decoration: none;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -121,7 +121,7 @@ const handleClick = (event) => {
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  min-height: 80px;
+  min-height: 68px;
 }
 
 .site-card::before {
@@ -251,14 +251,14 @@ const handleClick = (event) => {
 }
 
 .site-icon-wrapper {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(145deg, var(--color-bg) 0%, rgba(14, 165, 233, 0.15) 100%);
-  border-radius: 14px;
+  border-radius: 12px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.08),
@@ -288,8 +288,8 @@ const handleClick = (event) => {
 }
 
 .site-icon {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   object-fit: contain;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -309,9 +309,9 @@ const handleClick = (event) => {
 
 .site-name {
   font-weight: 700;
-  font-size: 1.0625rem;
+  font-size: 0.9375rem;
   color: var(--color-text);
-  margin-bottom: 0.375rem;
+  margin-bottom: 0.25rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -342,12 +342,12 @@ const handleClick = (event) => {
 }
 
 .site-desc {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--color-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.5;
+  line-height: 1.4;
   transition: all 0.3s ease;
 }
 
@@ -356,7 +356,7 @@ const handleClick = (event) => {
 }
 
 .site-url {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: var(--color-secondary);
   opacity: 0.8;
   white-space: nowrap;
@@ -372,9 +372,9 @@ const handleClick = (event) => {
 
 .pinned-badge {
   position: absolute;
-  top: 0.875rem;
-  right: 0.875rem;
-  font-size: 1.125rem;
+  top: 0.625rem;
+  right: 0.625rem;
+  font-size: 1rem;
   opacity: 0.9;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
   animation: pulse 2s ease-in-out infinite;

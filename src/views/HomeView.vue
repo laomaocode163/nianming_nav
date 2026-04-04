@@ -274,17 +274,7 @@ onUnmounted(() => {
             </el-input>
           </div>
 
-          <!-- Theme Toggle - 小屏幕手机隐藏 -->
-          <el-button
-            v-if="!isSmallMobile"
-            class="theme-toggle-btn"
-            @click="themeStore.toggleTheme"
-            text
-            :size="isMobile ? 'default' : 'large'"
-          >
-            <span v-if="themeStore.isDark">☀️</span>
-            <span v-else>🌙</span>
-          </el-button>
+
         </div>
       </div>
 
@@ -355,13 +345,13 @@ onUnmounted(() => {
         </div>
 
         <!-- 普通模式：不使用拖拽 -->
-        <TransitionGroup v-if="!dataStore.sortMode" name="card-list" class="sites-grid" tag="div">
+        <div v-if="!dataStore.sortMode" class="sites-grid">
           <SiteCard
             v-for="site in sortableLinks"
             :key="site.id"
             :site="site"
           />
-        </TransitionGroup>
+        </div>
 
         <!-- 排序模式：使用 vue-draggable-plus -->
         <VueDraggable
@@ -657,8 +647,8 @@ onUnmounted(() => {
 
 .sites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
   max-width: 1400px;
   margin: 0 auto;
   min-height: 100px;
@@ -868,30 +858,6 @@ onUnmounted(() => {
   .sites-grid {
     gap: 0.75rem;
   }
-}
-
-/* Card List Transitions */
-.card-list-enter-active,
-.card-list-leave-active {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-list-enter-from {
-  opacity: 0;
-  transform: translateY(30px) scale(0.95);
-}
-
-.card-list-leave-active {
-  position: absolute;
-}
-
-.card-list-leave-to {
-  opacity: 0;
-  transform: translateX(-30px) scale(0.95);
-}
-
-.card-list-move {
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* vue-draggable-plus 样式 */

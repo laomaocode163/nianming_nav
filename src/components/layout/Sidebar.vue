@@ -52,7 +52,7 @@ const handleClose = () => {
     <div class="sidebar-logo-section">
       <div class="logo-content" :class="{ 'logo-collapsed': collapsed }">
         <span class="logo-emoji">🐱</span>
-        <h1 class="site-title" v-show="!collapsed">nianming_nav</h1>
+        <h1 class="site-title" v-show="!collapsed">念铭导航</h1>
       </div>
       <div class="logo-actions">
         <!-- 移动端关闭按钮 -->
@@ -81,7 +81,7 @@ const handleClose = () => {
 
     <!-- Navigation Section -->
     <div class="sidebar-nav-section">
-      <h2 class="nav-section-title">分类导航</h2>
+      <h2 class="nav-section-title">导航目录</h2>
       <nav class="sidebar-nav">
         <el-button
           class="nav-item"
@@ -174,34 +174,44 @@ const handleClose = () => {
 }
 
 .collapse-btn {
-  width: 28px !important;
-  height: 28px !important;
+  width: 32px !important;
+  height: 32px !important;
   padding: 0 !important;
-  border-radius: 6px !important;
-  background: var(--color-bg) !important;
-  border: 1px solid var(--color-border) !important;
+  border-radius: 10px !important;
+  background: linear-gradient(145deg, var(--color-card), var(--color-bg)) !important;
+  border: 2px solid var(--color-border) !important;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
 }
 
 .collapse-btn:hover {
-  background: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-  transform: scale(1.1);
+  background: linear-gradient(135deg, var(--color-primary), #0d9488) !important;
+  border-color: transparent !important;
+  transform: scale(1.15) rotate(-5deg);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.collapse-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.2);
 }
 
 .collapse-btn:hover .collapse-icon {
   color: white;
+  transform: scale(1.1);
 }
 
 .collapse-icon {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: var(--color-secondary);
   font-weight: bold;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
 }
 
 /* 移动端关闭按钮 */
@@ -362,29 +372,14 @@ const handleClose = () => {
   border-radius: 0 4px 4px 0;
 }
 
-.nav-item::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, transparent 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
 .nav-item:hover {
-  background: var(--color-bg) !important;
-  color: var(--color-text) !important;
-  border-color: var(--color-border) !important;
-  transform: translateX(4px);
-}
-
-.nav-item:hover::after {
-  opacity: 1;
+  background: rgba(14, 165, 233, 0.08) !important;
+  color: var(--color-primary) !important;
+  border-color: transparent !important;
 }
 
 .sidebar-collapsed .nav-item:hover {
-  transform: scale(1.08);
-  border-color: transparent !important;
+  transform: scale(1.05);
 }
 
 .nav-item:hover::before {
@@ -392,18 +387,14 @@ const handleClose = () => {
 }
 
 .nav-item.active {
-  background: linear-gradient(135deg, var(--color-primary), #0d9488) !important;
-  color: white !important;
+  background: rgba(14, 165, 233, 0.12) !important;
+  color: var(--color-primary) !important;
   border-color: transparent !important;
-  box-shadow:
-    0 4px 6px -1px rgba(14, 165, 233, 0.2),
-    0 2px 4px -2px rgba(14, 165, 233, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  font-weight: 600;
 }
 
 .nav-item.active::before {
   transform: scaleY(1);
-  background: rgba(255, 255, 255, 0.5);
 }
 
 .nav-item:active {
@@ -412,8 +403,8 @@ const handleClose = () => {
 
 .nav-icon {
   font-size: 1.25rem;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   text-align: center;
   flex-shrink: 0;
   display: inline-flex;
@@ -421,44 +412,23 @@ const handleClose = () => {
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   line-height: 1;
-  background: var(--color-bg);
-  border-radius: 10px;
+  background: transparent;
+  border-radius: 8px;
   position: relative;
   z-index: 1;
 }
 
-.nav-icon::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, transparent 100%);
-  border-radius: 10px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
 .nav-item:hover .nav-icon {
-  transform: translateY(-2px) scale(1.1);
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
-}
-
-.nav-item:hover .nav-icon::before {
-  opacity: 1;
+  transform: scale(1.1);
 }
 
 .nav-item.active .nav-icon {
-  background: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
-}
-
-.nav-item.active .nav-icon::before {
-  opacity: 0;
 }
 
 .sidebar-collapsed .nav-icon {
   width: auto;
   height: auto;
-  background: transparent;
 }
 
 .nav-name {
@@ -476,12 +446,12 @@ const handleClose = () => {
 
 .nav-count {
   font-size: 0.75rem;
-  padding: 0.375rem 0.75rem;
-  background: var(--color-bg);
-  border-radius: 20px;
-  color: var(--color-secondary);
+  padding: 0.25rem 0.625rem;
+  background: rgba(14, 165, 233, 0.1);
+  border-radius: 12px;
+  color: var(--color-primary);
   flex-shrink: 0;
-  min-width: 32px;
+  min-width: 28px;
   text-align: center;
   font-weight: 600;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -491,20 +461,17 @@ const handleClose = () => {
   justify-content: center;
   position: relative;
   z-index: 1;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-right: 0.5rem;
 }
 
 .nav-item:hover .nav-count {
-  background: var(--color-primary);
-  color: white;
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+  background: rgba(14, 165, 233, 0.15);
+  color: var(--color-primary);
 }
 
 .nav-item.active .nav-count {
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: rgba(14, 165, 233, 0.2);
+  color: var(--color-primary);
 }
 
 /* Footer Section */
@@ -546,15 +513,6 @@ const handleClose = () => {
   gap: 0 !important;
 }
 
-.admin-link::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, transparent 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
 .admin-link::after {
   content: '';
   position: absolute;
@@ -568,24 +526,18 @@ const handleClose = () => {
   border-radius: 0 4px 4px 0;
 }
 
-.admin-link:hover::before {
-  opacity: 1;
-}
-
 .admin-link:hover::after {
   transform: scaleY(1);
 }
 
 .admin-link:hover {
-  background: var(--color-bg);
-  color: var(--color-text);
-  transform: translateX(4px);
-  border-color: var(--color-border);
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+  background: rgba(14, 165, 233, 0.08);
+  color: var(--color-primary);
+  border-color: transparent;
 }
 
 .admin-link:active {
-  transform: translateX(4px) scale(0.98);
+  transform: scale(0.98);
 }
 
 /* Responsive */
@@ -614,8 +566,8 @@ const handleClose = () => {
   }
 
   .nav-icon {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
   }
 }
 
