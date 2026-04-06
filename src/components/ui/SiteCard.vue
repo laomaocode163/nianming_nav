@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useDataStore } from '../../stores/data'
 import { getDefaultIcon } from '../../utils/constants'
 
@@ -16,74 +16,20 @@ const siteIcon = computed(() => {
   return dataStore.getLinkIcon(props.site)
 })
 
-const isSelected = ref(false)
-
-watch(
-  () => dataStore.selectedLinks,
-  (newSelectedLinks) => {
-    isSelected.value = newSelectedLinks.includes(props.site.id)
-  },
-  { deep: true, immediate: true }
-)
-
 const onIconError = (event) => {
   const img = event.target
   img.src = getDefaultIcon()
   img.onerror = null
 }
-
-const handleCheckboxChange = (value) => {
-  dataStore.toggleLinkSelection(props.site.id)
-}
-
-const handleCheckboxClick = (event) => {
-  event.stopPropagation()
-}
-
-const handleClick = (event) => {
-  if (dataStore.batchEditMode) {
-    event.preventDefault()
-    event.stopPropagation()
-    dataStore.toggleLinkSelection(props.site.id)
-  } else if (dataStore.sortMode) {
-    event.preventDefault()
-    event.stopPropagation()
-  }
-}
 </script>
 
 <template>
   <a
-    :href="dataStore.sortMode || dataStore.batchEditMode ? '#' : site.url"
-    :target="dataStore.sortMode || dataStore.batchEditMode ? '_self' : '_blank'"
+    :href="site.url"
+    target="_blank"
     rel="noopener noreferrer"
     class="site-card"
-    :class="{
-      'selected': isSelected,
-      'sort-mode': dataStore.sortMode,
-      'batch-mode': dataStore.batchEditMode
-    }"
-    @click="handleClick"
   >
-    <div v-if="dataStore.sortMode" class="drag-handle">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="9" cy="6" r="1.5" fill="currentColor"/>
-        <circle cx="9" cy="12" r="1.5" fill="currentColor"/>
-        <circle cx="9" cy="18" r="1.5" fill="currentColor"/>
-        <circle cx="15" cy="6" r="1.5" fill="currentColor"/>
-        <circle cx="15" cy="12" r="1.5" fill="currentColor"/>
-        <circle cx="15" cy="18" r="1.5" fill="currentColor"/>
-      </svg>
-    </div>
-
-    <div v-if="dataStore.batchEditMode" class="select-checkbox">
-      <el-checkbox
-        v-model="isSelected"
-        @change="handleCheckboxChange"
-        @click.stop="handleCheckboxClick"
-      />
-    </div>
-
     <div class="site-icon-wrapper">
       <img
         :src="siteIcon"
@@ -100,7 +46,7 @@ const handleClick = (event) => {
       <div v-if="!site.description" class="site-url">{{ site.url }}</div>
     </div>
 
-    <div v-if="site.pinned && !dataStore.sortMode" class="pinned-badge">📌</div>
+    <div v-if="site.pinned" class="pinned-badge">📌</div>
   </a>
 </template>
 
@@ -178,77 +124,7 @@ const handleClick = (event) => {
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-.site-card.sort-mode {
-  cursor: grab;
-  border: 2px solid var(--color-success);
-  background: rgba(16, 185, 129, 0.05);
-  padding-left: 0.75rem;
-}
 
-.site-card.sort-mode:hover {
-  border-color: #059669;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
-  background: rgba(16, 185, 129, 0.08);
-}
-
-.site-card.sort-mode:active {
-  cursor: grabbing;
-  transform: scale(0.98);
-}
-
-.site-card.batch-mode {
-  cursor: pointer;
-}
-
-.drag-handle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  margin-right: 0.25rem;
-  color: var(--color-success);
-  cursor: grab;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.drag-handle:hover {
-  background: rgba(16, 185, 129, 0.15);
-}
-
-.drag-handle:active {
-  cursor: grabbing;
-}
-
-.drag-handle svg {
-  opacity: 0.7;
-}
-
-:global(.sortable-drag) {
-  opacity: 0.95;
-  transform: scale(1.03) rotate(1deg) !important;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  background: var(--color-card);
-  border: 2px solid var(--color-success);
-  border-radius: 12px;
-}
-
-:global(.sortable-drag) .drag-handle {
-  cursor: grabbing;
-}
-
-:global(.sortable-ghost) {
-  opacity: 0.35;
-  background: rgba(16, 185, 129, 0.08);
-  border: 2px dashed var(--color-success);
-  border-radius: 12px;
-}
-
-:global(.sortable-ghost) * {
-  opacity: 0;
-}
 
 .site-icon-wrapper {
   width: 44px;
@@ -392,67 +268,7 @@ const handleClick = (event) => {
   }
 }
 
-.select-checkbox {
-  margin-right: 0.75rem;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.select-checkbox :deep(.el-checkbox) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.select-checkbox :deep(.el-checkbox__inner) {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  border: 2px solid var(--color-border);
-  background: linear-gradient(145deg, var(--color-bg), var(--color-card));
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.select-checkbox :deep(.el-checkbox__inner:hover) {
-  border-color: var(--color-primary);
-  background: linear-gradient(145deg, rgba(14, 165, 233, 0.1), rgba(139, 92, 246, 0.1));
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-}
-
-.select-checkbox :deep(.el-checkbox.is-checked .el-checkbox__inner) {
-  background: linear-gradient(135deg, var(--color-primary), #0d9488);
-  border-color: var(--color-primary);
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
-}
-
-.select-checkbox :deep(.el-checkbox__inner::after) {
-  width: 6px;
-  height: 11px;
-  left: 7px;
-  top: 4px;
-  border-width: 0 2px 2px 0;
-  border-color: white;
-  border-style: solid;
-  transform: rotate(45deg);
-  transition: all 0.2s ease;
-}
-
-.select-checkbox :deep(.el-checkbox__inner:hover::after) {
-  border-color: var(--color-primary);
-}
-
-.select-checkbox :deep(.el-checkbox.is-checked .el-checkbox__inner::after) {
-  border-color: white;
-}
-
-.site-card.selected {
-  border-color: var(--color-primary);
-  background: rgba(14, 165, 233, 0.08);
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
-}
 
 /* 平板适配 */
 @media (max-width: 768px) {
@@ -461,10 +277,6 @@ const handleClick = (event) => {
     gap: 0.875rem;
     border-radius: 16px;
     min-height: 72px;
-  }
-
-  .site-card.sort-mode {
-    padding-left: 0.5rem;
   }
 
   .site-card:hover {
@@ -495,52 +307,6 @@ const handleClick = (event) => {
     font-size: 0.75rem;
   }
 
-  .drag-handle {
-    padding: 0.375rem;
-  }
-
-  .drag-handle svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  .select-checkbox {
-    margin-right: 0.5rem;
-  }
-
-  .select-checkbox :deep(.el-checkbox__inner) {
-    width: 20px;
-    height: 20px;
-    border-radius: 5px;
-    border: 2px solid var(--color-border);
-    background: linear-gradient(145deg, var(--color-bg), var(--color-card));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  }
-
-  .select-checkbox :deep(.el-checkbox__inner:hover) {
-    border-color: var(--color-primary);
-    background: linear-gradient(145deg, rgba(14, 165, 233, 0.1), rgba(139, 92, 246, 0.1));
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-  }
-
-  .select-checkbox :deep(.el-checkbox.is-checked .el-checkbox__inner) {
-    background: linear-gradient(135deg, var(--color-primary), #0d9488);
-    border-color: var(--color-primary);
-    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
-  }
-
-  .select-checkbox :deep(.el-checkbox__inner::after) {
-  width: 5px;
-  height: 9px;
-  left: 6px;
-  top: 3px;
-  border-width: 0 2px 2px 0;
-  border-color: white;
-  border-style: solid;
-  transform: rotate(45deg);
-}
-
   .pinned-badge {
     top: 0.75rem;
     right: 0.75rem;
@@ -555,10 +321,6 @@ const handleClick = (event) => {
     gap: 0.75rem;
     border-radius: 14px;
     min-height: 64px;
-  }
-
-  .site-card.sort-mode {
-    padding-left: 0.375rem;
   }
 
   .site-card:hover {
@@ -588,53 +350,6 @@ const handleClick = (event) => {
   .site-url {
     font-size: 0.6875rem;
   }
-
-  .drag-handle {
-    padding: 0.25rem;
-    margin-right: 0.125rem;
-  }
-
-  .drag-handle svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .select-checkbox {
-    margin-right: 0.375rem;
-  }
-
-  .select-checkbox :deep(.el-checkbox__inner) {
-    width: 18px;
-    height: 18px;
-    border-radius: 4px;
-    border: 2px solid var(--color-border);
-    background: linear-gradient(145deg, var(--color-bg), var(--color-card));
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  }
-
-  .select-checkbox :deep(.el-checkbox__inner:hover) {
-    border-color: var(--color-primary);
-    background: linear-gradient(145deg, rgba(14, 165, 233, 0.1), rgba(139, 92, 246, 0.1));
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-  }
-
-  .select-checkbox :deep(.el-checkbox.is-checked .el-checkbox__inner) {
-    background: linear-gradient(135deg, var(--color-primary), #0d9488);
-    border-color: var(--color-primary);
-    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
-  }
-
-  .select-checkbox :deep(.el-checkbox__inner::after) {
-  width: 4px;
-  height: 7px;
-  left: 5px;
-  top: 2px;
-  border-width: 0 2px 2px 0;
-  border-color: white;
-  border-style: solid;
-  transform: rotate(45deg);
-}
 
   .pinned-badge {
     top: 0.5rem;

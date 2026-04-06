@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, ArrowDown } from '@element-plus/icons-vue'
 import { useDataStore } from '../stores/data'
 import { useThemeStore } from '../stores/theme'
@@ -8,7 +7,6 @@ import { useResponsive } from '../hooks/useResponsive'
 import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
 import SiteCard from '../components/ui/SiteCard.vue'
-import { VueDraggable } from 'vue-draggable-plus'
 
 const dataStore = useDataStore()
 const themeStore = useThemeStore()
@@ -19,8 +17,6 @@ const selectedCategoryId = ref('all')
 const sidebarOpen = ref(true)
 const sidebarCollapsed = ref(false)
 const searchInputRef = ref(null)
-const selectedMoveCategory = ref('')
-const batchLoading = ref(false)
 
 const toggleSidebarCollapse = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
@@ -44,13 +40,8 @@ const selectedEngine = computed(() => {
 
 const categories = computed(() => dataStore.visibleCategories)
 
-const sortableLinks = computed({
-  get: () => {
-    return dataStore.getLinksByCategory(selectedCategoryId.value)
-  },
-  set: (newList) => {
-    updateLinksOrder(newList)
-  }
+const links = computed(() => {
+  return dataStore.getLinksByCategory(selectedCategoryId.value)
 })
 
 const pageTitle = computed(() => {
@@ -92,105 +83,6 @@ const handleKeydown = (event) => {
     event.preventDefault()
     focusSearchInput()
   }
-  if (dataStore.batchEditMode) {
-    if (event.key === 'Escape') {
-      dataStore.toggleBatchEditMode()
-    } else if ((event.metaKey || event.ctrlKey) && event.key === 'a') {
-      event.preventDefault()
-      dataStore.selectAllLinks(selectedCategoryId.value)
-    }
-  }
-  if (dataStore.sortMode && event.key === 'Escape') {
-    dataStore.toggleSortMode()
-  }
-}
-
-const handleBatchEditClick = () => {
-  if (dataStore.sortMode) {
-    ElMessage.info('已退出排序模式，进入批量编辑模式')
-  }
-  dataStore.toggleBatchEditMode()
-}
-
-const handleSortClick = () => {
-  if (dataStore.batchEditMode) {
-    ElMessage.info('已退出批量编辑模式，进入排序模式')
-  }
-  dataStore.toggleSortMode()
-}
-
-const handleSelectAll = () => {
-  dataStore.selectAllLinks(selectedCategoryId.value)
-  ElMessage.success(`已选择 ${dataStore.selectedLinks.length} 个网站`)
-}
-
-const handleDeselectAll = () => {
-  dataStore.deselectAllLinks()
-  ElMessage.info('已取消全选')
-}
-
-const handleBatchTogglePin = () => {
-  if (dataStore.selectedLinks.length === 0) {
-    ElMessage.warning('请先选择要操作的网站')
-    return
-  }
-  batchLoading.value = true
-  dataStore.batchTogglePin()
-  batchLoading.value = false
-  ElMessage.success('批量置顶操作完成')
-}
-
-const handleBatchDelete = async () => {
-  if (dataStore.selectedLinks.length === 0) {
-    ElMessage.warning('请先选择要删除的网站')
-    return
-  }
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除选中的 ${dataStore.selectedLinks.length} 个网站吗？`,
-      '确认删除',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    batchLoading.value = true
-    dataStore.batchDelete()
-    batchLoading.value = false
-    ElMessage.success('批量删除操作完成')
-  } catch {
-    // 用户取消
-  }
-}
-
-const handleBatchMove = (targetCategoryId) => {
-  if (!targetCategoryId) return
-  if (dataStore.selectedLinks.length === 0) {
-    ElMessage.warning('请先选择要移动的网站')
-    selectedMoveCategory.value = ''
-    return
-  }
-  batchLoading.value = true
-  dataStore.batchMove(targetCategoryId)
-  batchLoading.value = false
-  const categoryName = categories.value.find(c => c.id === targetCategoryId)?.name
-  ElMessage.success(`已移动 ${dataStore.selectedLinks.length} 个网站到 ${categoryName}`)
-  selectedMoveCategory.value = ''
-}
-
-const updateLinksOrder = (newList) => {
-  newList.forEach((link, index) => {
-    const originalLink = dataStore.links.find(l => l.id === link.id)
-    if (originalLink) {
-      originalLink.order = index
-    }
-  })
-  dataStore.saveData()
-}
-
-const onSortEnd = () => {
-  ElMessage.success('排序已更新')
 }
 
 onMounted(() => {
@@ -223,13 +115,11 @@ onUnmounted(() => {
       <!-- Header -->
       <MainHeader
         :title="pageTitle"
-        @batch-edit-click="handleBatchEditClick"
-        @sort-click="handleSortClick"
         @toggle-sidebar="toggleSidebar"
       />
 
       <!-- Search Section -->
-      <div class="search-section" v-if="!dataStore.batchEditMode && !dataStore.sortMode" :class="{ 'is-mobile': isMobile }">
+      <div class="search-section" :class="{ 'is-mobile': isMobile }">
         <div class="search-container">
           <div class="search-wrapper">
             <!-- Search Engine Selector -->
@@ -278,111 +168,25 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Batch Edit Toolbar -->
-      <div v-if="dataStore.batchEditMode" class="batch-edit-toolbar">
-        <div class="batch-edit-container">
-          <div class="batch-edit-left">
-            <el-button class="edit-btn" @click="handleSelectAll">
-              <span class="btn-icon">✓</span>
-              <span class="btn-text">全选</span>
-              <el-tag size="small" class="shortcut-tag">⌘A</el-tag>
-            </el-button>
-            <el-button class="edit-btn" @click="handleDeselectAll">
-              <span class="btn-icon">✕</span>
-              <span class="btn-text">取消全选</span>
-            </el-button>
-            <el-button class="edit-btn edit-btn--pin" @click="handleBatchTogglePin" :loading="batchLoading">
-              <span class="btn-icon">📌</span>
-              <span class="btn-text">置顶</span>
-            </el-button>
-            <el-button class="edit-btn edit-btn--delete" @click="handleBatchDelete" :loading="batchLoading">
-              <span class="btn-icon">🗑</span>
-              <span class="btn-text">删除</span>
-            </el-button>
-          </div>
-          <div class="batch-edit-center">
-            <el-select
-              v-model="selectedMoveCategory"
-              placeholder="移动到..."
-              @change="handleBatchMove"
-              class="move-select"
-              :disabled="batchLoading"
-            >
-              <template #prefix>
-                <span class="select-prefix">📁</span>
-              </template>
-              <el-option
-                v-for="category in categories"
-                :key="category.id"
-                :label="`${category.icon} ${category.name}`"
-                :value="category.id"
-              />
-            </el-select>
-          </div>
-          <div class="batch-edit-right">
-            <div class="batch-edit-info">
-              <span class="info-icon">📋</span>
-              <span class="info-text">已选择 <strong>{{ dataStore.selectedLinks.length }}</strong> 个网站</span>
-            </div>
-            <el-button class="edit-btn edit-btn--complete" @click="handleBatchEditClick">
-              <span class="btn-icon">✓</span>
-              <span class="btn-text">完成</span>
-              <el-tag size="small" class="shortcut-tag">Esc</el-tag>
-            </el-button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sort Mode Toolbar -->
-      <div v-if="dataStore.sortMode" class="sort-toolbar">
-        <div class="sort-container">
-          <div class="sort-info">
-            <el-tag type="success">排序模式：拖拽调整网站顺序</el-tag>
-          </div>
-          <el-button type="primary" @click="handleSortClick" class="complete-sort-btn">
-            完成排序 <el-tag size="small" type="info" class="shortcut-tag">Esc</el-tag>
-          </el-button>
-        </div>
-      </div>
-
       <!-- Sites Grid -->
       <div class="sites-section">
         <!-- Category Header -->
         <div v-if="selectedCategoryId !== 'all'" class="category-header">
           <span class="category-icon">{{ currentCategory?.icon || '🌐' }}</span>
           <h2 class="category-title">{{ currentCategory?.name || '未知分类' }}</h2>
-          <span class="site-count">{{ sortableLinks.length }} 个网站</span>
+          <span class="site-count">{{ links.length }} 个网站</span>
         </div>
 
-        <!-- 普通模式：不使用拖拽 -->
-        <div v-if="!dataStore.sortMode" class="sites-grid">
+        <!-- 网站列表 -->
+        <div class="sites-grid">
           <SiteCard
-            v-for="site in sortableLinks"
+            v-for="site in links"
             :key="site.id"
             :site="site"
           />
         </div>
 
-        <!-- 排序模式：使用 vue-draggable-plus -->
-        <VueDraggable
-          v-else
-          v-model="sortableLinks"
-          class="sites-grid"
-          :animation="200"
-          :delay="0"
-          :delay-on-touch-only="true"
-          ghost-class="sortable-ghost"
-          drag-class="sortable-drag"
-          @end="onSortEnd"
-        >
-          <SiteCard
-            v-for="site in sortableLinks"
-            :key="site.id"
-            :site="site"
-          />
-        </VueDraggable>
-
-        <el-empty v-if="sortableLinks.length === 0" description="暂无网站数据" />
+        <el-empty v-if="links.length === 0" description="暂无网站数据" />
       </div>
     </div>
 
@@ -678,374 +482,6 @@ onUnmounted(() => {
   z-index: 90;
 }
 
-/* Batch Edit Toolbar */
-.batch-edit-toolbar {
-  padding: 1rem 1.5rem;
-  background: var(--color-card);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.batch-edit-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0.75rem 1.25rem;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
-  border-radius: 16px;
-  border: 1px solid var(--color-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.batch-edit-container:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border-color: rgba(14, 165, 233, 0.3);
-}
-
-.batch-edit-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.batch-edit-center {
-  flex: 0 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.batch-edit-right {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: nowrap;
-}
-
-.edit-btn {
-  height: 36px !important;
-  padding: 0 1rem !important;
-  border-radius: 10px !important;
-  font-size: 0.875rem !important;
-  font-weight: 500 !important;
-  border: 1px solid var(--color-border) !important;
-  background: var(--color-bg) !important;
-  color: var(--color-text) !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-.edit-btn:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-  border-color: var(--color-primary) !important;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(139, 92, 246, 0.08)) !important;
-}
-
-.edit-btn:active {
-  transform: translateY(0) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
-}
-
-.edit-btn--pin:hover {
-  border-color: var(--color-success) !important;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.08)) !important;
-}
-
-.edit-btn--delete:hover {
-  border-color: var(--color-danger) !important;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(220, 38, 38, 0.08)) !important;
-}
-
-.edit-btn--complete:hover {
-  border-color: var(--color-warning) !important;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.08)) !important;
-}
-
-.btn-icon {
-  font-size: 1rem;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-text {
-  white-space: nowrap;
-}
-
-.edit-btn .shortcut-tag {
-  margin-left: 0.25rem;
-  font-size: 0.625rem !important;
-  border-radius: 4px !important;
-  padding: 0.125rem 0.375rem !important;
-  background: rgba(14, 165, 233, 0.1) !important;
-  color: var(--color-primary) !important;
-  border: none !important;
-  font-weight: 600 !important;
-}
-
-.move-select {
-  min-width: 140px;
-  height: 36px !important;
-}
-
-.move-select :deep(.el-select__wrapper) {
-  border-radius: 10px !important;
-  box-shadow: none !important;
-  padding: 0 0.75rem !important;
-  border: 1px solid var(--color-border) !important;
-  background: var(--color-bg) !important;
-  height: 36px !important;
-  font-size: 0.875rem !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.move-select :deep(.el-select__placeholder) {
-  font-size: 0.875rem !important;
-  color: var(--color-text) !important;
-}
-
-.move-select:hover :deep(.el-select__wrapper) {
-  border-color: var(--color-primary) !important;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(139, 92, 246, 0.05)) !important;
-}
-
-.move-select :deep(.el-select__options) {
-  border-radius: 12px !important;
-  border: 1px solid var(--color-border) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
-  background: var(--color-card) !important;
-  padding: 0.5rem !important;
-}
-
-.move-select :deep(.el-select__option) {
-  border-radius: 8px !important;
-  padding: 0.5rem 1rem !important;
-  font-size: 0.875rem !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.move-select :deep(.el-select__option:hover) {
-  background: rgba(14, 165, 233, 0.1) !important;
-}
-
-.move-select :deep(.el-select__option.is-selected) {
-  background: var(--gradient-primary) !important;
-  color: white !important;
-}
-
-.select-prefix {
-  font-size: 0.875rem;
-  margin-right: 0.25rem;
-}
-
-.batch-edit-info {
-  flex-shrink: 0;
-  padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08), rgba(139, 92, 246, 0.08));
-  border-radius: 10px;
-  border: 1px solid rgba(14, 165, 233, 0.2);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: var(--color-text);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.batch-edit-info:hover {
-  border-color: var(--color-primary);
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(139, 92, 246, 0.12));
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
-}
-
-.info-icon {
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.info-text {
-  font-weight: 500;
-}
-
-.info-text strong {
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .batch-edit-toolbar {
-    padding: 0.75rem 1rem;
-  }
-  
-  .batch-edit-container {
-    padding: 0.75rem;
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: stretch;
-  }
-  
-  .batch-edit-left,
-  .batch-edit-center,
-  .batch-edit-right {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .batch-edit-right {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .batch-edit-info {
-    width: 100%;
-    justify-content: center;
-    padding: 0.5rem 0.875rem;
-    font-size: 0.8125rem;
-  }
-  
-  .edit-btn {
-    height: 34px !important;
-    padding: 0 0.875rem !important;
-    font-size: 0.8125rem !important;
-  }
-  
-  .move-select {
-    min-width: 130px;
-  }
-  
-  .move-select :deep(.el-select__wrapper) {
-    height: 34px !important;
-    padding: 0 0.625rem !important;
-    font-size: 0.8125rem !important;
-  }
-  
-  .edit-btn .shortcut-tag {
-    font-size: 0.5625rem !important;
-    padding: 0.125rem 0.3125rem !important;
-  }
-}
-
-/* 小屏幕移动端适配 */
-@media (max-width: 480px) {
-  .batch-edit-toolbar {
-    padding: 0.5rem 0.75rem;
-  }
-  
-  .batch-edit-container {
-    padding: 0.625rem;
-  }
-  
-  .batch-edit-left {
-    gap: 0.375rem;
-  }
-  
-  .edit-btn {
-    height: 32px !important;
-    padding: 0 0.75rem !important;
-    font-size: 0.75rem !important;
-  }
-  
-  .move-select {
-    min-width: 110px;
-  }
-  
-  .move-select :deep(.el-select__wrapper) {
-    height: 32px !important;
-    padding: 0 0.5rem !important;
-    font-size: 0.75rem !important;
-  }
-  
-  .batch-edit-info {
-    padding: 0.45rem 0.75rem;
-    font-size: 0.75rem;
-  }
-  
-  .edit-btn .shortcut-tag {
-    font-size: 0.5rem !important;
-    padding: 0.0625rem 0.25rem !important;
-  }
-}
-
-/* Sort Toolbar */
-.sort-toolbar {
-  padding: 1rem 1.5rem;
-  background: var(--color-card);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.sort-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.sort-info {
-  font-size: 0.875rem;
-}
-
-.sort-container :deep(.el-button[type="primary"]) {
-  border-radius: 14px !important;
-  padding: 0.75rem 1.5rem !important;
-  height: auto !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  background: var(--gradient-primary) !important;
-  border: none !important;
-  position: relative;
-  overflow: hidden;
-  font-weight: 500 !important;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.sort-container :deep(.el-button[type="primary"])::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.sort-container :deep(.el-button[type="primary"]):hover {
-  transform: scale(1.08) translateY(-2px) !important;
-  box-shadow:
-    0 8px 20px rgba(14, 165, 233, 0.3),
-    0 4px 8px rgba(14, 165, 233, 0.2) !important;
-}
-
-.sort-container :deep(.el-button[type="primary"]):hover::before {
-  opacity: 1;
-}
-
-.sort-container :deep(.el-button[type="primary"]):active {
-  transform: scale(0.98) translateY(0) !important;
-}
-
-.sort-container :deep(.el-button[type="primary"] .shortcut-tag) {
-  margin-left: 0.25rem;
-  font-size: 0.625rem !important;
-  border-radius: 4px !important;
-  padding: 0.125rem 0.375rem !important;
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: white !important;
-  border: none !important;
-  font-weight: 600 !important;
-}
-
 /* 移动端适配 */
 @media (max-width: 768px) {
   .main-content {
@@ -1114,68 +550,6 @@ onUnmounted(() => {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-
-  .batch-edit-toolbar {
-    padding: 0.75rem 1rem;
-  }
-
-  .batch-edit-actions {
-    width: 100%;
-    gap: 0.5rem;
-  }
-
-  .batch-edit-actions :deep(.el-button) {
-    flex: 1;
-    min-width: 0;
-    padding: 0.625rem 0.875rem !important;
-    font-size: 0.875rem !important;
-  }
-
-  .batch-edit-actions :deep(.el-button .shortcut-tag) {
-    font-size: 0.625rem !important;
-    padding: 0.125rem 0.25rem !important;
-  }
-
-  .batch-edit-secondary {
-    width: 100%;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .batch-edit-secondary :deep(.el-button) {
-    width: 100%;
-    padding: 0.625rem 1rem !important;
-  }
-
-  .move-select {
-    width: 100%;
-    min-width: unset;
-  }
-
-  .batch-edit-info {
-    width: 100%;
-    text-align: center;
-    padding: 0.5rem;
-  }
-
-  .batch-edit-container {
-    padding: 0.5rem;
-    gap: 1rem;
-  }
-
-  .sort-toolbar {
-    padding: 0.75rem 1rem;
-  }
-
-  .sort-container {
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: stretch;
-  }
-
-  .sort-container :deep(.el-button) {
-    width: 100%;
-  }
 }
 
 /* 小屏幕手机适配 */
@@ -1201,23 +575,5 @@ onUnmounted(() => {
   .sites-grid {
     gap: 0.75rem;
   }
-}
-
-/* vue-draggable-plus 样式 */
-:deep(.sortable-ghost) {
-  opacity: 0.4;
-  background: rgba(16, 185, 129, 0.1);
-  border: 2px dashed var(--color-success);
-  border-radius: 12px;
-}
-
-:deep(.sortable-drag) {
-  opacity: 0.9;
-  transform: scale(1.05) rotate(2deg);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  background: var(--color-card);
-  border: 2px solid var(--color-success);
-  border-radius: 12px;
 }
 </style>

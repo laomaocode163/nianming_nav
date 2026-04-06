@@ -9,7 +9,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['batch-edit-click', 'sort-click', 'toggle-sidebar'])
+const emit = defineEmits(['toggle-sidebar'])
 
 const themeStore = useThemeStore()
 const { isMobile } = useResponsive()
@@ -34,22 +34,6 @@ const { isMobile } = useResponsive()
     </div>
 
     <div class="header-right">
-      <el-button
-        class="action-btn"
-        @click="emit('batch-edit-click')"
-        :title="'批量编辑'"
-        text
-      >
-        <span>📋</span>
-      </el-button>
-      <el-button
-        class="action-btn"
-        @click="emit('sort-click')"
-        :title="'排序'"
-        text
-      >
-        <span>🔄</span>
-      </el-button>
       <el-button
         class="theme-btn"
         @click="themeStore.toggleTheme"
@@ -141,7 +125,7 @@ const { isMobile } = useResponsive()
   background: var(--color-primary);
 }
 
-.action-btn, .theme-btn {
+.theme-btn {
   width: 48px;
   height: 48px;
   border: 2px solid var(--color-border);
@@ -157,7 +141,7 @@ const { isMobile } = useResponsive()
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.action-btn::before, .theme-btn::before {
+.theme-btn::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -165,12 +149,12 @@ const { isMobile } = useResponsive()
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
   transform: translate(-50%, -50%);
   transition: width 0.4s ease, height 0.4s ease;
 }
 
-.action-btn::after, .theme-btn::after {
+.theme-btn::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -179,77 +163,41 @@ const { isMobile } = useResponsive()
   transition: opacity 0.3s ease;
 }
 
-.action-btn:hover::before, .theme-btn:hover::before {
+.theme-btn:hover::before {
   width: 120%;
   height: 120%;
 }
 
-.action-btn:hover::after, .theme-btn:hover::after {
+.theme-btn:hover::after {
   opacity: 1;
 }
 
-.action-btn:hover, .theme-btn:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-3px) scale(1.08);
-  box-shadow:
-    0 8px 20px rgba(14, 165, 233, 0.2),
-    0 4px 8px rgba(14, 165, 233, 0.1);
-}
-
-.action-btn:active, .theme-btn:active {
-  transform: translateY(-1px) scale(0.96);
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
-}
-
-/* 批量编辑按钮特殊样式 */
-.action-btn:nth-child(1):hover {
-  border-color: var(--color-success);
-  box-shadow:
-    0 8px 20px rgba(16, 185, 129, 0.2),
-    0 4px 8px rgba(16, 185, 129, 0.1);
-}
-
-.action-btn:nth-child(1)::before {
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
-}
-
-/* 排序按钮特殊样式 */
-.action-btn:nth-child(2):hover {
-  border-color: var(--color-warning);
-  box-shadow:
-    0 8px 20px rgba(245, 158, 11, 0.2),
-    0 4px 8px rgba(245, 158, 11, 0.1);
-}
-
-.action-btn:nth-child(2)::before {
-  background: radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 70%);
-}
-
-/* 主题按钮特殊样式 */
 .theme-btn:hover {
   border-color: var(--color-secondary);
+  transform: translateY(-3px) scale(1.08);
   box-shadow:
     0 8px 20px rgba(139, 92, 246, 0.2),
     0 4px 8px rgba(139, 92, 246, 0.1);
 }
 
-.theme-btn::before {
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+.theme-btn:active {
+  transform: translateY(-1px) scale(0.96);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
 }
 
 /* 图标动画 */
-.action-btn span, .theme-btn span {
+.theme-btn span {
   display: inline-block;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 1;
 }
 
-.action-btn:hover span, .theme-btn:hover span {
+.theme-btn:hover span {
   transform: scale(1.15) rotate(5deg);
 }
 
-.action-btn:active span, .theme-btn:active span {
+.theme-btn:active span {
   transform: scale(0.95);
 }
 
@@ -262,7 +210,7 @@ const { isMobile } = useResponsive()
     font-size: 1.1rem;
   }
 
-  .action-btn, .theme-btn {
+  .theme-btn {
     width: 40px;
     height: 40px;
     font-size: 1.1rem;
@@ -295,7 +243,7 @@ const { isMobile } = useResponsive()
     gap: 0.5rem;
   }
 
-  .action-btn, .theme-btn {
+  .theme-btn {
     width: 36px;
     height: 36px;
     font-size: 1rem;

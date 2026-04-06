@@ -109,13 +109,7 @@ const handleClose = () => {
       </nav>
     </div>
 
-    <!-- Footer Section -->
-    <div class="sidebar-footer">
-      <router-link to="/admin" class="admin-link">
-        <span class="nav-icon">⚙️</span>
-        <span class="nav-name" v-show="!collapsed">管理后台</span>
-      </router-link>
-    </div>
+
   </aside>
 </template>
 
@@ -479,74 +473,7 @@ const handleClose = () => {
   color: var(--color-primary);
 }
 
-/* Footer Section */
-.sidebar-footer {
-  padding: 0.75rem;
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-}
 
-.sidebar-collapsed .sidebar-footer {
-  padding: 0.5rem;
-}
-
-.admin-link {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  font-size: 0.9375rem;
-  border-radius: 14px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-  justify-content: flex-start;
-  border: 1px solid transparent;
-  min-height: 48px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-collapsed .admin-link {
-  justify-content: center;
-  padding: 0.75rem;
-  gap: 0 !important;
-}
-
-.admin-link::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 4px;
-  background: linear-gradient(180deg, var(--color-primary), #38bdf8);
-  transform: scaleY(0);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 0 4px 4px 0;
-}
-
-.admin-link:hover::after {
-  transform: scaleY(1);
-}
-
-.admin-link:hover {
-  background: rgba(14, 165, 233, 0.08);
-  color: var(--color-primary);
-  border-color: transparent;
-  transform: translateX(4px);
-  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.15);
-}
-
-.admin-link:active {
-  transform: scale(0.98);
-}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -566,11 +493,6 @@ const handleClose = () => {
   .nav-item {
     min-height: 52px;
     padding: 0.875rem 1rem !important;
-  }
-
-  .admin-link {
-    min-height: 52px;
-    padding: 0.875rem 1rem;
   }
 
   .nav-icon {
