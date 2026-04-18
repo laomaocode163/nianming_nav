@@ -569,4 +569,49 @@ const handleClose = () => {
     font-size: 1.125rem;
   }
 }
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .nav-item:hover {
+    transform: none;
+    background: transparent !important;
+  }
+
+  .nav-item:active {
+    transform: scale(0.98);
+    background: hsl(var(--hue-primary), 20%, 94%) !important;
+  }
+
+  .dark .nav-item:active {
+    background: hsl(var(--hue-primary), 20%, 18%) !important;
+  }
+
+  .collapse-btn:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-close-btn:active {
+    transform: scale(0.95);
+  }
+}
+
+/* 改善滚动体验 */
+.sidebar-nav {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
 </style>

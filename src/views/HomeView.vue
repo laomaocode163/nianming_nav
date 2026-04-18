@@ -1,10 +1,13 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { Search, ArrowDown } from '@element-plus/icons-vue'
 import { useDataStore } from '../stores/data'
 import { useResponsive } from '../hooks/useResponsive.ts'
 import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
+import ScrollToTop from '../components/ui/ScrollToTop.vue'
+import EmptyState from '../components/ui/EmptyState.vue'
+import KeyboardHint from '../components/ui/KeyboardHint.vue'
 import { defineAsyncComponent } from 'vue'
 const SiteCard = defineAsyncComponent(() => import('../components/ui/SiteCard.vue'))
 
@@ -16,6 +19,8 @@ const selectedCategoryId = ref('all')
 const sidebarOpen = ref(true)
 const sidebarCollapsed = ref(false)
 const searchInputRef = ref(null)
+const isCycling = ref(false)
+const gridKey = ref(0) // 用于触发动画
 
 const toggleSidebarCollapse = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
@@ -64,8 +69,23 @@ const selectEngine = (engineId) => {
   dataStore.updateSearchConfig({ selectedSourceId: engineId })
 }
 
+const cycleEngine = (event) => {
+  // 如果点击的是下拉箭头，不切换搜索引擎
+  if (event.target.closest('.search-engine-dropdown')) {
+    return
+  }
+  
+  const currentIndex = searchEngines.value.findIndex(e => e.id === selectedEngine.value?.id)
+  const nextIndex = (currentIndex + 1) % searchEngines.value.length
+  isCycling.value = true
+  selectEngine(searchEngines.value[nextIndex].id)
+  setTimeout(() => { isCycling.value = false }, 300)
+}
+
 const selectCategory = (categoryId) => {
   selectedCategoryId.value = categoryId
+  // 触发动画
+  gridKey.value++
 }
 
 const focusSearchInput = () => {
@@ -82,7 +102,16 @@ const handleKeydown = (event) => {
     event.preventDefault()
     focusSearchInput()
   }
+  // ESC 键关闭移动端侧边栏
+  if (event.key === 'Escape' && isMobile.value && sidebarOpen.value) {
+    closeSidebar()
+  }
 }
+
+// 监听分类变化，触发动画
+watch(selectedCategoryId, () => {
+  gridKey.value++
+})
 
 onMounted(() => {
   // 初始化侧边栏状态
@@ -122,28 +151,36 @@ onUnmounted(() => {
         <div class="search-container">
           <div class="search-wrapper">
             <!-- Search Engine Selector -->
-            <el-dropdown
-              class="search-engine-dropdown"
-              trigger="click"
-            >
-              <div class="search-engine-selector">
-                <span class="engine-name">{{ selectedEngine?.name || 'Bing' }}</span>
-                <el-icon class="el-icon--right"><arrow-down /></el-icon>
-              </div>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item
-                    v-for="engine in searchEngines"
-                    :key="engine.id"
-                    :command="engine.id"
-                    :class="{ active: dataStore.searchConfig.selectedSourceId === engine.id }"
-                    @click="selectEngine(engine.id)"
-                  >
-                    {{ engine.name }}
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+            <div class="search-engine-selector" @click="cycleEngine" title="点击切换搜索引擎">
+              <img
+                v-if="selectedEngine?.icon"
+                :src="selectedEngine.icon"
+                :alt="selectedEngine.name"
+                class="engine-icon-img"
+                :class="{ switching: isCycling }"
+              />
+              <span class="engine-name">{{ selectedEngine?.name || 'Bing' }}</span>
+              <el-dropdown class="search-engine-dropdown" trigger="click" @command="selectEngine">
+                <el-icon class="dropdown-arrow"><arrow-down /></el-icon>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item
+                      v-for="engine in searchEngines"
+                      :key="engine.id"
+                      :command="engine.id"
+                    >
+                      <img
+                        v-if="engine.icon"
+                        :src="engine.icon"
+                        :alt="engine.name"
+                        class="dropdown-engine-icon"
+                      />
+                      {{ engine.name }}
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
 
             <!-- Search Input -->
             <el-input
@@ -170,24 +207,40 @@ onUnmounted(() => {
       <!-- Sites Grid -->
       <div class="sites-section">
         <!-- Category Header -->
-        <div v-if="selectedCategoryId !== 'all'" class="category-header">
-          <span class="category-icon">{{ currentCategory?.icon || '🌐' }}</span>
-          <h2 class="category-title">{{ currentCategory?.name || '未知分类' }}</h2>
-          <span class="site-count">{{ links.length }} 个网站</span>
-        </div>
+        <Transition name="category-fade" mode="out-in">
+          <div v-if="selectedCategoryId !== 'all'" :key="selectedCategoryId" class="category-header">
+            <span class="category-icon">{{ currentCategory?.icon || '🌐' }}</span>
+            <h2 class="category-title">{{ currentCategory?.name || '未知分类' }}</h2>
+            <span class="site-count">{{ links.length }} 个网站</span>
+          </div>
+        </Transition>
 
         <!-- 网站列表 -->
-        <div class="sites-grid">
-          <SiteCard
-            v-for="site in links"
-            :key="site.id"
-            :site="site"
-          />
-        </div>
+        <Transition name="grid-fade" mode="out-in">
+          <div :key="gridKey" class="sites-grid">
+            <SiteCard
+              v-for="(site, index) in links"
+              :key="site.id"
+              :site="site"
+              :style="{ animationDelay: `${index * 0.05}s` }"
+            />
+          </div>
+        </Transition>
 
-        <el-empty v-if="links.length === 0" description="暂无网站数据" />
+        <EmptyState
+          v-if="links.length === 0"
+          icon="📭"
+          title="暂无网站"
+          :description="selectedCategoryId === 'all' ? '还没有添加任何网站' : `该分类下暂无网站`"
+        />
       </div>
     </div>
+
+    <!-- Scroll to Top Button -->
+    <ScrollToTop />
+
+    <!-- Keyboard Shortcut Hint -->
+    <KeyboardHint />
 
     <!-- Mobile Overlay -->
     <div
@@ -324,8 +377,60 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-.search-input {
-  flex: 1;
+.engine-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 4px;
+  transition: transform var(--transition-fast);
+}
+
+.engine-icon-img.switching {
+  animation: iconSwitch 0.3s var(--ease-out-expo);
+}
+
+@keyframes iconSwitch {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(0.7) rotate(15deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.search-engine-selector.cycling .engine-name {
+  animation: nameFade 0.3s var(--ease-out-expo);
+}
+
+@keyframes nameFade {
+  0% { opacity: 1; transform: translateX(0); }
+  50% { opacity: 0; transform: translateX(-8px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.dropdown-arrow {
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.875rem;
+  padding: 2px;
+}
+
+.dropdown-arrow:hover {
+  color: var(--color-primary);
+  transform: scale(1.1);
+}
+
+.search-engine-dropdown :deep(.dropdown-engine-icon) {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  margin-right: 8px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+.search-engine-dropdown :deep(.el-dropdown-menu__item) {
+  display: flex;
+  align-items: center;
 }
 
 .search-input {
@@ -475,6 +580,59 @@ onUnmounted(() => {
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 90;
+  backdrop-filter: blur(4px);
+}
+
+/* Transition Animations */
+.category-fade-enter-active,
+.category-fade-leave-active {
+  transition: all var(--transition-normal);
+}
+
+.category-fade-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.category-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.grid-fade-enter-active,
+.grid-fade-leave-active {
+  transition: all var(--transition-normal);
+}
+
+.grid-fade-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.grid-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* Staggered animation for site cards */
+.sites-grid > * {
+  animation: cardFadeIn 0.4s var(--ease-out-expo) backwards;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
 }
 
 /* 移动端适配 */

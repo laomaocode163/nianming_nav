@@ -267,19 +267,61 @@ const onIconError = (event) => {
 @media (hover: none) and (pointer: coarse) {
   .site-card:hover {
     transform: none;
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .site-card:hover::before {
+    opacity: 0;
   }
 
   .site-card:hover .site-icon-wrapper {
     transform: none;
+    background: hsl(var(--hue-primary), 20%, 96%);
+  }
+
+  .dark .site-card:hover .site-icon-wrapper {
+    background: hsl(var(--hue-primary), 20%, 16%);
+  }
+
+  .site-card:hover .site-icon-wrapper .site-icon {
+    filter: none;
   }
 
   .site-card:hover .site-name {
-    transform: none;
+    color: var(--color-text);
+  }
+
+  .site-card:hover .site-desc {
+    color: var(--color-text-secondary);
+  }
+
+  .site-card:hover .site-url {
+    opacity: 0.8;
+    color: var(--color-text-secondary);
   }
 
   .site-card:active {
-    transform: scale(0.98);
-    background: rgba(14, 165, 233, 0.05);
+    transform: scale(0.97);
+    background: hsl(var(--hue-primary), 20%, 94%);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+  }
+
+  .dark .site-card:active {
+    background: hsl(var(--hue-primary), 20%, 14%);
+  }
+
+  .site-card:active .site-icon-wrapper {
+    transform: scale(0.95);
+  }
+}
+
+/* 增强移动端触摸反馈 */
+@media (max-width: 768px) {
+  .site-card {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 }
 </style>

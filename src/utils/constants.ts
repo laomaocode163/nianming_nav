@@ -101,10 +101,10 @@ export const INITIAL_LINKS: Link[] = [
 ]
 
 export const DEFAULT_SEARCH_SOURCES: SearchSource[] = [
-  { id: 'google', name: 'Google', url: 'https://www.google.com/search?q=', enabled: true },
-  { id: 'bing', name: 'Bing', url: 'https://www.bing.com/search?q=', enabled: true },
-  { id: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd=', enabled: true },
-  { id: 'github', name: 'GitHub', url: 'https://github.com/search?q=', enabled: true },
+  { id: 'google', name: 'Google', url: 'https://www.google.com/search?q=', enabled: true, icon: 'https://www.google.com/favicon.ico' },
+  { id: 'bing', name: 'Bing', url: 'https://www.bing.com/search?q=', enabled: true, icon: 'https://www.bing.com/favicon.ico' },
+  { id: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd=', enabled: true, icon: 'https://www.baidu.com/favicon.ico' },
+  { id: 'github', name: 'GitHub', url: 'https://github.com/search?q=', enabled: true, icon: 'https://github.com/favicon.ico' },
 ]
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
