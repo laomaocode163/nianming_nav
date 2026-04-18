@@ -235,35 +235,28 @@ onUnmounted(() => {
       <!-- Sites Grid -->
       <div class="sites-section">
         <!-- Category Header -->
-        <Transition name="category-fade" mode="out-in">
-          <div v-if="selectedCategoryId !== 'all'" :key="selectedCategoryId" class="category-header">
-            <span class="category-icon">{{ currentCategory?.icon || '🌐' }}</span>
-            <h2 class="category-title">{{ currentCategory?.name || '未知分类' }}</h2>
-            <span class="site-count">{{ links.length }} 个网站</span>
-          </div>
-        </Transition>
+        <div v-if="selectedCategoryId !== 'all'" class="category-header">
+          <span class="category-icon">{{ currentCategory?.icon || '🌐' }}</span>
+          <h2 class="category-title">{{ currentCategory?.name || '未知分类' }}</h2>
+          <span class="site-count">{{ links.length }} 个网站</span>
+        </div>
 
         <!-- 网站列表 -->
-        <Transition name="grid-fade" mode="out-in">
-          <div :key="gridKey" class="sites-grid">
-            <SiteCard
-              v-for="(site, index) in links"
-              :key="site.id"
-              :site="site"
-              :style="{ animationDelay: `${index * 0.05}s` }"
-            />
-          </div>
-        </Transition>
-
-        <Transition name="empty-fade" mode="out-in">
-          <EmptyState
-            v-if="links.length === 0"
-            :key="selectedCategoryId"
-            icon="📭"
-            title="暂无网站"
-            :description="selectedCategoryId === 'all' ? '还没有添加任何网站' : `该分类下暂无网站`"
+        <div v-if="links.length > 0" class="sites-grid">
+          <SiteCard
+            v-for="(site, index) in links"
+            :key="site.id"
+            :site="site"
+            :style="{ animationDelay: `${index * 0.05}s` }"
           />
-        </Transition>
+        </div>
+
+        <EmptyState
+          v-if="links.length === 0"
+          icon="📭"
+          title="暂无网站"
+          :description="selectedCategoryId === 'all' ? '还没有添加任何网站' : `该分类下暂无网站`"
+        />
       </div>
     </div>
 
