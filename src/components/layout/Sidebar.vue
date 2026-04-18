@@ -51,7 +51,7 @@ const handleClose = () => {
     <!-- Logo Section -->
     <div class="sidebar-logo-section">
       <div class="logo-content" :class="{ 'logo-collapsed': collapsed }">
-        <span v-show="!collapsed" class="logo-emoji">🐱</span>
+        <img src="/signature.png" alt="签名" class="logo-signature" />
         <h1 v-show="!collapsed" class="site-title">念铭导航</h1>
       </div>
       <div class="logo-actions">
@@ -186,7 +186,7 @@ const handleClose = () => {
 
 /* Logo Section */
 .sidebar-logo-section {
-  padding: var(--space-md) var(--space-sm);
+  padding: 1rem 0.875rem;
   border-bottom: 1px solid var(--color-border);
   background: linear-gradient(135deg, hsl(var(--hue-primary), 20%, 96%) 0%, transparent 100%);
   display: flex;
@@ -197,7 +197,7 @@ const handleClose = () => {
   flex-shrink: 0;
   position: relative;
   overflow: visible;
-  min-height: 60px;
+  min-height: 72px;
 }
 
 .sidebar-logo-section.sidebar-collapsed-header {
@@ -226,7 +226,7 @@ const handleClose = () => {
 .logo-content {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.75rem;
   animation: logoFadeIn 0.5s ease-out;
   overflow: hidden;
   justify-content: flex-start;
@@ -234,8 +234,29 @@ const handleClose = () => {
   min-width: 0;
 }
 
+.logo-signature {
+  height: 40px;
+  width: auto;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.site-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-text);
+  white-space: nowrap;
+  margin: 0;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .logo-content.logo-collapsed {
-  display: none;
+  justify-content: center;
+  width: 100%;
 }
 
 .logo-actions {
@@ -243,7 +264,14 @@ const handleClose = () => {
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
-  width: auto;
+  margin-left: auto;
+}
+
+.sidebar-collapsed .logo-actions {
+  position: relative;
+  right: auto;
+  width: 100%;
+  justify-content: center;
 }
 
 .collapse-btn {
@@ -262,6 +290,7 @@ const handleClose = () => {
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  margin: 0 auto;
 }
 
 .collapse-btn::before {
@@ -505,9 +534,11 @@ const handleClose = () => {
 }
 
 .sidebar-collapsed .nav-item {
-  justify-content: center;
-  padding: var(--space-sm) !important;
+  justify-content: center !important;
+  padding: var(--space-sm) 0.375rem !important;
   gap: 0 !important;
+  width: 100% !important;
+  margin: 0.25rem 0 !important;
 }
 
 .nav-item::before {
@@ -593,6 +624,10 @@ const handleClose = () => {
   position: relative;
   z-index: 1;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-collapsed .nav-icon {
+  margin: 0;
 }
 
 .nav-item:hover .nav-icon {
