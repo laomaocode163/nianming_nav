@@ -51,7 +51,7 @@ const handleClose = () => {
     <!-- Logo Section -->
     <div class="sidebar-logo-section">
       <div class="logo-content" :class="{ 'logo-collapsed': collapsed }">
-        <span class="logo-emoji">🐱</span>
+        <span v-show="!collapsed" class="logo-emoji">🐱</span>
         <h1 v-show="!collapsed" class="site-title">念铭导航</h1>
       </div>
       <div class="logo-actions">
@@ -81,7 +81,6 @@ const handleClose = () => {
 
     <!-- Navigation Section -->
     <div class="sidebar-nav-section">
-      <h2 class="nav-section-title">导航目录</h2>
       <nav class="sidebar-nav">
         <el-button
           class="nav-item"
@@ -159,25 +158,29 @@ const handleClose = () => {
   /* Enhanced mobile nav items */
   .nav-item {
     min-height: 50px;
-    padding: 0.75rem 1rem !important;
+    padding: 0.75rem 0.75rem !important;
     border-radius: 12px !important;
+    margin: 0 !important;
   }
   
   .nav-icon {
-    width: 34px;
-    height: 34px;
-    font-size: 1.2rem;
+    font-size: 1.375rem !important;
+    width: 36px !important;
+    height: 36px !important;
+    flex-shrink: 0;
   }
   
   .nav-name {
-    font-size: 0.9375rem;
-    font-weight: 600;
+    font-size: 1rem !important;
+    flex: 1;
+    font-weight: 500;
   }
   
   .nav-count {
+    font-size: 0.8125rem !important;
+    padding: 0.25rem 0.5rem !important;
     min-width: 28px;
-    padding: 0.25rem 0.625rem;
-    font-size: 0.75rem;
+    flex-shrink: 0;
   }
 }
 
@@ -193,7 +196,12 @@ const handleClose = () => {
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  min-height: 60px;
+}
+
+.sidebar-logo-section.sidebar-collapsed-header {
+  justify-content: center;
 }
 
 .sidebar-logo-section::before {
@@ -220,18 +228,22 @@ const handleClose = () => {
   align-items: center;
   gap: 0.625rem;
   animation: logoFadeIn 0.5s ease-out;
-  flex: 1;
   overflow: hidden;
+  justify-content: flex-start;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .logo-content.logo-collapsed {
-  justify-content: flex-start;
+  display: none;
 }
 
 .logo-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
+  width: auto;
 }
 
 .collapse-btn {
@@ -417,11 +429,11 @@ const handleClose = () => {
 
 .sidebar-nav {
   flex: 1;
-  padding: 0.375rem 0.5rem;
+  padding: 0.25rem 0.5rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.125rem;
   /* Smooth scrolling */
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
@@ -432,12 +444,13 @@ const handleClose = () => {
   display: flex !important;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-sm) !important;
+  padding: 0.625rem 0.75rem !important;
   color: var(--color-text-secondary) !important;
-  font-size: 0.875rem !important;
+  font-size: 0.9375rem !important;
   border-radius: var(--radius-lg) !important;
   text-align: left;
-  width: 100% !important;
+  width: calc(100% - 0.75rem) !important;
+  margin: 0.25rem auto !important;
   white-space: nowrap;
   background: transparent !important;
   border: 1px solid transparent !important;
@@ -446,10 +459,8 @@ const handleClose = () => {
   position: relative;
   overflow: hidden;
   justify-content: flex-start;
-  min-height: 42px;
+  min-height: 44px;
   cursor: pointer;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
   /* Add subtle entrance animation */
   animation: navItemFadeIn 0.4s ease-out backwards;
 }

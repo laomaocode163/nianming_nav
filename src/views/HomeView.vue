@@ -168,19 +168,18 @@ onUnmounted(() => {
         <div class="search-container">
           <div class="search-wrapper">
             <!-- Search Engine Selector -->
-            <div class="search-engine-selector" @click="cycleEngine" title="点击切换搜索引擎">
+            <div class="search-engine-selector">
               <!-- Favicon image with error fallback -->
               <div v-if="getEngineDisplayIcon(selectedEngine)" class="engine-icon-wrapper">
                 <img
                   :src="getEngineDisplayIcon(selectedEngine)"
                   :alt="selectedEngine.name"
                   class="engine-icon-img"
-                  :class="{ switching: isCycling }"
                   @error="handleIconError(selectedEngine.id, getEngineDisplayIcon(selectedEngine))"
                 />
               </div>
               <!-- Fallback: show first letter when icon fails -->
-              <div v-else class="engine-icon-fallback" :class="{ switching: isCycling }">
+              <div v-else class="engine-icon-fallback">
                 {{ selectedEngine?.name?.charAt(0) || 'G' }}
               </div>
               <span class="engine-name">{{ selectedEngine?.name || 'Bing' }}</span>
@@ -215,7 +214,7 @@ onUnmounted(() => {
             <el-input
               ref="searchInputRef"
               v-model="searchQuery"
-              :placeholder="isMobile ? `在 ${selectedEngine?.name || '必应'} 搜索...` : `在 ${selectedEngine?.name || '必应'} 搜索... (点 logo 切换搜索引擎)`"
+              :placeholder="isMobile ? `在 ${selectedEngine?.name || '必应'} 搜索...` : `在 ${selectedEngine?.name || '必应'} 搜索...`"
               :size="isMobile ? 'default' : 'large'"
               clearable
               class="search-input"
@@ -269,7 +268,7 @@ onUnmounted(() => {
     <ScrollToTop />
 
     <!-- Keyboard Shortcut Hint -->
-    <KeyboardHint />
+    <!-- <KeyboardHint /> -->
 
     <!-- Mobile Overlay -->
     <div
