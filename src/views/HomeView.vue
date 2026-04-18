@@ -21,6 +21,18 @@ const sidebarCollapsed = ref(false)
 const searchInputRef = ref(null)
 const isCycling = ref(false)
 const gridKey = ref(0) // 用于触发动画
+const iconErrorMap = ref({}) // 记录加载失败的图标
+
+const handleIconError = (engineId) => {
+  iconErrorMap.value[engineId] = true
+}
+
+const getEngineDisplayIcon = (engine) => {
+  if (!engine?.icon || iconErrorMap.value[engine.id]) {
+    return null // 返回 null 显示首字母
+  }
+  return engine.icon
+}
 
 const toggleSidebarCollapse = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
@@ -152,13 +164,20 @@ onUnmounted(() => {
           <div class="search-wrapper">
             <!-- Search Engine Selector -->
             <div class="search-engine-selector" @click="cycleEngine" title="点击切换搜索引擎">
-              <img
-                v-if="selectedEngine?.icon"
-                :src="selectedEngine.icon"
-                :alt="selectedEngine.name"
-                class="engine-icon-img"
-                :class="{ switching: isCycling }"
-              />
+              <!-- Favicon image with error fallback -->
+              <div v-if="getEngineDisplayIcon(selectedEngine)" class="engine-icon-wrapper">
+                <img
+                  :src="getEngineDisplayIcon(selectedEngine)"
+                  :alt="selectedEngine.name"
+                  class="engine-icon-img"
+                  :class="{ switching: isCycling }"
+                  @error="handleIconError(selectedEngine.id)"
+                />
+              </div>
+              <!-- Fallback: show first letter when icon fails -->
+              <div v-else class="engine-icon-fallback" :class="{ switching: isCycling }">
+                {{ selectedEngine?.name?.charAt(0) || 'G' }}
+              </div>
               <span class="engine-name">{{ selectedEngine?.name || 'Bing' }}</span>
               <el-dropdown class="search-engine-dropdown" trigger="click" @command="selectEngine">
                 <el-icon class="dropdown-arrow"><arrow-down /></el-icon>
@@ -169,12 +188,17 @@ onUnmounted(() => {
                       :key="engine.id"
                       :command="engine.id"
                     >
-                      <img
-                        v-if="engine.icon"
-                        :src="engine.icon"
-                        :alt="engine.name"
-                        class="dropdown-engine-icon"
-                      />
+                      <div v-if="getEngineDisplayIcon(engine)" class="dropdown-engine-icon-wrapper">
+                        <img
+                          :src="getEngineDisplayIcon(engine)"
+                          :alt="engine.name"
+                          class="dropdown-engine-icon"
+                          @error="handleIconError(engine.id)"
+                        />
+                      </div>
+                      <div v-else class="dropdown-engine-fallback">
+                        {{ engine.name?.charAt(0) || '?' }}
+                      </div>
                       {{ engine.name }}
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -384,6 +408,56 @@ onUnmounted(() => {
   flex-shrink: 0;
   border-radius: 4px;
   transition: transform var(--transition-fast);
+}
+
+.engine-icon-wrapper {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.engine-icon-fallback {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--gradient-primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.dropdown-engine-icon-wrapper {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.dropdown-engine-fallback {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+  background: var(--gradient-primary);
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  border-radius: 4px;
+  text-transform: uppercase;
 }
 
 .engine-icon-img.switching {
