@@ -2,15 +2,14 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Search, ArrowDown } from '@element-plus/icons-vue'
 import { useDataStore } from '../stores/data'
-import { useThemeStore } from '../stores/theme'
-import { useResponsive } from '../hooks/useResponsive'
+import { useResponsive } from '../hooks/useResponsive.ts'
 import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
-import SiteCard from '../components/ui/SiteCard.vue'
+import { defineAsyncComponent } from 'vue'
+const SiteCard = defineAsyncComponent(() => import('../components/ui/SiteCard.vue'))
 
 const dataStore = useDataStore()
-const themeStore = useThemeStore()
-const { isMobile, isSmallMobile } = useResponsive()
+const { isMobile } = useResponsive()
 
 const searchQuery = ref('')
 const selectedCategoryId = ref('all')
@@ -157,7 +156,7 @@ onUnmounted(() => {
               @keyup.enter="handleSearch"
             >
               <template #suffix>
-                <el-button type="primary" @click="handleSearch" class="search-button">
+                <el-button type="primary" class="search-button" @click="handleSearch">
                   <el-icon><Search /></el-icon>
                 </el-button>
               </template>

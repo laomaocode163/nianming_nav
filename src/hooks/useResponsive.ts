@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, Ref, ComputedRef } from 'vue'
 
 /**
  * 响应式断点配置
@@ -15,17 +15,16 @@ const breakpoints = {
   lg: 1024,
   xl: 1280,
   '2xl': 1536
-}
+} as const
 
 /**
  * 检测是否为触摸设备
  * 通过检查 touch 事件支持和 max-touch-points 来判断
  * 这样可以区分触摸设备和纯鼠标设备
  */
-const isTouchDevice = () => {
+const isTouchDevice = (): boolean => {
   return 'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0 ||
-    navigator.msMaxTouchPoints > 0
+    navigator.maxTouchPoints > 0
 }
 
 /**
@@ -35,17 +34,17 @@ const isTouchDevice = () => {
  */
 export function useResponsive() {
   // 当前窗口宽度
-  const windowWidth = ref(window.innerWidth)
+  const windowWidth: Ref<number> = ref(window.innerWidth)
   // 当前窗口高度
-  const windowHeight = ref(window.innerHeight)
+  const windowHeight: Ref<number> = ref(window.innerHeight)
   // 是否为触摸设备
-  const isTouch = ref(false)
+  const isTouch: Ref<boolean> = ref(false)
 
   /**
    * 更新窗口尺寸状态
    * 在 resize 事件触发时调用
    */
-  const updateWindowSize = () => {
+  const updateWindowSize = (): void => {
     windowWidth.value = window.innerWidth
     windowHeight.value = window.innerHeight
   }
@@ -55,34 +54,34 @@ export function useResponsive() {
    * 这些属性基于当前窗口宽度动态计算
    */
   // 是否大于等于 sm 断点 (>= 640px)
-  const isSm = computed(() => windowWidth.value >= breakpoints.sm)
+  const isSm: ComputedRef<boolean> = computed(() => windowWidth.value >= breakpoints.sm)
   // 是否大于等于 md 断点 (>= 768px)
-  const isMd = computed(() => windowWidth.value >= breakpoints.md)
+  const isMd: ComputedRef<boolean> = computed(() => windowWidth.value >= breakpoints.md)
   // 是否大于等于 lg 断点 (>= 1024px)
-  const isLg = computed(() => windowWidth.value >= breakpoints.lg)
+  const isLg: ComputedRef<boolean> = computed(() => windowWidth.value >= breakpoints.lg)
   // 是否大于等于 xl 断点 (>= 1280px)
-  const isXl = computed(() => windowWidth.value >= breakpoints.xl)
+  const isXl: ComputedRef<boolean> = computed(() => windowWidth.value >= breakpoints.xl)
   // 是否大于等于 2xl 断点 (>= 1536px)
-  const is2xl = computed(() => windowWidth.value >= breakpoints['2xl'])
+  const is2xl: ComputedRef<boolean> = computed(() => windowWidth.value >= breakpoints['2xl'])
 
   /**
    * 设备类型判断
    * 基于断点组合判断当前设备类型
    */
   // 移动端：< 768px
-  const isMobile = computed(() => windowWidth.value < breakpoints.md)
+  const isMobile: ComputedRef<boolean> = computed(() => windowWidth.value < breakpoints.md)
   // 平板：768px - 1023px
-  const isTablet = computed(() => windowWidth.value >= breakpoints.md && windowWidth.value < breakpoints.lg)
+  const isTablet: ComputedRef<boolean> = computed(() => windowWidth.value >= breakpoints.md && windowWidth.value < breakpoints.lg)
   // 桌面端：>= 1024px
-  const isDesktop = computed(() => windowWidth.value >= breakpoints.lg)
+  const isDesktop: ComputedRef<boolean> = computed(() => windowWidth.value >= breakpoints.lg)
   // 小屏幕手机：< 640px
-  const isSmallMobile = computed(() => windowWidth.value < breakpoints.sm)
+  const isSmallMobile: ComputedRef<boolean> = computed(() => windowWidth.value < breakpoints.sm)
 
   /**
    * 屏幕方向判断
    */
-  const isLandscape = computed(() => windowWidth.value > windowHeight.value)
-  const isPortrait = computed(() => windowWidth.value <= windowHeight.value)
+  const isLandscape: ComputedRef<boolean> = computed(() => windowWidth.value > windowHeight.value)
+  const isPortrait: ComputedRef<boolean> = computed(() => windowWidth.value <= windowHeight.value)
 
   onMounted(() => {
     // 初始化触摸设备检测

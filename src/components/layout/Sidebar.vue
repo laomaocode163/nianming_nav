@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useDataStore } from '../../stores/data'
 import { useResponsive } from '../../hooks/useResponsive'
 
-const props = defineProps({
+defineProps({
   selectedCategory: {
     type: String,
     default: 'all'
@@ -52,16 +52,16 @@ const handleClose = () => {
     <div class="sidebar-logo-section">
       <div class="logo-content" :class="{ 'logo-collapsed': collapsed }">
         <span class="logo-emoji">🐱</span>
-        <h1 class="site-title" v-show="!collapsed">念铭导航</h1>
+        <h1 v-show="!collapsed" class="site-title">念铭导航</h1>
       </div>
       <div class="logo-actions">
         <!-- 移动端关闭按钮 -->
         <button
           v-if="isMobile"
           class="mobile-close-btn"
-          @click="handleClose"
           title="关闭菜单"
           aria-label="关闭菜单"
+          @click="handleClose"
         >
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
@@ -70,9 +70,9 @@ const handleClose = () => {
         <el-button
           v-else
           class="collapse-btn"
-          @click="emit('toggle-collapse')"
           text
           :title="collapsed ? '展开侧边栏' : '收起侧边栏'"
+          @click="emit('toggle-collapse')"
         >
           <span class="collapse-icon">{{ collapsed ? '→' : '←' }}</span>
         </el-button>
@@ -86,12 +86,12 @@ const handleClose = () => {
         <el-button
           class="nav-item"
           :class="{ active: selectedCategory === 'all' }"
-          @click="handleSelect('all')"
           text
+          @click="handleSelect('all')"
         >
           <span class="nav-icon">📋</span>
-          <span class="nav-name" v-show="!collapsed">全部</span>
-          <span class="nav-count" v-show="!collapsed">{{ allLinksCount }}</span>
+          <span v-show="!collapsed" class="nav-name">全部</span>
+          <span v-show="!collapsed" class="nav-count">{{ allLinksCount }}</span>
         </el-button>
 
         <el-button
@@ -99,12 +99,12 @@ const handleClose = () => {
           :key="category.id"
           class="nav-item"
           :class="{ active: selectedCategory === category.id }"
-          @click="handleSelect(category.id)"
           text
+          @click="handleSelect(category.id)"
         >
           <span class="nav-icon">{{ category.icon }}</span>
-          <span class="nav-name" v-show="!collapsed">{{ category.name }}</span>
-          <span class="nav-count" v-show="!collapsed">{{ getCategoryCount(category.id) }}</span>
+          <span v-show="!collapsed" class="nav-name">{{ category.name }}</span>
+          <span v-show="!collapsed" class="nav-count">{{ getCategoryCount(category.id) }}</span>
         </el-button>
       </nav>
     </div>

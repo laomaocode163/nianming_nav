@@ -6,17 +6,18 @@ import {
   DEFAULT_SITE_SETTINGS,
   DEFAULT_SEARCH_CONFIG,
   DEFAULT_ICON_PLACEHOLDER
-} from '../utils/constants'
-import { extractDomain } from '../utils/faviconService'
+} from '../utils/constants.ts'
+import { extractDomain } from '../utils/faviconService.ts'
+import type { Link, Category, SearchConfig, SiteSettings, IconMap } from '../types'
 
 const LOCAL_STORAGE_KEY = 'nianming_nav_data'
 
 export const useDataStore = defineStore('data', () => {
-  const links = ref([])
-  const categories = ref([])
-  const settings = ref({ ...DEFAULT_SITE_SETTINGS })
-  const searchConfig = ref({ ...DEFAULT_SEARCH_CONFIG })
-  const iconMap = ref({}) // 域名 -> 图标URL的映射表
+  const links = ref<Link[]>([])
+  const categories = ref<Category[]>([])
+  const settings = ref<SiteSettings>({ ...DEFAULT_SITE_SETTINGS })
+  const searchConfig = ref<SearchConfig>({ ...DEFAULT_SEARCH_CONFIG })
+  const iconMap = ref<IconMap>({}) // 域名 -> 图标URL的映射表
   const isLoaded = ref(false)
 
   const pinnedLinks = computed(() => {
@@ -26,7 +27,7 @@ export const useDataStore = defineStore('data', () => {
   })
 
   const getLinksByCategory = computed(() => {
-    return (categoryId) => {
+    return (categoryId: string) => {
       let filteredLinks
       if (categoryId === 'all') {
         filteredLinks = links.value.filter(link => !link.hidden)
@@ -46,10 +47,10 @@ export const useDataStore = defineStore('data', () => {
 
   /**
    * 获取网站的图标URL
-   * @param {Object} link - 网站对象
+   * @param {Link} link - 网站对象
    * @returns {string} 图标URL
    */
-  const getLinkIcon = (link) => {
+  const getLinkIcon = (link: Link): string => {
     if (!link || !link.url) return DEFAULT_ICON_PLACEHOLDER
     
     const domain = extractDomain(link.url)
@@ -66,15 +67,15 @@ export const useDataStore = defineStore('data', () => {
    * @param {string} domain - 域名
    * @returns {string} 图标URL
    */
-  const fetchIconForDomain = (domain) => {
+  const fetchIconForDomain = (domain: string): string => {
     return `https://www.faviconextractor.com/favicon/${domain}?larger=true`
   }
 
   /**
    * 同步网站图标（如果域名没有图标则自动获取）
-   * @param {Object} link - 网站对象
+   * @param {Link} link - 网站对象
    */
-  const syncLinkIcon = (link) => {
+  const syncLinkIcon = (link: Link): void => {
     if (!link || !link.url) return
     
     const domain = extractDomain(link.url)
@@ -87,7 +88,7 @@ export const useDataStore = defineStore('data', () => {
   /**
    * 清理未使用的图标
    */
-  const cleanupUnusedIcons = () => {
+  const cleanupUnusedIcons = (): void => {
     const usedDomains = new Set(
       links.value.map(link => extractDomain(link.url))
     )
@@ -106,7 +107,7 @@ export const useDataStore = defineStore('data', () => {
    * 数据迁移：从旧格式迁移到新格式
    * 将 link.icon 迁移到 iconMap
    */
-  const migrateIconData = () => {
+  const migrateIconData = (): void => {
     let hasMigration = false
     
     links.value.forEach(link => {
@@ -133,7 +134,7 @@ export const useDataStore = defineStore('data', () => {
 
   // ========== 数据加载与保存 ==========
 
-  const loadData = () => {
+  const loadData = (): void => {
     try {
       const stored = localStorage.getItem(LOCAL_STORAGE_KEY)
       if (stored) {
@@ -176,7 +177,7 @@ export const useDataStore = defineStore('data', () => {
     isLoaded.value = true
   }
 
-  const saveData = () => {
+  const saveData = (): void => {
     try {
       const data = {
         links: links.value,
@@ -193,7 +194,7 @@ export const useDataStore = defineStore('data', () => {
 
   // ========== 链接管理 ==========
 
-  const togglePin = (id) => {
+  const togglePin = (id: string): void => {
     const link = links.value.find(l => l.id === id)
     if (link) {
       link.pinned = !link.pinned
@@ -202,12 +203,12 @@ export const useDataStore = defineStore('data', () => {
     }
   }
 
-  const updateSettings = (newSettings) => {
+  const updateSettings = (newSettings: Partial<SiteSettings>): void => {
     settings.value = { ...settings.value, ...newSettings }
     saveData()
   }
 
-  const updateSearchConfig = (newConfig) => {
+  const updateSearchConfig = (newConfig: Partial<SearchConfig>): void => {
     searchConfig.value = { ...searchConfig.value, ...newConfig }
     saveData()
   }

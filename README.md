@@ -91,31 +91,75 @@ Pages 项目 → **Settings** → **Environment variables** 添加：
 5. 创建 KV 命名空间，更新 `wrangler.toml` 中的 KV ID
 6. 推送代码到 main 分支，GitHub Actions 自动部署
 
-## 项目结构
+## 项目架构
+
+### 核心架构
+
+- **前端框架**: Vue 3 + Composition API
+- **状态管理**: Pinia
+- **路由管理**: Vue Router
+- **样式方案**: Tailwind CSS v4
+- **构建工具**: Vite
+- **测试框架**: Vitest
+
+### 目录结构
 
 ```
-nianming_nav/
+ianming_nav/
 ├── src/
 │   ├── assets/          # 静态资源
 │   ├── components/      # 组件
 │   │   ├── admin/       # 管理后台组件
 │   │   ├── layout/      # 布局组件
 │   │   └── ui/          # UI 组件
+│   ├── hooks/           # 自定义钩子
 │   ├── stores/          # Pinia 状态管理
+│   ├── types/           # TypeScript 类型定义
 │   ├── views/           # 页面视图
 │   ├── utils/           # 工具函数
 │   ├── App.vue
-│   └── main.js
+│   └── main.ts
 ├── functions/           # Cloudflare Pages Functions
 │   └── api/
 │       └── sync.js      # 同步 API
-├── worker/              # Cloudflare Workers
-│   └── index.js
+├── tests/               # 单元测试
+│   ├── stores/          # Store 测试
+│   └── utils/           # 工具函数测试
 ├── .github/workflows/   # GitHub Actions
 ├── wrangler.toml        # Workers 配置
-├── vite.config.js       # Vite 配置
+├── vite.config.ts       # Vite 配置
 └── package.json
 ```
+
+### 核心模块
+
+1. **数据管理模块** (`src/stores/`)
+   - `data.ts`: 管理链接、分类、搜索配置等核心数据
+   - `theme.ts`: 管理主题相关配置
+
+2. **工具函数模块** (`src/utils/`)
+   - `faviconService.ts`: 处理网站图标加载和缓存
+   - `constants.ts`: 定义常量和默认值
+
+3. **组件模块** (`src/components/`)
+   - `layout/`: 布局组件，如侧边栏、头部
+   - `ui/`: 通用 UI 组件，如网站卡片
+   - `admin/`: 管理后台组件
+
+4. **页面模块** (`src/views/`)
+   - `HomeView.vue`: 主页面
+
+5. **自定义钩子** (`src/hooks/`)
+   - `useNotification.ts`: 通知相关功能
+   - `useResponsive.ts`: 响应式布局相关功能
+
+### 数据流程图
+
+1. **数据加载**：应用启动时从 localStorage 加载数据
+2. **数据存储**：数据变更时自动保存到 localStorage
+3. **数据同步**：可选的 Cloudflare KV 数据同步
+4. **状态管理**：使用 Pinia 管理全局状态
+5. **组件渲染**：基于状态渲染 UI 组件
 
 ## License
 

@@ -2,7 +2,7 @@
 import { useThemeStore } from '../../stores/theme'
 import { useResponsive } from '../../hooks/useResponsive'
 
-const props = defineProps({
+defineProps({
   title: {
     type: String,
     default: '全部网站'
@@ -22,9 +22,9 @@ const { isMobile } = useResponsive()
       <button
         v-if="isMobile"
         class="hamburger-btn"
-        @click="emit('toggle-sidebar')"
         title="打开菜单"
         aria-label="打开菜单"
+        @click="emit('toggle-sidebar')"
       >
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
@@ -36,9 +36,9 @@ const { isMobile } = useResponsive()
     <div class="header-right">
       <el-button
         class="theme-btn"
-        @click="themeStore.toggleTheme"
         :title="themeStore.isDark ? '切换到亮色模式' : '切换到暗色模式'"
         text
+        @click="themeStore.toggleTheme"
       >
         <span v-if="themeStore.isDark">☀️</span>
         <span v-else>🌙</span>

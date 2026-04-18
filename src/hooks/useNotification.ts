@@ -1,34 +1,31 @@
 import { ElMessage } from 'element-plus'
 
 export function useNotification() {
-  const success = (message, duration = 3000) => {
+  const success = (message: string, duration: number = 3000) => {
     return ElMessage.success({
       message,
-      duration,
-      center: true
+      duration
     })
   }
 
-  const error = (message, duration = 3000) => {
+  const error = (message: string, duration: number = 3000) => {
     return ElMessage.error({
       message,
-      duration,
-      center: true
+      duration
     })
   }
 
-  const info = (message, duration = 3000) => {
+  const info = (message: string, duration: number = 3000) => {
     return ElMessage.info({
       message,
-      duration,
-      center: true
+      duration
     })
   }
 
   // 保持兼容性，返回空数组
-  const notifications = []
-  const removeNotification = () => {}
-  const addNotification = () => {}
+  const notifications: never[] = []
+  const removeNotification = (): void => {}
+  const addNotification = (): void => {}
 
   return {
     notifications,
