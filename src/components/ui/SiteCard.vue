@@ -45,8 +45,6 @@ const onIconError = (event) => {
       <div v-if="site.description" class="site-desc">{{ site.description }}</div>
       <div v-if="!site.description" class="site-url">{{ site.url }}</div>
     </div>
-
-    <div v-if="site.pinned" class="pinned-badge">📌</div>
   </a>
 </template>
 
@@ -54,126 +52,87 @@ const onIconError = (event) => {
 .site-card {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(145deg, var(--color-card), var(--color-bg));
-  border: 2px solid var(--color-border);
-  border-radius: 16px;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   text-decoration: none;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
   user-select: none;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  min-height: 68px;
+  box-shadow: var(--shadow-sm);
+  min-height: 72px;
 }
 
 .site-card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, transparent 60%);
+  inset: 0;
+  background: linear-gradient(135deg, hsl(var(--hue-primary), 20%, 96%) 0%, transparent 100%);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity var(--transition-normal);
   pointer-events: none;
 }
 
-.site-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: left 0.6s ease;
-  pointer-events: none;
+.dark .site-card::before {
+  background: linear-gradient(135deg, hsl(var(--hue-primary), 20%, 14%) 0%, transparent 100%);
 }
 
 .site-card:hover::before {
   opacity: 1;
 }
 
-.site-card:hover::after {
-  left: 100%;
-}
-
 .site-card:hover {
   border-color: var(--color-primary);
-  transform: translateY(-6px) scale(1.02);
-  box-shadow:
-    0 16px 32px rgba(14, 165, 233, 0.2),
-    0 8px 16px rgba(14, 165, 233, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow), var(--shadow-lg);
 }
 
 .site-card:active {
   transform: translateY(-2px) scale(0.99);
-  box-shadow:
-    0 8px 16px rgba(14, 165, 233, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-md);
 }
 
 
 
 .site-icon-wrapper {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, var(--color-bg) 0%, rgba(14, 165, 233, 0.15) 100%);
-  border-radius: 12px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: hsl(var(--hue-primary), 20%, 96%);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
 }
 
-.site-icon-wrapper::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, transparent 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.dark .site-icon-wrapper {
+  background: hsl(var(--hue-primary), 20%, 16%);
 }
 
 .site-card:hover .site-icon-wrapper {
-  transform: scale(1.12) rotate(8deg);
-  box-shadow:
-    0 8px 24px rgba(14, 165, 233, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: scale(1.05) rotate(-5deg);
+  background: var(--color-primary);
+  box-shadow: var(--shadow-md);
 }
 
-.site-card:hover .site-icon-wrapper::before {
-  opacity: 1;
+.site-card:hover .site-icon-wrapper .site-icon {
+  filter: brightness(0) invert(1);
 }
 
 .site-icon {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-normal);
   position: relative;
   z-index: 1;
-}
-
-.site-card:hover .site-icon {
-  transform: scale(1.1);
 }
 
 .site-info {
@@ -192,29 +151,11 @@ const onIconError = (event) => {
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.4;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  display: inline-block;
-}
-
-.site-name::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: var(--gradient-primary);
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-fast);
 }
 
 .site-card:hover .site-name {
   color: var(--color-primary);
-  transform: translateX(6px);
-}
-
-.site-card:hover .site-name::after {
-  width: 100%;
 }
 
 .site-desc {
@@ -224,7 +165,7 @@ const onIconError = (event) => {
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.4;
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast);
 }
 
 .site-card:hover .site-desc {
@@ -238,37 +179,13 @@ const onIconError = (event) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast);
 }
 
 .site-card:hover .site-url {
   opacity: 1;
   color: var(--color-primary);
 }
-
-.pinned-badge {
-  position: absolute;
-  top: 0.625rem;
-  right: 0.625rem;
-  font-size: 1rem;
-  opacity: 0.9;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
-  animation: pulse 2s ease-in-out infinite;
-  z-index: 2;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
-  }
-  50% {
-    transform: scale(1.15);
-    filter: drop-shadow(0 4px 12px rgba(14, 165, 233, 0.3));
-  }
-}
-
-
 
 /* 平板适配 */
 @media (max-width: 768px) {
@@ -305,12 +222,6 @@ const onIconError = (event) => {
 
   .site-url {
     font-size: 0.75rem;
-  }
-
-  .pinned-badge {
-    top: 0.75rem;
-    right: 0.75rem;
-    font-size: 1rem;
   }
 }
 
@@ -349,12 +260,6 @@ const onIconError = (event) => {
 
   .site-url {
     font-size: 0.6875rem;
-  }
-
-  .pinned-badge {
-    top: 0.5rem;
-    right: 0.5rem;
-    font-size: 0.875rem;
   }
 }
 

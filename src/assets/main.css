@@ -1,9 +1,17 @@
 @import 'tailwindcss';
 
 :root {
-  /* 主色调 */
-  --color-primary: #0ea5e9;
-  --color-secondary: #8b5cf6;
+  /* 主色调 - HSL format for better manipulation */
+  --hue-primary: 200;
+  --sat-primary: 98%;
+  --lig-primary: 48%;
+  --color-primary: hsl(var(--hue-primary), var(--sat-primary), var(--lig-primary));
+  
+  --hue-secondary: 262;
+  --sat-secondary: 83%;
+  --lig-secondary: 75%;
+  --color-secondary: hsl(var(--hue-secondary), var(--sat-secondary), var(--lig-secondary));
+  
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
@@ -15,16 +23,41 @@
   --color-border: #e5e7eb;
   --color-card: #ffffff;
   
-  /* 阴影 */
+  /* 间距系统 */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* 圆角 */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-full: 9999px;
+  
+  /* 阴影 - 更加细腻和现代 */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-glow: 0 0 20px hsl(var(--hue-primary), var(--sat-primary), var(--lig-primary), 0.15);
+  --shadow-float: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
   
   /* 渐变 */
   --gradient-primary: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  --gradient-subtle: linear-gradient(180deg, var(--color-bg) 0%, hsl(var(--hue-primary), 20%, 98%) 100%);
   --gradient-success: linear-gradient(135deg, var(--color-success), #059669);
   --gradient-warning: linear-gradient(135deg, var(--color-warning), #d97706);
   --gradient-danger: linear-gradient(135deg, var(--color-danger), #dc2626);
+  
+  /* 动画曲线 */
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-in-out-quint: cubic-bezier(0.86, 0, 0.07, 1);
+  --transition-fast: 150ms var(--ease-out-expo);
+  --transition-normal: 300ms var(--ease-out-expo);
+  --transition-slow: 500ms var(--ease-out-expo);
   
   /* Element Plus 主题变量 */
   --el-color-primary: var(--color-primary);
@@ -37,6 +70,7 @@
   --el-text-color-secondary: var(--color-text-secondary);
   --el-border-color: var(--color-border);
   --el-card-bg-color: var(--color-card);
+  --el-border-radius-base: var(--radius-md);
 }
 
 .dark {
@@ -46,6 +80,12 @@
   --color-text-secondary: #94a3b8;
   --color-border: #334155;
   --color-card: #1e293b;
+  
+  /* 暗色模式阴影 */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.2);
+  --shadow-glow: 0 0 25px hsl(var(--hue-primary), var(--sat-primary), var(--lig-primary), 0.25);
   
   /* Element Plus 暗黑主题变量 */
   --el-color-primary: var(--color-primary);

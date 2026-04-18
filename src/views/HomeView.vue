@@ -226,7 +226,8 @@ onUnmounted(() => {
 .search-section {
   display: flex;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: var(--space-xl) var(--space-md);
+  margin-bottom: var(--space-lg);
 }
 
 .search-container {
@@ -234,7 +235,7 @@ onUnmounted(() => {
   max-width: 800px;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-md);
 }
 
 .search-wrapper {
@@ -242,39 +243,38 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 0;
-  background: linear-gradient(145deg, var(--color-card), var(--color-bg));
-  border: 2px solid var(--color-border);
-  border-radius: 18px;
-  padding: 0.5rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 0.375rem;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
 }
 
-.search-wrapper::before {
+.search-wrapper::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
+  inset: -2px;
+  border-radius: var(--radius-full);
+  padding: 2px;
+  background: var(--gradient-primary);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity var(--transition-normal);
+  pointer-events: none;
 }
 
-.search-wrapper:hover,
 .search-wrapper:focus-within {
-  border-color: var(--color-primary);
-  box-shadow:
-    0 8px 24px rgba(14, 165, 233, 0.2),
-    0 4px 12px rgba(14, 165, 233, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow), var(--shadow-lg);
 }
 
-.search-wrapper:hover::before,
-.search-wrapper:focus-within::before {
+.search-wrapper:focus-within::after {
   opacity: 1;
 }
 
@@ -285,42 +285,26 @@ onUnmounted(() => {
 .search-engine-selector {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
+  gap: var(--space-sm);
+  padding: 0.625rem 1rem;
   cursor: pointer;
-  border-radius: 14px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--color-text);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+  color: var(--color-text-secondary);
   font-size: 0.9375rem;
   font-weight: 600;
   position: relative;
-  background: linear-gradient(145deg, var(--color-bg), transparent);
-  border: 1px solid transparent;
-}
-
-.search-engine-selector::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, transparent 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  border-radius: 14px;
-}
-
-.search-engine-selector:hover::before {
-  opacity: 1;
+  background: transparent;
+  white-space: nowrap;
 }
 
 .search-engine-selector:hover {
-  background: var(--color-bg);
-  border-color: var(--color-border);
-  transform: scale(1.03);
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.1);
+  color: var(--color-primary);
+  background: hsl(var(--hue-primary), 20%, 96%);
 }
 
-.search-engine-selector:active {
-  transform: scale(0.98);
+.dark .search-engine-selector:hover {
+  background: hsl(var(--hue-primary), 20%, 16%);
 }
 
 .engine-name {
@@ -331,58 +315,46 @@ onUnmounted(() => {
   flex: 1;
 }
 
+.search-input {
+  flex: 1;
+}
+
 .search-input :deep(.el-input__wrapper) {
   box-shadow: none !important;
   padding: 0;
+  background: transparent !important;
 }
 
 .search-input :deep(.el-input__inner) {
   font-size: 1rem;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--color-text);
+}
+
+.search-input :deep(.el-input__inner)::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.7;
 }
 
 .search-button {
-  border-radius: 14px !important;
-  padding: 0.75rem 1.5rem !important;
-  height: auto !important;
-  margin: 0.25rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: var(--radius-full) !important;
+  width: 44px !important;
+  height: 44px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transition: all var(--transition-fast) !important;
   background: var(--gradient-primary) !important;
   border: none !important;
-  position: relative;
-  overflow: hidden;
-}
-
-.search-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .search-button:hover {
-  transform: scale(1.08) translateY(-2px);
-  box-shadow:
-    0 8px 20px rgba(14, 165, 233, 0.3),
-    0 4px 8px rgba(14, 165, 233, 0.2) !important;
-}
-
-.search-button:hover::before {
-  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md) !important;
 }
 
 .search-button:active {
-  transform: scale(0.98) translateY(0);
-}
-
-.search-button .el-icon {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.search-button:hover .el-icon {
-  transform: scale(1.2) rotate(-10deg);
+  transform: scale(0.95);
 }
 
 .theme-toggle-btn {
@@ -461,17 +433,28 @@ onUnmounted(() => {
 
 .sites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-md);
   max-width: 1400px;
   margin: 0 auto;
-  min-height: 100px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-bottom: var(--space-xl);
+  animation: fadeInUp 0.5s var(--ease-out-expo);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .main-content.sidebar-collapsed .sites-grid {
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-lg);
 }
 
 .sidebar-overlay {

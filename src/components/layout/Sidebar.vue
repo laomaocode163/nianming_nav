@@ -125,9 +125,10 @@ const handleClose = () => {
   left: 0;
   top: 0;
   z-index: 100;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+  transition: width var(--transition-normal), transform var(--transition-normal);
   overflow: hidden;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md);
+  will-change: width, transform;
 }
 
 .sidebar:not(.sidebar-open) {
@@ -138,16 +139,37 @@ const handleClose = () => {
   width: 72px;
 }
 
+/* 移动端侧边栏样式 */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 280px;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .sidebar:not(.sidebar-open) {
+    transform: translateX(-100%);
+  }
+
+  .sidebar-open {
+    transform: translateX(0);
+  }
+}
+
 /* Logo Section */
 .sidebar-logo-section {
-  padding: 1.5rem 1rem;
+  padding: var(--space-lg) var(--space-md);
   border-bottom: 1px solid var(--color-border);
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.05) 0%, transparent 100%);
+  background: linear-gradient(135deg, hsl(var(--hue-primary), 20%, 96%) 0%, transparent 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  gap: var(--space-sm);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.dark .sidebar-logo-section {
+  background: linear-gradient(135deg, hsl(var(--hue-primary), 20%, 14%) 0%, transparent 100%);
 }
 
 .logo-content {
@@ -173,28 +195,28 @@ const handleClose = () => {
   width: 32px !important;
   height: 32px !important;
   padding: 0 !important;
-  border-radius: 10px !important;
-  background: linear-gradient(145deg, var(--color-card), var(--color-bg)) !important;
-  border: 2px solid var(--color-border) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--color-bg) !important;
+  border: 1px solid var(--color-border) !important;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all var(--transition-fast) !important;
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
 }
 
 .collapse-btn:hover {
-  background: linear-gradient(135deg, var(--color-primary), #0d9488) !important;
-  border-color: transparent !important;
-  transform: scale(1.15) rotate(-5deg);
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
 }
 
 .collapse-btn:active {
   transform: scale(0.95);
-  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.2);
 }
 
 .collapse-btn:hover .collapse-icon {
@@ -329,18 +351,18 @@ const handleClose = () => {
 .nav-item {
   display: flex !important;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem !important;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md) !important;
   color: var(--color-text-secondary) !important;
   font-size: 0.9375rem !important;
-  border-radius: 14px !important;
+  border-radius: var(--radius-lg) !important;
   text-align: left;
   width: 100% !important;
   white-space: nowrap;
   background: transparent !important;
   border: 1px solid transparent !important;
   box-shadow: none !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-fast);
   position: relative;
   overflow: hidden;
   justify-content: flex-start;
@@ -352,7 +374,7 @@ const handleClose = () => {
 
 .sidebar-collapsed .nav-item {
   justify-content: center;
-  padding: 0.75rem !important;
+  padding: var(--space-sm) !important;
   gap: 0 !important;
 }
 
@@ -362,18 +384,22 @@ const handleClose = () => {
   left: 0;
   top: 0;
   height: 100%;
-  width: 4px;
-  background: linear-gradient(180deg, var(--color-primary), #38bdf8);
+  width: 3px;
+  background: var(--color-primary);
   transform: scaleY(0);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 0 4px 4px 0;
+  transition: transform var(--transition-fast);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .nav-item:hover {
-  background: rgba(14, 165, 233, 0.08) !important;
+  background: hsl(var(--hue-primary), 20%, 96%) !important;
   color: var(--color-primary) !important;
   border-color: transparent !important;
   transform: translateX(4px);
+}
+
+.dark .nav-item:hover {
+  background: hsl(var(--hue-primary), 20%, 16%) !important;
 }
 
 .sidebar-collapsed .nav-item:hover {
@@ -385,10 +411,14 @@ const handleClose = () => {
 }
 
 .nav-item.active {
-  background: rgba(14, 165, 233, 0.12) !important;
+  background: hsl(var(--hue-primary), 20%, 94%) !important;
   color: var(--color-primary) !important;
   border-color: transparent !important;
   font-weight: 600;
+}
+
+.dark .nav-item.active {
+  background: hsl(var(--hue-primary), 20%, 18%) !important;
 }
 
 .nav-item.active::before {
@@ -408,10 +438,10 @@ const handleClose = () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-fast);
   line-height: 1;
   background: transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   position: relative;
   z-index: 1;
 }

@@ -58,8 +58,8 @@ export const useDataStore = defineStore('data', () => {
     if (iconMap.value[domain]) {
       return iconMap.value[domain]
     }
-    // 返回默认图标
-    return DEFAULT_ICON_PLACEHOLDER
+    // 自动回退到域名图标获取
+    return fetchIconForDomain(domain)
   }
 
   /**
