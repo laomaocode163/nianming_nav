@@ -101,9 +101,9 @@ export const INITIAL_LINKS: Link[] = [
 ]
 
 export const DEFAULT_SEARCH_SOURCES: SearchSource[] = [
-  { id: 'bing', name: 'Bing', url: 'https://www.bing.com/search?q=', enabled: true, icon: 'https://www.google.com/s2/favicons?domain=bing.com&sz=64' },
-  { id: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd=', enabled: true, icon: 'https://www.google.com/s2/favicons?domain=baidu.com&sz=64' },
-  { id: 'github', name: 'GitHub', url: 'https://github.com/search?q=', enabled: true, icon: 'https://www.google.com/s2/favicons?domain=github.com&sz=64' },
+  { id: 'bing', name: 'Bing', url: 'https://www.bing.com/search?q=', enabled: true, icon: 'https://icon.horse/icon/www.bing.com' },
+  { id: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd=', enabled: true, icon: 'https://icon.horse/icon/www.baidu.com' },
+  { id: 'github', name: 'GitHub', url: 'https://github.com/search?q=', enabled: true, icon: 'https://icon.horse/icon/github.com' },
 ]
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {

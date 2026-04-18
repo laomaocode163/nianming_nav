@@ -144,7 +144,22 @@ export const useDataStore = defineStore('data', () => {
           ? parsed.categories
           : [...DEFAULT_CATEGORIES]
         settings.value = { ...DEFAULT_SITE_SETTINGS, ...parsed.settings }
-        searchConfig.value = { ...DEFAULT_SEARCH_CONFIG, ...parsed.searchConfig }
+        
+        // 搜索引擎配置特殊处理：始终使用最新的默认列表，只保留选中的ID
+        const oldSelectedId = parsed.searchConfig?.selectedSourceId || DEFAULT_SEARCH_CONFIG.selectedSourceId
+        searchConfig.value = {
+          ...DEFAULT_SEARCH_CONFIG,
+          selectedSourceId: oldSelectedId
+        }
+        
+        // 检查选中的搜索引擎是否仍然存在于最新的配置中
+        const isValidSelection = searchConfig.value.externalSources.some(
+          source => source.id === searchConfig.value.selectedSourceId
+        )
+        if (!isValidSelection && searchConfig.value.externalSources.length > 0) {
+          searchConfig.value.selectedSourceId = searchConfig.value.externalSources[0].id
+        }
+        
         iconMap.value = parsed.iconMap || {}
       } else {
         links.value = [...INITIAL_LINKS]
