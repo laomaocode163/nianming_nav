@@ -255,12 +255,15 @@ onUnmounted(() => {
           </div>
         </Transition>
 
-        <EmptyState
-          v-if="links.length === 0"
-          icon="📭"
-          title="暂无网站"
-          :description="selectedCategoryId === 'all' ? '还没有添加任何网站' : `该分类下暂无网站`"
-        />
+        <Transition name="empty-fade" mode="out-in">
+          <EmptyState
+            v-if="links.length === 0"
+            :key="selectedCategoryId"
+            icon="📭"
+            title="暂无网站"
+            :description="selectedCategoryId === 'all' ? '还没有添加任何网站' : `该分类下暂无网站`"
+          />
+        </Transition>
       </div>
     </div>
 
@@ -806,5 +809,53 @@ html {
   .sites-grid {
     gap: 0.75rem;
   }
+}
+
+/* Empty State Transitions */
+.empty-fade-enter-active,
+.empty-fade-leave-active {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.empty-fade-enter-from {
+  opacity: 0;
+  transform: translateY(15px) scale(0.98);
+}
+
+.empty-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+}
+
+/* Grid Transitions */
+.grid-fade-enter-active,
+.grid-fade-leave-active {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.grid-fade-enter-from {
+  opacity: 0;
+  transform: translateY(15px) scale(0.98);
+}
+
+.grid-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+}
+
+/* Category Header Transitions */
+.category-fade-enter-active,
+.category-fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.category-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
