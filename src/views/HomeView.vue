@@ -212,7 +212,8 @@ onUnmounted(() => {
   flex-direction: column;
   min-height: 100vh;
   background: var(--color-bg);
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: margin-left var(--transition-normal);
+  overflow: hidden;
 }
 
 .main-content.sidebar-collapsed {
@@ -221,6 +222,18 @@ onUnmounted(() => {
 
 .main-content.sidebar-closed {
   margin-left: 0;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+
+  .main-content.sidebar-collapsed,
+  .main-content.sidebar-closed {
+    margin-left: 0;
+  }
 }
 
 .search-section {

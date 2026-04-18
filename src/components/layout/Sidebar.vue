@@ -90,7 +90,7 @@ const handleClose = () => {
           @click="handleSelect('all')"
         >
           <span class="nav-icon">📋</span>
-          <span v-show="!collapsed" class="nav-name">全部</span>
+          <span v-show="!collapsed" class="nav-name">全部网站</span>
           <span v-show="!collapsed" class="nav-count">{{ allLinksCount }}</span>
         </el-button>
 
