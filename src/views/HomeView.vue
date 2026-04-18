@@ -21,15 +21,20 @@ const sidebarCollapsed = ref(false)
 const searchInputRef = ref(null)
 const isCycling = ref(false)
 const gridKey = ref(0) // 用于触发动画
-const iconErrorMap = ref({}) // 记录加载失败的图标
+const iconErrorMap = ref({}) // 记录加载失败的图标及其URL
 
-const handleIconError = (engineId) => {
-  iconErrorMap.value[engineId] = true
+const handleIconError = (engineId, iconUrl) => {
+  // 记录失败的URL
+  iconErrorMap.value[engineId] = iconUrl
 }
 
 const getEngineDisplayIcon = (engine) => {
-  if (!engine?.icon || iconErrorMap.value[engine.id]) {
+  if (!engine?.icon) {
     return null // 返回 null 显示首字母
+  }
+  // 如果当前URL加载失败过，则显示fallback
+  if (iconErrorMap.value[engine.id] === engine.icon) {
+    return null
   }
   return engine.icon
 }
@@ -171,7 +176,7 @@ onUnmounted(() => {
                   :alt="selectedEngine.name"
                   class="engine-icon-img"
                   :class="{ switching: isCycling }"
-                  @error="handleIconError(selectedEngine.id)"
+                  @error="handleIconError(selectedEngine.id, getEngineDisplayIcon(selectedEngine))"
                 />
               </div>
               <!-- Fallback: show first letter when icon fails -->
@@ -193,7 +198,7 @@ onUnmounted(() => {
                           :src="getEngineDisplayIcon(engine)"
                           :alt="engine.name"
                           class="dropdown-engine-icon"
-                          @error="handleIconError(engine.id)"
+                          @error="handleIconError(engine.id, getEngineDisplayIcon(engine))"
                         />
                       </div>
                       <div v-else class="dropdown-engine-fallback">
@@ -284,7 +289,7 @@ onUnmounted(() => {
 
 .main-content {
   flex: 1;
-  margin-left: 260px;
+  margin-left: 220px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -294,7 +299,7 @@ onUnmounted(() => {
 }
 
 .main-content.sidebar-collapsed {
-  margin-left: 72px;
+  margin-left: 64px;
 }
 
 .main-content.sidebar-closed {
