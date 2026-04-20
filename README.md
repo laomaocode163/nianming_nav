@@ -4,21 +4,24 @@
 
 ## 功能特性
 
-- 📁 **分类管理** - 支持创建、编辑、删除分类，自定义图标
-- 🔗 **网站管理** - 支持添加、编辑、删除网站，自动获取图标
-- 🔍 **多引擎搜索** - 支持 Google、Bing、百度、GitHub 等搜索引擎
-- 🌓 **主题切换** - 支持亮色/暗色模式，自动检测系统偏好
+- 📁 **分类管理** - 支持创建、编辑、删除分类，自定义图标和排序
+- 🔗 **网站管理** - 支持添加、编辑、删除网站，自动获取网站图标
+- � **网站置顶** - 支持将常用网站置顶显示，优先访问
+- � **多引擎搜索** - 支持 Bing、百度、GitHub 等搜索引擎快速切换
+- ⌨️ **键盘快捷键** - 支持 ⌘/Ctrl + K 快速聚焦搜索框
+- 🌓 **主题切换** - 支持亮色/暗色模式，主题按钮一键切换
 - 📱 **响应式设计** - 完美适配桌面端和移动端
-- ☁️ **云端同步** - 支持 Cloudflare KV 数据同步
-- 📤 **数据导入导出** - 支持 JSON 格式数据备份恢复
+- 🎨 **个性化设置** - 支持自定义站点名称、强调色、背景图片等
 
 ## 技术栈
 
-- **Vue 3** - 渐进式 JavaScript 框架
+- **Vue 3** - 渐进式 JavaScript 框架（Composition API）
 - **Vite** - 下一代前端构建工具
 - **Tailwind CSS v4** - 原子化 CSS 框架
+- **Element Plus** - Vue 3 UI 组件库
 - **Pinia** - Vue 状态管理
-- **Vue Router** - Vue.js 官方路由
+- **Vue Router** - Vue.js 官方路由（版本 5）
+- **Vitest** - 单元测试框架
 
 ## 本地开发
 
@@ -105,26 +108,23 @@ Pages 项目 → **Settings** → **Environment variables** 添加：
 ### 目录结构
 
 ```
-ianming_nav/
+nianming_nav/
 ├── src/
 │   ├── assets/          # 静态资源
 │   ├── components/      # 组件
-│   │   ├── admin/       # 管理后台组件
-│   │   ├── layout/      # 布局组件
-│   │   └── ui/          # UI 组件
-│   ├── hooks/           # 自定义钩子
-│   ├── stores/          # Pinia 状态管理
+│   │   ├── layout/      # 布局组件（Sidebar、MainHeader）
+│   │   └── ui/          # UI 组件（SiteCard、Dialog、Notification 等）
+│   ├── hooks/           # 自定义钩子（useNotification、useResponsive）
+│   ├── router/          # 路由配置
+│   ├── stores/          # Pinia 状态管理（data、theme）
 │   ├── types/           # TypeScript 类型定义
-│   ├── views/           # 页面视图
-│   ├── utils/           # 工具函数
+│   ├── utils/           # 工具函数（faviconService、constants）
+│   ├── views/           # 页面视图（HomeView）
 │   ├── App.vue
 │   └── main.ts
-├── functions/           # Cloudflare Pages Functions
-│   └── api/
-│       └── sync.js      # 同步 API
 ├── tests/               # 单元测试
 │   ├── stores/          # Store 测试
-│   └── utils/           # 工具函数测试
+│   └── utils/          # 工具函数测试
 ├── .github/workflows/   # GitHub Actions
 ├── wrangler.toml        # Workers 配置
 ├── vite.config.ts       # Vite 配置
@@ -134,32 +134,30 @@ ianming_nav/
 ### 核心模块
 
 1. **数据管理模块** (`src/stores/`)
-   - `data.ts`: 管理链接、分类、搜索配置等核心数据
-   - `theme.ts`: 管理主题相关配置
+   - `data.ts`: 管理链接、分类、搜索引擎配置、站点设置等核心数据，支持 localStorage 持久化
+   - `theme.ts`: 管理主题相关配置（亮色/暗色模式切换）
 
 2. **工具函数模块** (`src/utils/`)
-   - `faviconService.ts`: 处理网站图标加载和缓存
-   - `constants.ts`: 定义常量和默认值
+   - `faviconService.ts`: 处理网站图标加载、域名提取和缓存管理
+   - `constants.ts`: 定义常量、默认值和初始数据
 
 3. **组件模块** (`src/components/`)
-   - `layout/`: 布局组件，如侧边栏、头部
-   - `ui/`: 通用 UI 组件，如网站卡片
-   - `admin/`: 管理后台组件
+   - `layout/`: 布局组件（Sidebar 侧边栏、MainHeader 头部）
+   - `ui/`: 通用 UI 组件（SiteCard 网站卡片、Dialog 对话框、Notification 通知、EmptyState 空状态、Skeleton 骨架屏、ScrollToTop 滚动到顶、KeyboardHint 键盘提示）
 
 4. **页面模块** (`src/views/`)
-   - `HomeView.vue`: 主页面
+   - `HomeView.vue`: 主页面，整合搜索、分类筛选和网站展示
 
 5. **自定义钩子** (`src/hooks/`)
    - `useNotification.ts`: 通知相关功能
-   - `useResponsive.ts`: 响应式布局相关功能
+   - `useResponsive.ts`: 响应式布局检测（移动端/桌面端）
 
-### 数据流程图
+### 数据流程
 
-1. **数据加载**：应用启动时从 localStorage 加载数据
+1. **数据加载**：应用启动时从 localStorage 加载数据，初始化默认值
 2. **数据存储**：数据变更时自动保存到 localStorage
-3. **数据同步**：可选的 Cloudflare KV 数据同步
-4. **状态管理**：使用 Pinia 管理全局状态
-5. **组件渲染**：基于状态渲染 UI 组件
+3. **状态管理**：使用 Pinia 管理全局状态
+4. **组件渲染**：基于响应式状态渲染 UI 组件
 
 ## License
 
