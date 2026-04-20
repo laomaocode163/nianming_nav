@@ -1,0 +1,18 @@
+[
+  { "id": "1", "name": "GitHub", "url": "https://github.com", "categoryId": "common", "description": "代码托管平台", "pinned": true },
+  { "id": "2", "name": "ChatGPT", "url": "https://chat.openai.com", "categoryId": "common", "description": "OpenAI聊天机器人", "pinned": true },
+  { "id": "3", "name": "Claude", "url": "https://claude.ai", "categoryId": "common", "description": "Anthropic AI助手", "pinned": true },
+  { "id": "4", "name": "Vue.js", "url": "https://vuejs.org", "categoryId": "dev", "description": "渐进式JavaScript框架" },
+  { "id": "5", "name": "Vercel", "url": "https://vercel.com", "categoryId": "dev", "description": "前端部署与托管平台" },
+  { "id": "6", "name": "VS Code", "url": "https://code.visualstudio.com", "categoryId": "dev", "description": "微软开源代码编辑器" },
+  { "id": "7", "name": "Stack Overflow", "url": "https://stackoverflow.com", "categoryId": "dev", "description": "开发者问答社区" },
+  { "id": "8", "name": "MDN Web Docs", "url": "https://developer.mozilla.org", "categoryId": "dev", "description": "Web开发者文档" },
+  { "id": "9", "name": "Tailwind CSS", "url": "https://tailwindcss.com", "categoryId": "design", "description": "原子化CSS框架" },
+  { "id": "10", "name": "Figma", "url": "https://figma.com", "categoryId": "design", "description": "在线协作界面设计工具" },
+  { "id": "11", "name": "Dribbble", "url": "https://dribbble.com", "categoryId": "design", "description": "设计师作品分享社区" },
+  { "id": "12", "name": "Hacker News", "url": "https://news.ycombinator.com", "categoryId": "read", "description": "极客新闻聚合社区" },
+  { "id": "13", "name": "YouTube", "url": "https://youtube.com", "categoryId": "ent", "description": "全球最大的视频分享网站" },
+  { "id": "14", "name": "Netflix", "url": "https://www.netflix.com", "categoryId": "ent", "description": "流媒体影视平台" },
+  { "id": "15", "name": "Midjourney", "url": "https://www.midjourney.com", "categoryId": "ai", "description": "AI图像生成工具" },
+  { "id": "16", "name": "Gemini", "url": "https://gemini.google.com", "categoryId": "ai", "description": "Google AI助手" }
+]

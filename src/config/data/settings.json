@@ -1,0 +1,13 @@
+{
+  "title": "nianming_nav",
+  "navTitle": "念铭导航",
+  "favicon": "",
+  "cardStyle": "detailed",
+  "siteMode": "personal",
+  "accentColor": "14 165 233",
+  "grayScale": "slate",
+  "closeOnBackdrop": true,
+  "backgroundImage": "",
+  "backgroundImageEnabled": false,
+  "backgroundMotion": false
+}

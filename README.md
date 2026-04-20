@@ -4,14 +4,18 @@
 
 ## 功能特性
 
-- 📁 **分类管理** - 支持创建、编辑、删除分类，自定义图标和排序
+- 📁 **分类管理** - 支持按分类组织网站，每个分类显示网站数量统计
 - 🔗 **网站管理** - 支持添加、编辑、删除网站，自动获取网站图标
-- � **网站置顶** - 支持将常用网站置顶显示，优先访问
-- � **多引擎搜索** - 支持 Bing、百度、GitHub 等搜索引擎快速切换
-- ⌨️ **键盘快捷键** - 支持 ⌘/Ctrl + K 快速聚焦搜索框
-- 🌓 **主题切换** - 支持亮色/暗色模式，主题按钮一键切换
-- 📱 **响应式设计** - 完美适配桌面端和移动端
-- 🎨 **个性化设置** - 支持自定义站点名称、强调色、背景图片等
+- ⭐ **网站置顶** - 支持将常用网站置顶显示，优先访问
+- 🔍 **多引擎搜索** - 支持 Bing、百度、GitHub 等多个搜索引擎快速切换，搜索引擎图标自动加载
+- ⌨️ **键盘快捷键** - 支持 ⌘/Ctrl + K 快速聚焦搜索框，ESC 关闭移动端侧边栏
+- 🌓 **主题切换** - 支持亮色/暗色模式切换，自动记忆用户偏好
+- 📱 **响应式设计** - 完美适配桌面端和移动端，移动端侧边栏为抽屉式
+- 🎨 **个性化设置** - 支持自定义网站标题、强调色等个性化配置
+- 🔌 **图标智能管理** - 自动获取网站图标，图标加载失败时显示默认占位符
+- 💾 **本地数据持久化** - 所有数据自动保存到 localStorage
+- ✨ **流畅动画** - 分类切换动画、网站卡片入场动画、侧边栏展开动画等丰富动效
+- 🔄 **侧边栏折叠** - 桌面端支持侧边栏折叠/展开，适配不同屏幕空间需求
 
 ## 技术栈
 
@@ -26,10 +30,6 @@
 ## 本地开发
 
 ```bash
-# 克隆仓库
-git clone https://github.com/laomaocode163/nianming_nav.git
-cd nianming_nav
-
 # 安装依赖
 npm install
 
@@ -41,11 +41,17 @@ npm run build
 
 # 预览构建结果
 npm run preview
+
+# 运行测试
+npm run test
+
+# 代码检查
+npm run lint
 ```
 
 ## 部署
 
-### 方式一：Cloudflare Pages（推荐）
+### Cloudflare Pages（推荐）
 
 1. Fork 本仓库到你的 GitHub 账号
 2. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
@@ -56,54 +62,7 @@ npm run preview
    - **构建输出目录**: `dist`
 6. 点击 **Save and Deploy**
 
-#### 绑定 KV（必须）
-
-1. Cloudflare Dashboard → **Workers & Pages** → **KV** → **Create a namespace**
-2. 命名：`NAV_DB`
-3. 打开 Pages 项目 → **Settings** → **Functions** → **KV namespace bindings**
-4. 新增绑定：
-   - Variable name: `NAV_KV`
-   - KV namespace: 选择刚创建的 KV
-5. 保存后 **重新部署**
-
-#### 设置同步密码（可选）
-
-Pages 项目 → **Settings** → **Environment variables** 添加：
-
-- `SYNC_PASSWORD`: 你的同步密码
-
-### 方式二：Cloudflare Workers
-
-支持自定义域名 + 优选 IP，国内访问更快。
-
-#### 前置要求
-
-- GitHub 账号
-- Cloudflare 账号（免费）
-- 一个托管在 Cloudflare 的域名（可选）
-
-#### 步骤
-
-1. Fork 本仓库
-2. 创建 Cloudflare API Token（权限：Edit Cloudflare Workers）
-3. 获取 Cloudflare Account ID
-4. 在你 Fork 的仓库中配置 GitHub Secrets：
-   - `CLOUDFLARE_API_TOKEN`
-   - `CLOUDFLARE_ACCOUNT_ID`
-   - `SYNC_PASSWORD`（可选）
-5. 创建 KV 命名空间，更新 `wrangler.toml` 中的 KV ID
-6. 推送代码到 main 分支，GitHub Actions 自动部署
-
 ## 项目架构
-
-### 核心架构
-
-- **前端框架**: Vue 3 + Composition API
-- **状态管理**: Pinia
-- **路由管理**: Vue Router
-- **样式方案**: Tailwind CSS v4
-- **构建工具**: Vite
-- **测试框架**: Vitest
 
 ### 目录结构
 
@@ -123,10 +82,6 @@ nianming_nav/
 │   ├── App.vue
 │   └── main.ts
 ├── tests/               # 单元测试
-│   ├── stores/          # Store 测试
-│   └── utils/          # 工具函数测试
-├── .github/workflows/   # GitHub Actions
-├── wrangler.toml        # Workers 配置
 ├── vite.config.ts       # Vite 配置
 └── package.json
 ```
@@ -151,13 +106,6 @@ nianming_nav/
 5. **自定义钩子** (`src/hooks/`)
    - `useNotification.ts`: 通知相关功能
    - `useResponsive.ts`: 响应式布局检测（移动端/桌面端）
-
-### 数据流程
-
-1. **数据加载**：应用启动时从 localStorage 加载数据，初始化默认值
-2. **数据存储**：数据变更时自动保存到 localStorage
-3. **状态管理**：使用 Pinia 管理全局状态
-4. **组件渲染**：基于响应式状态渲染 UI 组件
 
 ## License
 

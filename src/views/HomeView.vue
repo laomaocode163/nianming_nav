@@ -7,7 +7,6 @@ import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
 import ScrollToTop from '../components/ui/ScrollToTop.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
-import KeyboardHint from '../components/ui/KeyboardHint.vue'
 import { defineAsyncComponent } from 'vue'
 const SiteCard = defineAsyncComponent(() => import('../components/ui/SiteCard.vue'))
 
@@ -19,7 +18,6 @@ const selectedCategoryId = ref('all')
 const sidebarOpen = ref(true)
 const sidebarCollapsed = ref(false)
 const searchInputRef = ref(null)
-const isCycling = ref(false)
 const gridKey = ref(0) // 用于触发动画
 const iconErrorMap = ref({}) // 记录加载失败的图标及其URL
 
@@ -84,19 +82,6 @@ const handleSearch = () => {
 
 const selectEngine = (engineId) => {
   dataStore.updateSearchConfig({ selectedSourceId: engineId })
-}
-
-const cycleEngine = (event) => {
-  // 如果点击的是下拉箭头，不切换搜索引擎
-  if (event.target.closest('.search-engine-dropdown')) {
-    return
-  }
-  
-  const currentIndex = searchEngines.value.findIndex(e => e.id === selectedEngine.value?.id)
-  const nextIndex = (currentIndex + 1) % searchEngines.value.length
-  isCycling.value = true
-  selectEngine(searchEngines.value[nextIndex].id)
-  setTimeout(() => { isCycling.value = false }, 300)
 }
 
 const selectCategory = (categoryId) => {
