@@ -230,7 +230,7 @@ onUnmounted(() => {
         <div v-if="links.length > 0" class="sites-grid">
           <SiteCard
             v-for="(site, index) in links"
-            :key="site.id"
+            :key="`${gridKey}-${site.id}`"
             :site="site"
             :style="{ animationDelay: `${index * 0.05}s` }"
           />
