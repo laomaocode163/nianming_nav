@@ -65,9 +65,9 @@ const links = computed(() => {
 })
 
 const pageTitle = computed(() => {
-  if (selectedCategoryId.value === 'all') return '全部分类'
+  if (selectedCategoryId.value === 'all') return '全部网站'
   const category = categories.value.find(c => c.id === selectedCategoryId.value)
-  return category?.name || '全部分类'
+  return category?.name || '全部网站'
 })
 
 const currentCategory = computed(() => {
@@ -273,7 +273,7 @@ onUnmounted(() => {
 
 .main-content {
   flex: 1;
-  margin-left: 220px;
+  margin-left: 240px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;

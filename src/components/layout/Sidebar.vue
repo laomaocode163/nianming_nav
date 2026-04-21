@@ -25,14 +25,6 @@ const { isMobile } = useResponsive()
 
 const categories = computed(() => dataStore.visibleCategories)
 
-const allLinksCount = computed(() => {
-  return dataStore.links.filter(l => !l.hidden).length
-})
-
-const getCategoryCount = (categoryId) => {
-  return dataStore.getLinksByCategory(categoryId).length
-}
-
 const handleSelect = (categoryId) => {
   emit('select', categoryId)
   // 移动端选择分类后自动关闭侧边栏
@@ -83,16 +75,25 @@ const handleClose = () => {
     <div class="sidebar-nav-section">
       <nav class="sidebar-nav">
         <el-button
+          class="nav-item"
+          :class="{ active: selectedCategory === 'all' }"
+          text
+          @click="handleSelect('all')"
+        >
+          <span class="nav-icon">✓</span>
+          <span v-show="!collapsed" class="nav-name">全部网站</span>
+        </el-button>
+
+        <el-button
           v-for="category in categories"
           :key="category.id"
           class="nav-item"
-          :class="{ active: selectedCategory === category.id || (selectedCategory === 'all' && category.id === 'common') }"
+          :class="{ active: selectedCategory === category.id }"
           text
-          @click="handleSelect(category.id === 'common' ? 'all' : category.id)"
+          @click="handleSelect(category.id)"
         >
           <span class="nav-icon">{{ category.icon }}</span>
           <span v-show="!collapsed" class="nav-name">{{ category.name }}</span>
-          <span v-show="!collapsed" class="nav-count">{{ category.id === 'common' ? allLinksCount : getCategoryCount(category.id) }}</span>
         </el-button>
       </nav>
     </div>
@@ -103,7 +104,7 @@ const handleClose = () => {
 
 <style scoped>
 .sidebar {
-  width: 220px;
+  width: 240px;
   height: 100vh;
   background: var(--color-card);
   border-right: 1px solid var(--color-border);
@@ -422,14 +423,14 @@ const handleClose = () => {
 .nav-item {
   display: flex !important;
   align-items: center;
-  gap: var(--space-sm);
-  padding: 0.5rem 0.75rem !important;
+  gap: var(--space-md);
+  padding: 0.75rem 1rem !important;
   color: var(--color-text-secondary) !important;
-  font-size: 0.9rem !important;
-  border-radius: 8px !important;
+  font-size: 1rem !important;
+  border-radius: 10px !important;
   text-align: left;
-  width: calc(100% - 0.75rem) !important;
-  margin: 0.125rem auto !important;
+  width: calc(100% - 1rem) !important;
+  margin: 0.25rem auto !important;
   white-space: nowrap;
   background: transparent !important;
   border: none !important;
@@ -438,7 +439,7 @@ const handleClose = () => {
   position: relative;
   overflow: hidden;
   justify-content: flex-start;
-  min-height: 40px;
+  min-height: 50px;
   cursor: pointer;
   font-weight: 500;
 }
@@ -479,9 +480,9 @@ const handleClose = () => {
 }
 
 .nav-icon {
-  font-size: 1rem;
-  width: 24px;
-  height: 24px;
+  font-size: 1.25rem;
+  width: 32px;
+  height: 32px;
   text-align: center;
   flex-shrink: 0;
   display: inline-flex;
@@ -523,8 +524,8 @@ const handleClose = () => {
 }
 
 .nav-count {
-  font-size: 0.7rem;
-  padding: 0.15rem 0.4rem;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
   background: hsl(var(--hue-primary), 10%, 94%);
   border-radius: 6px;
   color: var(--color-text-secondary);

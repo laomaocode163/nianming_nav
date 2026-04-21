@@ -1,9 +1,8 @@
 [
-  { "id": "common", "name": "全部分类", "icon": "✓" },
+  { "id": "common", "name": "常用推荐", "icon": "☆" },
   { "id": "dev", "name": "开发工具", "icon": "</>" },
-  { "id": "design", "name": "设计资源", "icon": "🎨" },
-  { "id": "ai", "name": "AI工具", "icon": "🤖" },
-  { "id": "ent", "name": "影音娱乐", "icon": "🎬" },
-  { "id": "read", "name": "学习成长", "icon": "📚" },
-  { "id": "tools", "name": "效率工具", "icon": "⚡" }
+  { "id": "design", "name": "设计资源", "icon": "🖌️" },
+  { "id": "read", "name": "阅读资讯", "icon": "📖" },
+  { "id": "ent", "name": "休闲娱乐", "icon": "🧩" },
+  { "id": "ai", "name": "人工智能", "icon": "⚙️" }
 ]
