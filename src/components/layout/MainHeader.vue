@@ -15,8 +15,6 @@ const themeStore = useThemeStore()
 const dataStore = useDataStore()
 const { isMobile } = useResponsive()
 
-const searchQuery = ref('')
-const searchMode = ref('external') // 'external' 或 'internal'
 const iconErrorMap = ref({}) // 记录加载失败的图标及其URL
 
 const searchEngines = computed(() => {
@@ -48,14 +46,14 @@ const selectEngine = (engineId) => {
 }
 
 const handleSearch = () => {
-  if (!searchQuery.value.trim()) return
+  if (!dataStore.searchQuery.trim()) return
   
-  if (searchMode.value === 'external') {
+  if (dataStore.searchMode === 'external') {
     // 外部搜索（搜索引擎）
     if (selectedEngine.value) {
-      window.open(selectedEngine.value.url + encodeURIComponent(searchQuery.value), '_blank')
+      window.open(selectedEngine.value.url + encodeURIComponent(dataStore.searchQuery), '_blank')
       // 清空搜索框内容
-      searchQuery.value = ''
+      dataStore.updateSearchQuery('')
     }
   } else {
     // 内部搜索（网站搜索）
@@ -88,29 +86,31 @@ const handleSearch = () => {
       
       <div class="search-wrapper">
         <!-- Search Mode Toggle -->
-        <div class="search-mode-toggle" @click="searchMode = searchMode === 'external' ? 'internal' : 'external'">
-          <span class="mode-icon">{{ searchMode === 'external' ? '🌐' : '🔍' }}</span>
-          <span class="mode-text">{{ searchMode === 'external' ? '搜索' : '站内' }}</span>
+        <div class="search-mode-toggle" @click="dataStore.updateSearchMode(dataStore.searchMode === 'external' ? 'internal' : 'external')">
+          <span class="mode-icon">{{ dataStore.searchMode === 'external' ? '🌐' : '🔍' }}</span>
+          <span class="mode-text">{{ dataStore.searchMode === 'external' ? '搜索' : '站内' }}</span>
         </div>
         
         <!-- Search Engine Selector (only show in external mode) -->
-        <div v-if="searchMode === 'external'" class="search-engine-selector">
-          <!-- Favicon image with error fallback -->
-          <div v-if="getEngineDisplayIcon(selectedEngine)" class="engine-icon-wrapper">
-            <img
-              :src="getEngineDisplayIcon(selectedEngine)"
-              :alt="selectedEngine.name"
-              class="engine-icon-img"
-              @error="handleIconError(selectedEngine.id, getEngineDisplayIcon(selectedEngine))"
-            />
-          </div>
-          <!-- Fallback: show first letter when icon fails -->
-          <div v-else class="engine-icon-fallback">
-            {{ selectedEngine?.name?.charAt(0) || 'G' }}
-          </div>
-          <span class="engine-name">{{ selectedEngine?.name || 'Bing' }}</span>
+        <div v-if="dataStore.searchMode === 'external'" class="search-engine-selector">
           <el-dropdown class="search-engine-dropdown" trigger="click" @command="selectEngine">
-            <el-icon class="dropdown-arrow"><ArrowDown /></el-icon>
+            <!-- Favicon image with error fallback -->
+            <div class="engine-selector-content">
+              <div v-if="getEngineDisplayIcon(selectedEngine)" class="engine-icon-wrapper">
+                <img
+                  :src="getEngineDisplayIcon(selectedEngine)"
+                  :alt="selectedEngine.name"
+                  class="engine-icon-img"
+                  @error="handleIconError(selectedEngine.id, getEngineDisplayIcon(selectedEngine))"
+                />
+              </div>
+              <!-- Fallback: show first letter when icon fails -->
+              <div v-else class="engine-icon-fallback">
+                {{ selectedEngine?.name?.charAt(0) || 'G' }}
+              </div>
+              <span class="engine-name">{{ selectedEngine?.name || 'Bing' }}</span>
+              <el-icon class="dropdown-arrow"><ArrowDown /></el-icon>
+            </div>
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item
@@ -138,8 +138,8 @@ const handleSearch = () => {
 
         <!-- Search Input -->
         <el-input
-          v-model="searchQuery"
-          :placeholder="searchMode === 'external' ? (isMobile ? `在 ${selectedEngine?.name || '必应'} 搜索...` : `在 ${selectedEngine?.name || '必应'} 搜索...`) : '搜索站内网站...'"
+          v-model="dataStore.searchQuery"
+          :placeholder="dataStore.searchMode === 'external' ? (isMobile ? `在 ${selectedEngine?.name || '必应'} 搜索...` : `在 ${selectedEngine?.name || '必应'} 搜索...`) : '搜索站内网站...'"
           :size="isMobile ? 'default' : 'large'"
           clearable
           class="search-input"
@@ -320,7 +320,6 @@ const handleSearch = () => {
   position: relative;
   background: transparent;
   white-space: nowrap;
-  border-right: 1px solid var(--color-border);
 }
 
 .search-mode-toggle:hover {
@@ -355,6 +354,13 @@ const handleSearch = () => {
   position: relative;
   background: transparent;
   white-space: nowrap;
+}
+
+.engine-selector-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
 }
 
 .search-engine-selector:hover {
