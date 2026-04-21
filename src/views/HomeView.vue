@@ -7,6 +7,7 @@ import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
 import ScrollToTop from '../components/ui/ScrollToTop.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
+import TimeDateComponent from '../components/ui/TimeDateComponent.vue'
 import { defineAsyncComponent } from 'vue'
 const SiteCard = defineAsyncComponent(() => import('../components/ui/SiteCard.vue'))
 
@@ -151,6 +152,9 @@ onUnmounted(() => {
       <!-- Search Section -->
       <div class="search-section" :class="{ 'is-mobile': isMobile }">
         <div class="search-container">
+          <!-- Time Date Component -->
+          <TimeDateComponent v-if="!isMobile" />
+          
           <div class="search-wrapper">
             <!-- Search Engine Selector -->
             <div class="search-engine-selector">
@@ -307,14 +311,17 @@ onUnmounted(() => {
 
 .search-container {
   width: 100%;
-  max-width: 800px;
+  max-width: 1200px;
   display: flex;
   align-items: center;
   gap: var(--space-md);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .search-wrapper {
   flex: 1;
+  min-width: 300px;
   display: flex;
   align-items: center;
   gap: 0;
