@@ -320,37 +320,17 @@ onUnmounted(() => {
   gap: 0;
   background: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: 12px;
   padding: 0.375rem;
-  transition: all var(--transition-normal);
-  box-shadow: var(--shadow-md);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   position: relative;
   overflow: hidden;
 }
 
-.search-wrapper::after {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: var(--radius-full);
-  padding: 2px;
-  background: var(--gradient-primary);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity var(--transition-normal);
-  pointer-events: none;
-}
-
 .search-wrapper:focus-within {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow), var(--shadow-lg);
-}
-
-.search-wrapper:focus-within::after {
-  opacity: 1;
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .search-engine-dropdown {
@@ -361,13 +341,13 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: 0.625rem 1rem;
+  padding: 0.5rem 0.75rem;
   cursor: pointer;
-  border-radius: var(--radius-full);
-  transition: all var(--transition-fast);
+  border-radius: 8px;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   color: var(--color-text-secondary);
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   position: relative;
   background: transparent;
   white-space: nowrap;
@@ -375,11 +355,11 @@ onUnmounted(() => {
 
 .search-engine-selector:hover {
   color: var(--color-primary);
-  background: hsl(var(--hue-primary), 20%, 96%);
+  background: hsl(var(--hue-primary), 15%, 96%);
 }
 
 .dark .search-engine-selector:hover {
-  background: hsl(var(--hue-primary), 20%, 16%);
+  background: hsl(var(--hue-primary), 20%, 18%);
 }
 
 .engine-name {
@@ -387,17 +367,17 @@ onUnmounted(() => {
 }
 
 .engine-icon-img {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   object-fit: contain;
   flex-shrink: 0;
   border-radius: 4px;
-  transition: transform var(--transition-fast);
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .engine-icon-wrapper {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -405,17 +385,17 @@ onUnmounted(() => {
 }
 
 .engine-icon-fallback {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   background: var(--gradient-primary);
   color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border-radius: 5px;
   text-transform: uppercase;
 }
 
@@ -446,36 +426,35 @@ onUnmounted(() => {
 }
 
 .engine-icon-img.switching {
-  animation: iconSwitch 0.3s var(--ease-out-expo);
+  animation: iconSwitch 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes iconSwitch {
   0% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(0.7) rotate(15deg); }
+  50% { transform: scale(0.8) rotate(8deg); }
   100% { transform: scale(1) rotate(0deg); }
 }
 
 .search-engine-selector.cycling .engine-name {
-  animation: nameFade 0.3s var(--ease-out-expo);
+  animation: nameFade 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes nameFade {
   0% { opacity: 1; transform: translateX(0); }
-  50% { opacity: 0; transform: translateX(-8px); }
+  50% { opacity: 0; transform: translateX(-4px); }
   100% { opacity: 1; transform: translateX(0); }
 }
 
 .dropdown-arrow {
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  font-size: 0.875rem;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.75rem;
   padding: 2px;
 }
 
 .dropdown-arrow:hover {
   color: var(--color-primary);
-  transform: scale(1.1);
 }
 
 .search-engine-dropdown :deep(.dropdown-engine-icon) {
@@ -503,35 +482,36 @@ onUnmounted(() => {
 }
 
 .search-input :deep(.el-input__inner) {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   padding: 0.5rem 0.75rem;
   color: var(--color-text);
 }
 
 .search-input :deep(.el-input__inner)::placeholder {
   color: var(--color-text-secondary);
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .search-button {
-  border-radius: var(--radius-full) !important;
-  width: 44px !important;
-  height: 44px !important;
+  border-radius: 8px !important;
+  width: 38px !important;
+  height: 38px !important;
   padding: 0 !important;
   margin: 0 !important;
-  transition: all var(--transition-fast) !important;
-  background: var(--gradient-primary) !important;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  background: var(--color-primary) !important;
   border: none !important;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2);
 }
 
 .search-button:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-md) !important;
+  background: hsl(var(--hue-primary), var(--sat-primary), calc(var(--lig-primary) - 5%)) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
 }
 
 .search-button:active {
-  transform: scale(0.95);
+  transform: translateY(0px) scale(0.97);
 }
 
 .theme-toggle-btn {
@@ -550,17 +530,17 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle at center, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .theme-toggle-btn:hover {
   transform: scale(1.12) rotate(180deg);
-  border-color: #8b5cf6 !important;
+  border-color: var(--color-primary) !important;
   box-shadow:
-    0 8px 24px rgba(139, 92, 246, 0.25),
-    0 4px 12px rgba(139, 92, 246, 0.15) !important;
+    0 8px 24px rgba(139, 92, 246, 0.3),
+    0 4px 12px rgba(139, 92, 246, 0.2) !important;
 }
 
 .theme-toggle-btn:hover::before {

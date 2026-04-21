@@ -52,14 +52,13 @@ const { isMobile } = useResponsive()
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding: 0.875rem 1.5rem;
   background: var(--color-card);
   border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 50;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-left {
@@ -69,19 +68,17 @@ const { isMobile } = useResponsive()
 }
 
 .header-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.01em;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 /* 汉堡菜单按钮样式 */
@@ -90,22 +87,24 @@ const { isMobile } = useResponsive()
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   padding: 0;
-  border: 2px solid var(--color-border);
-  border-radius: 12px;
-  background: linear-gradient(145deg, var(--color-card), var(--color-bg));
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: transparent;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  gap: 5px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 4px;
 }
 
 .hamburger-btn:hover {
   border-color: var(--color-primary);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+  background: hsl(var(--hue-primary), 10%, 96%);
+}
+
+.dark .hamburger-btn:hover {
+  background: hsl(var(--hue-primary), 20%, 18%);
 }
 
 .hamburger-btn:active {
@@ -114,11 +113,11 @@ const { isMobile } = useResponsive()
 
 .hamburger-line {
   display: block;
-  width: 20px;
+  width: 18px;
   height: 2px;
-  background: var(--color-text);
+  background: var(--color-text-secondary);
   border-radius: 2px;
-  transition: all 0.3s ease;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hamburger-btn:hover .hamburger-line {
@@ -126,79 +125,37 @@ const { isMobile } = useResponsive()
 }
 
 .theme-btn {
-  width: 48px;
-  height: 48px;
-  border: 2px solid var(--color-border);
-  border-radius: 14px;
-  background: linear-gradient(145deg, var(--color-card), var(--color-bg));
-  font-size: 1.25rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 1.125rem;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.theme-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s ease, height 0.4s ease;
-}
-
-.theme-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.theme-btn:hover::before {
-  width: 120%;
-  height: 120%;
-}
-
-.theme-btn:hover::after {
-  opacity: 1;
+  color: var(--color-text-secondary);
 }
 
 .theme-btn:hover {
-  border-color: var(--color-secondary);
-  transform: translateY(-3px) scale(1.08);
-  box-shadow:
-    0 8px 20px rgba(139, 92, 246, 0.2),
-    0 4px 8px rgba(139, 92, 246, 0.1);
+  border-color: var(--color-primary);
+  background: hsl(var(--hue-primary), 10%, 96%);
+  color: var(--color-primary);
+}
+
+.dark .theme-btn:hover {
+  background: hsl(var(--hue-primary), 20%, 18%);
 }
 
 .theme-btn:active {
-  transform: translateY(-1px) scale(0.96);
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+  transform: scale(0.95);
 }
 
 /* 图标动画 */
 .theme-btn span {
   display: inline-block;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  z-index: 1;
-}
-
-.theme-btn:hover span {
-  transform: scale(1.15) rotate(5deg);
-}
-
-.theme-btn:active span {
-  transform: scale(0.95);
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 768px) {
@@ -207,22 +164,22 @@ const { isMobile } = useResponsive()
   }
 
   .header-title {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
 
   .theme-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 1.1rem;
+    width: 34px;
+    height: 34px;
+    font-size: 1.05rem;
   }
 
   .hamburger-btn {
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
   }
 
   .hamburger-line {
-    width: 18px;
+    width: 16px;
   }
 }
 
@@ -232,7 +189,7 @@ const { isMobile } = useResponsive()
   }
 
   .header-left {
-    gap: 0.75rem;
+    gap: 0.625rem;
   }
 
   .header-title {
@@ -244,8 +201,8 @@ const { isMobile } = useResponsive()
   }
 
   .theme-btn {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     font-size: 1rem;
   }
 

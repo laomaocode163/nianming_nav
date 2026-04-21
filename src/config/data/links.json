@@ -11,8 +11,6 @@
   { "id": "10", "name": "Figma", "url": "https://figma.com", "categoryId": "design", "description": "在线协作界面设计工具" },
   { "id": "11", "name": "Dribbble", "url": "https://dribbble.com", "categoryId": "design", "description": "设计师作品分享社区" },
   { "id": "12", "name": "Hacker News", "url": "https://news.ycombinator.com", "categoryId": "read", "description": "极客新闻聚合社区" },
-  { "id": "13", "name": "YouTube", "url": "https://youtube.com", "categoryId": "ent", "description": "全球最大的视频分享网站" },
-  { "id": "14", "name": "Netflix", "url": "https://www.netflix.com", "categoryId": "ent", "description": "流媒体影视平台" },
   { "id": "15", "name": "Midjourney", "url": "https://www.midjourney.com", "categoryId": "ai", "description": "AI图像生成工具" },
   { "id": "16", "name": "Gemini", "url": "https://gemini.google.com", "categoryId": "ai", "description": "Google AI助手" }
 ]
