@@ -83,27 +83,16 @@ const handleClose = () => {
     <div class="sidebar-nav-section">
       <nav class="sidebar-nav">
         <el-button
-          class="nav-item"
-          :class="{ active: selectedCategory === 'all' }"
-          text
-          @click="handleSelect('all')"
-        >
-          <span class="nav-icon">✓</span>
-          <span v-show="!collapsed" class="nav-name">全部网站</span>
-          <span v-show="!collapsed" class="nav-count">{{ allLinksCount }}</span>
-        </el-button>
-
-        <el-button
           v-for="category in categories"
           :key="category.id"
           class="nav-item"
-          :class="{ active: selectedCategory === category.id }"
+          :class="{ active: selectedCategory === category.id || (selectedCategory === 'all' && category.id === 'common') }"
           text
-          @click="handleSelect(category.id)"
+          @click="handleSelect(category.id === 'common' ? 'all' : category.id)"
         >
           <span class="nav-icon">{{ category.icon }}</span>
           <span v-show="!collapsed" class="nav-name">{{ category.name }}</span>
-          <span v-show="!collapsed" class="nav-count">{{ getCategoryCount(category.id) }}</span>
+          <span v-show="!collapsed" class="nav-count">{{ category.id === 'common' ? allLinksCount : getCategoryCount(category.id) }}</span>
         </el-button>
       </nav>
     </div>
