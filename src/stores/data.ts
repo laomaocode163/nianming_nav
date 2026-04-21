@@ -15,6 +15,8 @@ export const useDataStore = defineStore('data', () => {
   const categories = ref<Category[]>(SITE_CONFIG.categories)
   const settings = ref<SiteSettings>(SITE_CONFIG.settings)
   const searchConfig = ref<SearchConfig>(SITE_CONFIG.searchConfig)
+  const searchQuery = ref('')
+  const searchMode = ref('external') // 'external' 或 'internal'
 
   const pinnedLinks = computed(() => {
     return links.value
@@ -30,6 +32,17 @@ export const useDataStore = defineStore('data', () => {
       } else {
         filteredLinks = links.value.filter(link => link.categoryId === categoryId && !link.hidden)
       }
+      
+      // 过滤网站搜索结果
+      if (searchMode.value === 'internal' && searchQuery.value.trim()) {
+        const searchTerm = searchQuery.value.toLowerCase().trim()
+        filteredLinks = filteredLinks.filter(link => 
+          link.name.toLowerCase().includes(searchTerm) || 
+          (link.description && link.description.toLowerCase().includes(searchTerm)) ||
+          link.url.toLowerCase().includes(searchTerm)
+        )
+      }
+      
       return filteredLinks.sort((a, b) => (a.order || 0) - (b.order || 0))
     }
   })
@@ -48,6 +61,14 @@ export const useDataStore = defineStore('data', () => {
     searchConfig.value = { ...searchConfig.value, ...newConfig }
   }
 
+  const updateSearchQuery = (query: string): void => {
+    searchQuery.value = query
+  }
+
+  const updateSearchMode = (mode: 'external' | 'internal'): void => {
+    searchMode.value = mode
+  }
+
   const updateSettings = (newSettings: Partial<SiteSettings>): void => {
     settings.value = { ...settings.value, ...newSettings }
   }
@@ -57,11 +78,15 @@ export const useDataStore = defineStore('data', () => {
     categories,
     settings,
     searchConfig,
+    searchQuery,
+    searchMode,
     pinnedLinks,
     getLinksByCategory,
     visibleCategories,
     getLinkIcon,
     updateSearchConfig,
+    updateSearchQuery,
+    updateSearchMode,
     updateSettings
   }
 })
