@@ -6,9 +6,6 @@ import { ref, computed } from 'vue'
 import { useDataStore } from '../../stores/data'
 import { ArrowDown, Search } from '@element-plus/icons-vue'
 
-defineProps({
-})
-
 const emit = defineEmits(['toggle-sidebar'])
 
 const themeStore = useThemeStore()
