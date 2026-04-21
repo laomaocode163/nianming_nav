@@ -78,6 +78,8 @@ const handleSearch = () => {
   if (!searchQuery.value.trim()) return
   if (selectedEngine.value) {
     window.open(selectedEngine.value.url + encodeURIComponent(searchQuery.value), '_blank')
+    // 清空搜索框内容
+    searchQuery.value = ''
   }
 }
 
@@ -224,9 +226,9 @@ onUnmounted(() => {
       <!-- Sites Grid -->
       <div class="sites-section">
         <!-- Category Header -->
-        <div v-if="selectedCategoryId !== 'all'" class="category-header">
-          <span class="category-icon">{{ currentCategory?.icon || '🌐' }}</span>
-          <h2 class="category-title">{{ currentCategory?.name || '未知分类' }}</h2>
+        <div class="category-header">
+          <span class="category-icon">{{ selectedCategoryId === 'all' ? '✓' : currentCategory?.icon || '🌐' }}</span>
+          <h2 class="category-title">{{ selectedCategoryId === 'all' ? '全部网站' : currentCategory?.name || '未知分类' }}</h2>
           <span class="site-count">{{ links.length }} 个网站</span>
         </div>
 
@@ -575,6 +577,8 @@ onUnmounted(() => {
 .category-icon {
   font-size: 1.75rem;
   line-height: 1;
+  color: var(--color-primary);
+  margin-right: 0.5rem;
 }
 
 .category-title {
@@ -589,19 +593,23 @@ onUnmounted(() => {
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   padding: 0.25rem 0.75rem;
-  background: var(--color-bg);
+  background: #f3f4f6;
   border-radius: 20px;
   font-weight: 500;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+.dark .site-count {
+  background: #374151;
+}
+
 .sites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--space-md);
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
   max-width: 1400px;
   margin: 0 auto;
-  padding-bottom: var(--space-xl);
+  padding: var(--space-lg) 0;
   animation: fadeInUp 0.5s var(--ease-out-expo);
 }
 

@@ -33,7 +33,7 @@ const onIconError = (event) => {
     <div class="site-icon-wrapper">
       <img
         :src="siteIcon"
-        :alt="site.title"
+        :alt="site.name"
         class="site-icon"
         loading="lazy"
         @error="onIconError"
@@ -41,7 +41,6 @@ const onIconError = (event) => {
     </div>
 
     <div class="site-info">
-      <div class="site-name">{{ site.title }}</div>
       <div v-if="site.description" class="site-desc">{{ site.description }}</div>
       <div v-if="!site.description" class="site-url">{{ site.url }}</div>
     </div>
@@ -53,9 +52,9 @@ const onIconError = (event) => {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  padding: 1rem 1.25rem;
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
+  padding: 1.25rem 1.5rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
   text-decoration: none;
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -63,7 +62,12 @@ const onIconError = (event) => {
   overflow: hidden;
   user-select: none;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  min-height: 68px;
+  min-height: 80px;
+}
+
+.dark .site-card {
+  background: #1f2937;
+  border-color: #374151;
 }
 
 .site-card:hover {
@@ -83,20 +87,20 @@ const onIconError = (event) => {
 }
 
 .site-icon-wrapper {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: hsl(var(--hue-primary), 15%, 96%);
-  border-radius: 10px;
+  background: #f3f4f6;
+  border-radius: 50%;
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
 .dark .site-icon-wrapper {
-  background: hsl(var(--hue-primary), 20%, 20%);
+  background: #374151;
 }
 
 .site-card:hover .site-icon-wrapper {
@@ -137,13 +141,13 @@ const onIconError = (event) => {
 }
 
 .site-desc {
-  font-size: 0.8125rem;
-  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.4;
-  opacity: 0.8;
+  font-weight: 500;
 }
 
 .site-url {
