@@ -88,7 +88,7 @@ const handleClose = () => {
           text
           @click="handleSelect('all')"
         >
-          <span class="nav-icon">📋</span>
+          <span class="nav-icon">✓</span>
           <span v-show="!collapsed" class="nav-name">全部网站</span>
           <span v-show="!collapsed" class="nav-count">{{ allLinksCount }}</span>
         </el-button>
@@ -168,6 +168,8 @@ const handleClose = () => {
     width: 36px !important;
     height: 36px !important;
     flex-shrink: 0;
+    background: transparent !important;
+    color: var(--color-text-secondary) !important;
   }
   
   .nav-name {
@@ -552,6 +554,7 @@ const handleClose = () => {
   transform: scaleY(0);
   transition: transform var(--transition-fast);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  opacity: 0;
 }
 
 .nav-item:hover {
@@ -575,33 +578,30 @@ const handleClose = () => {
 }
 
 .nav-item:hover::before {
-  transform: scaleY(1);
+  transform: scaleY(0);
+  opacity: 0;
 }
 
 .nav-item.active {
-  background: hsl(var(--hue-primary), 20%, 94%) !important;
+  background: transparent !important;
   color: var(--color-primary) !important;
   border-color: transparent !important;
   font-weight: 600;
-  box-shadow: 
-    inset 0 0 0 1px rgba(14, 165, 233, 0.2),
-    0 2px 8px rgba(14, 165, 233, 0.1);
+  box-shadow: none !important;
 }
 
 .nav-item.active::after {
-  opacity: 1;
-  background: linear-gradient(90deg, 
-    rgba(14, 165, 233, 0.1) 0%, 
-    transparent 100%
-  );
+  opacity: 0;
+  background: transparent;
 }
 
 .dark .nav-item.active {
-  background: hsl(var(--hue-primary), 20%, 18%) !important;
+  background: transparent !important;
 }
 
 .nav-item.active::before {
-  transform: scaleY(1);
+  transform: scaleY(0);
+  opacity: 0;
 }
 
 .nav-item:active {
@@ -623,7 +623,7 @@ const handleClose = () => {
   border-radius: var(--radius-sm);
   position: relative;
   z-index: 1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  color: var(--color-text-secondary);
 }
 
 .sidebar-collapsed .nav-icon {
@@ -632,13 +632,20 @@ const handleClose = () => {
 
 .nav-item:hover .nav-icon {
   transform: scale(1.1);
-  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.2);
+  color: var(--color-primary);
 }
 
 .nav-item.active .nav-icon {
-  transform: scale(1.05);
-  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.3);
-  background: rgba(14, 165, 233, 0.1);
+  color: var(--color-primary);
+}
+
+/* 为全部网站项添加特殊样式 */
+.nav-item.active:has(.nav-name:contains('全部网站')) {
+  background: rgba(14, 165, 233, 0.1) !important;
+}
+
+.nav-item.active:has(.nav-name:contains('全部网站')) .nav-icon {
+  color: var(--color-primary);
 }
 
 .sidebar-collapsed .nav-icon {
@@ -760,6 +767,8 @@ const handleClose = () => {
     width: 32px;
     height: 32px;
     font-size: 1rem;
+    background: transparent;
+    color: var(--color-text-secondary);
   }
   
   .nav-name {
@@ -809,6 +818,8 @@ const handleClose = () => {
   .nav-icon {
     width: 36px;
     height: 36px;
+    background: transparent;
+    color: var(--color-text-secondary);
   }
 }
 
