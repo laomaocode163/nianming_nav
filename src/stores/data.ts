@@ -16,7 +16,7 @@ export const useDataStore = defineStore('data', () => {
   const settings = ref<SiteSettings>(SITE_CONFIG.settings)
   const searchConfig = ref<SearchConfig>(SITE_CONFIG.searchConfig)
   const searchQuery = ref('')
-  const searchMode = ref('external') // 'external' 或 'internal'
+  const searchMode = ref('internal') // 'external' 或 'internal'
 
   const pinnedLinks = computed(() => {
     return links.value

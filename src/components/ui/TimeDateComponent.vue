@@ -84,7 +84,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem;
   background: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: 12px;
