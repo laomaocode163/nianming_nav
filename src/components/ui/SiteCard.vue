@@ -41,6 +41,7 @@ const onIconError = (event) => {
     </div>
 
     <div class="site-info">
+      <div class="site-name">{{ site.name }}</div>
       <div v-if="site.description" class="site-desc">{{ site.description }}</div>
       <div v-if="!site.description" class="site-url">{{ site.url }}</div>
     </div>
@@ -125,8 +126,8 @@ const onIconError = (event) => {
 }
 
 .site-name {
-  font-weight: 600;
-  font-size: 0.9375rem;
+  font-weight: 700;
+  font-size: 1.05rem;
   color: var(--color-text);
   margin-bottom: 0.25rem;
   white-space: nowrap;
@@ -141,13 +142,13 @@ const onIconError = (event) => {
 }
 
 .site-desc {
-  font-size: 0.9375rem;
-  color: var(--color-text);
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.4;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .site-url {
