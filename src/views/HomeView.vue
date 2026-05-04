@@ -1,7 +1,7 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useDataStore } from '../stores/data'
-import { useResponsive } from '../hooks/useResponsive.ts'
+import { useResponsive } from '../hooks/useResponsive'
 import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
 import ScrollToTop from '../components/ui/ScrollToTop.vue'
@@ -15,9 +15,7 @@ const { isMobile } = useResponsive()
 const selectedCategoryId = ref('all')
 const sidebarOpen = ref(true)
 const sidebarCollapsed = ref(false)
-const gridKey = ref(0) // 用于触发动画
-
-
+const gridKey = ref(0)
 
 const toggleSidebarCollapse = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
@@ -31,42 +29,31 @@ const closeSidebar = () => {
   sidebarOpen.value = false
 }
 
-
-
 const categories = computed(() => dataStore.visibleCategories)
 
 const links = computed(() => {
   return dataStore.getLinksByCategory(selectedCategoryId.value)
 })
 
-
-
 const currentCategory = computed(() => {
   return categories.value.find(c => c.id === selectedCategoryId.value)
 })
 
-
-
-const selectCategory = (categoryId) => {
+const selectCategory = (categoryId: string) => {
   selectedCategoryId.value = categoryId
-  // 触发动画
-  gridKey.value++
 }
 
-const handleKeydown = (event) => {
-  // ESC 键关闭移动端侧边栏
+const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && isMobile.value && sidebarOpen.value) {
     closeSidebar()
   }
 }
 
-// 监听分类变化，触发动画
 watch(selectedCategoryId, () => {
   gridKey.value++
 })
 
 onMounted(() => {
-  // 初始化侧边栏状态
   if (isMobile.value) {
     sidebarOpen.value = false
   }
@@ -151,7 +138,7 @@ onUnmounted(() => {
 
 .main-content {
   flex: 1;
-  margin-left: 240px;
+  margin-left: var(--sidebar-width, 240px);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -166,59 +153,6 @@ onUnmounted(() => {
 
 .main-content.sidebar-closed {
   margin-left: 0;
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-  }
-
-  .main-content.sidebar-collapsed,
-  .main-content.sidebar-closed {
-    margin-left: 0;
-  }
-}
-
-
-
-.theme-toggle-btn {
-  font-size: 1.5rem !important;
-  padding: 1rem !important;
-  border-radius: 16px !important;
-  flex-shrink: 0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  background: linear-gradient(145deg, var(--color-card), var(--color-bg)) !important;
-  border: 2px solid var(--color-border) !important;
-  position: relative;
-  overflow: hidden;
-}
-
-.theme-toggle-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.theme-toggle-btn:hover {
-  transform: scale(1.12) rotate(180deg);
-  border-color: var(--color-primary) !important;
-  box-shadow:
-    0 8px 24px rgba(139, 92, 246, 0.3),
-    0 4px 12px rgba(139, 92, 246, 0.2) !important;
-}
-
-
-
-.theme-toggle-btn:hover::before {
-  opacity: 1;
-}
-
-.theme-toggle-btn:active {
-  transform: scale(1.05) rotate(180deg);
 }
 
 .sites-section {
@@ -298,37 +232,6 @@ onUnmounted(() => {
   backdrop-filter: blur(4px);
 }
 
-/* Transition Animations */
-.category-fade-enter-active,
-.category-fade-leave-active {
-  transition: all var(--transition-normal);
-}
-
-.category-fade-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.category-fade-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.grid-fade-enter-active,
-.grid-fade-leave-active {
-  transition: all var(--transition-normal);
-}
-
-.grid-fade-enter-from {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.grid-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
 /* Staggered animation for site cards */
 .sites-grid > * {
   animation: cardFadeIn 0.4s var(--ease-out-expo) backwards;
@@ -343,11 +246,6 @@ onUnmounted(() => {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
-}
-
-/* Smooth scroll behavior */
-html {
-  scroll-behavior: smooth;
 }
 
 /* 移动端适配 */
@@ -389,53 +287,5 @@ html {
   .sites-grid {
     gap: 0.75rem;
   }
-}
-
-/* Empty State Transitions */
-.empty-fade-enter-active,
-.empty-fade-leave-active {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.empty-fade-enter-from {
-  opacity: 0;
-  transform: translateY(15px) scale(0.98);
-}
-
-.empty-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px) scale(0.98);
-}
-
-/* Grid Transitions */
-.grid-fade-enter-active,
-.grid-fade-leave-active {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.grid-fade-enter-from {
-  opacity: 0;
-  transform: translateY(15px) scale(0.98);
-}
-
-.grid-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px) scale(0.98);
-}
-
-/* Category Header Transitions */
-.category-fade-enter-active,
-.category-fade-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.category-fade-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.category-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
 }
 </style>

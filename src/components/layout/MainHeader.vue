@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { useThemeStore } from '../../stores/theme'
 import { useResponsive } from '../../hooks/useResponsive'
 import TimeDateComponent from '../ui/TimeDateComponent.vue'
@@ -13,7 +13,7 @@ const themeStore = useThemeStore()
 const dataStore = useDataStore()
 const { isMobile } = useResponsive()
 
-const iconErrorMap = ref({}) // 记录加载失败的图标及其URL
+const iconErrorMap = ref<Record<string, string>>({})
 
 const searchEngines = computed(() => {
   return dataStore.searchConfig.externalSources.filter(s => s.enabled)
@@ -139,11 +139,12 @@ const handleSearch = () => {
 
         <!-- Search Input -->
         <el-input
-          v-model="dataStore.searchQuery"
-          :placeholder="dataStore.searchMode === 'external' ? (isMobile ? `在 ${selectedEngine?.name || '必应'} 搜索...` : `在 ${selectedEngine?.name || '必应'} 搜索...`) : '搜索站内网站...'"
+          :model-value="dataStore.searchQuery"
+          :placeholder="dataStore.searchMode === 'external' ? `在 ${selectedEngine?.name || '必应'} 搜索...` : '搜索站内网站...'"
           :size="isMobile ? 'default' : 'large'"
           clearable
           class="search-input"
+          @update:model-value="dataStore.updateSearchQuery($event)"
           @keyup.enter="handleSearch"
         >
           <template #suffix>

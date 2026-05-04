@@ -109,7 +109,7 @@ const handleClose = () => {
 
 <style scoped>
 .sidebar {
-  width: 240px;
+  width: var(--sidebar-width, 240px);
   height: 100vh;
   background: var(--color-card);
   border-right: 1px solid var(--color-border);
@@ -220,11 +220,14 @@ const handleClose = () => {
 
 .site-title {
   font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--color-text);
+  font-weight: 800;
   white-space: nowrap;
   margin: 0;
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: -0.01em;
   line-height: 1;
   vertical-align: middle;
@@ -327,34 +330,6 @@ const handleClose = () => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.logo-emoji {
-  font-size: 1.875rem;
-  flex-shrink: 0;
-  animation: emojiFloat 3s ease-in-out infinite;
-}
-
-@keyframes emojiFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-.site-title {
-  font-size: 1.125rem;
-  font-weight: 800;
-  color: var(--color-text);
-  white-space: nowrap;
-  margin: 0;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Navigation Section */
@@ -567,31 +542,6 @@ const handleClose = () => {
 
 
 
-/* Responsive */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 240px;
-  }
-
-  .sidebar:not(.sidebar-open) {
-    transform: translateX(-100%);
-  }
-
-  .sidebar-open {
-    transform: translateX(0);
-  }
-
-  /* 移动端优化触摸目标 */
-  .nav-item {
-    min-height: 52px;
-    padding: 0.875rem 1rem !important;
-  }
-
-  .nav-icon {
-    width: 36px;
-    height: 36px;
-  }
-}
 
 @media (max-width: 480px) {
   .sidebar {

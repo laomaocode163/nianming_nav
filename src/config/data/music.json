@@ -1,13 +1,13 @@
 [
-  { "name": "晴天", "keyword": "周杰伦 晴天" },
-  { "name": "稻香", "keyword": "周杰伦 稻香" },
-  { "name": "告白气球", "keyword": "周杰伦 告白气球" },
-  { "name": "青花瓷", "keyword": "周杰伦 青花瓷" },
-  { "name": "七里香", "keyword": "周杰伦 七里香" },
-  { "name": "夜曲", "keyword": "周杰伦 夜曲" },
-  { "name": "听妈妈的话", "keyword": "周杰伦 听妈妈的话" },
-  { "name": "简单爱", "keyword": "周杰伦 简单爱" },
-  { "name": "双截棍", "keyword": "周杰伦 双截棍" },
-  { "name": "发如雪", "keyword": "周杰伦 发如雪" },
-  { "name": "菊花台", "keyword": "周杰伦 菊花台" }
+  { "name": "晴天", "keyword": "周杰伦 晴天", "kuwoId": "228908", "neteaseId": "186016" },
+  { "name": "稻香", "keyword": "周杰伦 稻香", "kuwoId": "440613", "neteaseId": "185926" },
+  { "name": "告白气球", "keyword": "周杰伦 告白气球", "kuwoId": "7149583", "neteaseId": "468009068" },
+  { "name": "青花瓷", "keyword": "周杰伦 青花瓷", "kuwoId": "324244", "neteaseId": "185965" },
+  { "name": "七里香", "keyword": "周杰伦 七里香", "kuwoId": "94237", "neteaseId": "186007" },
+  { "name": "夜曲", "keyword": "周杰伦 夜曲", "kuwoId": "118980", "neteaseId": "185969" },
+  { "name": "听妈妈的话", "keyword": "周杰伦 听妈妈的话", "kuwoId": "138243", "neteaseId": "185968" },
+  { "name": "简单爱", "keyword": "周杰伦 简单爱", "kuwoId": "156522", "neteaseId": "186014" },
+  { "name": "双截棍", "keyword": "周杰伦 双截棍", "kuwoId": "156517", "neteaseId": "186015" },
+  { "name": "发如雪", "keyword": "周杰伦 发如雪", "kuwoId": "118990", "neteaseId": "185967" },
+  { "name": "菊花台", "keyword": "周杰伦 菊花台", "kuwoId": "138804", "neteaseId": "186008" }
 ]
