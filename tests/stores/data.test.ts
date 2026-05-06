@@ -68,12 +68,4 @@ describe('dataStore', () => {
       }
     })
   })
-
-  describe('pinned links', () => {
-    it('should get pinned links', () => {
-      const store = useDataStore()
-      const pinnedLinks = store.pinnedLinks
-      expect(pinnedLinks.every(link => link.pinned === true)).toBe(true)
-    })
-  })
 })

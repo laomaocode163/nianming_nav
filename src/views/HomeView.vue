@@ -117,9 +117,6 @@ onUnmounted(() => {
     <!-- Scroll to Top Button -->
     <ScrollToTop />
 
-    <!-- Keyboard Shortcut Hint -->
-    <!-- <KeyboardHint /> -->
-
     <!-- Mobile Overlay -->
     <div
       v-if="isMobile && sidebarOpen"

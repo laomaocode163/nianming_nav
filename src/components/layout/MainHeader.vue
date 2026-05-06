@@ -49,7 +49,7 @@ const handleSearch = () => {
   if (dataStore.searchMode === 'external') {
     // 外部搜索（搜索引擎）
     if (selectedEngine.value) {
-      window.open(selectedEngine.value.url + encodeURIComponent(dataStore.searchQuery), '_blank')
+      window.open(selectedEngine.value.url + encodeURIComponent(dataStore.searchQuery), '_blank', 'noopener,noreferrer')
       // 清空搜索框内容
       dataStore.updateSearchQuery('')
     }

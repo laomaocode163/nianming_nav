@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { extractDomain, getFaviconUrl, getDefaultIcon } from '../../src/utils/faviconService'
+import { extractDomain, getFaviconUrl } from '../../src/utils/faviconService'
+import { getDefaultIcon } from '../../src/utils/constants'
 
 describe('faviconService', () => {
   describe('extractDomain', () => {

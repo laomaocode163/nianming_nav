@@ -106,7 +106,7 @@ const getSongUrl = async (source: string, id: string): Promise<string | null> =>
     const data = await res.json()
     return data.url || null
   } catch (e) {
-    console.warn(`URL fetch failed on ${source}:`, e)
+    // URL 获取失败
   }
   return null
 }
@@ -123,7 +123,7 @@ const searchAndPlay = async (keyword: string): Promise<string | null> => {
         if (url) return url
       }
     } catch (e) {
-      console.warn(`Search failed on ${source}:`, e)
+      // 搜索失败
     }
   }
   return null
@@ -164,12 +164,11 @@ const playSong = async (song: SongInfo, autoPlay: boolean = true) => {
         await audioPlayer.value.play()
         isPlaying.value = true
       } catch (playError) {
-        console.warn('Auto-play blocked:', playError)
+        // 自动播放被浏览器阻止
         isPlaying.value = false
       }
     }
   } catch (error: unknown) {
-    console.error('播放失败:', error)
     errorMessage.value = error instanceof Error ? error.message : '播放失败'
     isPlaying.value = false
   }

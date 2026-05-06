@@ -1,6 +1,5 @@
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useDataStore } from '../../stores/data'
 import { useResponsive } from '../../hooks/useResponsive'
 
@@ -21,17 +20,12 @@ defineProps({
 
 const emit = defineEmits(['select', 'toggle-collapse', 'close'])
 
-const router = useRouter()
 const dataStore = useDataStore()
 const { isMobile } = useResponsive()
 
 const categories = computed(() => dataStore.visibleCategories)
 
 const handleSelect = (categoryId) => {
-  if (categoryId === 'music') {
-    router.push('/music')
-    return
-  }
   emit('select', categoryId)
   if (isMobile.value) {
     emit('close')

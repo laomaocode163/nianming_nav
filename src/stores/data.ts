@@ -16,12 +16,6 @@ export const useDataStore = defineStore('data', () => {
   const searchQuery = ref('')
   const searchMode = ref('internal') // 'external' 或 'internal'
 
-  const pinnedLinks = computed(() => {
-    return links.value
-      .filter(link => link.pinned)
-      .sort((a, b) => (a.pinnedOrder || 0) - (b.pinnedOrder || 0))
-  })
-
   const getLinksByCategory = (categoryId: string): Link[] => {
     let filteredLinks
     if (categoryId === 'all') {
@@ -64,10 +58,6 @@ export const useDataStore = defineStore('data', () => {
     searchMode.value = mode
   }
 
-  const updateSettings = (newSettings: Partial<SiteSettings>): void => {
-    settings.value = { ...settings.value, ...newSettings }
-  }
-
   return {
     links,
     categories,
@@ -75,13 +65,11 @@ export const useDataStore = defineStore('data', () => {
     searchConfig,
     searchQuery,
     searchMode,
-    pinnedLinks,
     getLinksByCategory,
     visibleCategories,
     getLinkIcon,
     updateSearchConfig,
     updateSearchQuery,
-    updateSearchMode,
-    updateSettings
+    updateSearchMode
   }
 })

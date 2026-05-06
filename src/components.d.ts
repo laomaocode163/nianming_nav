@@ -11,7 +11,6 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    Dialog: typeof import('./components/ui/Dialog.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElDropdown: typeof import('element-plus/es')['ElDropdown']
     ElDropdownItem: typeof import('element-plus/es')['ElDropdownItem']
@@ -19,16 +18,13 @@ declare module 'vue' {
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
     EmptyState: typeof import('./components/ui/EmptyState.vue')['default']
-    KeyboardHint: typeof import('./components/ui/KeyboardHint.vue')['default']
     MainHeader: typeof import('./components/layout/MainHeader.vue')['default']
     MiniPlayer: typeof import('./components/MusicPlayer/MiniPlayer.vue')['default']
-    Notification: typeof import('./components/ui/Notification.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScrollToTop: typeof import('./components/ui/ScrollToTop.vue')['default']
     Sidebar: typeof import('./components/layout/Sidebar.vue')['default']
     SiteCard: typeof import('./components/ui/SiteCard.vue')['default']
-    Skeleton: typeof import('./components/ui/Skeleton.vue')['default']
     TimeDateComponent: typeof import('./components/ui/TimeDateComponent.vue')['default']
   }
 }
