@@ -252,17 +252,18 @@ const handleSearch = () => {
 }
 
 .theme-btn {
-  width: 36px;
-  height: 36px;
+  width: 54px;
+  height: 54px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: transparent;
-  font-size: 1.125rem;
+  border-radius: 12px;
+  background: var(--color-card);
+  font-size: 1.25rem;
   transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--color-text-secondary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .theme-btn:hover {
