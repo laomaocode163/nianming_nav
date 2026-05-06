@@ -289,7 +289,7 @@ const handleSearch = () => {
 /* Search Styles */
 .search-wrapper {
   flex: 1;
-  min-width: 320px;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 0;
@@ -528,11 +528,41 @@ const handleSearch = () => {
 
 @media (max-width: 768px) {
   .main-header {
-    padding: 0.75rem 1rem;
+    padding: 0.625rem 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .header-center {
+    gap: 0.75rem;
   }
 
   .search-wrapper {
-    padding: 0.625rem 0.875rem;
+    padding: 0.5rem 0.75rem;
+    min-width: 0;
+  }
+
+  .search-mode-toggle {
+    padding: 0.375rem 0.5rem;
+    gap: 0.25rem;
+    font-size: 0.8125rem;
+  }
+
+  .mode-text {
+    display: none;
+  }
+
+  .search-engine-selector {
+    padding: 0.375rem 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .engine-name {
+    display: none;
+  }
+
+  .search-button {
+    width: 32px !important;
+    height: 32px !important;
   }
 
   .theme-btn {

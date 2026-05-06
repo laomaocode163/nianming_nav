@@ -245,6 +245,13 @@ onUnmounted(() => {
   }
 }
 
+/* 平板适配 - 2列过渡 */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .sites-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* 移动端适配 */
 @media (max-width: 768px) {
   .main-content {

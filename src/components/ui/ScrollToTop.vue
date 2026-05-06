@@ -100,4 +100,22 @@ onUnmounted(() => {
     font-size: 1rem;
   }
 }
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .scroll-to-top {
+    width: 48px;
+    height: 48px;
+  }
+
+  .scroll-to-top:hover {
+    transform: none;
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
+  }
+
+  .scroll-to-top:active {
+    transform: scale(0.92);
+    opacity: 0.85;
+  }
+}
 </style>

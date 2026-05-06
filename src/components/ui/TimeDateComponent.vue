@@ -149,58 +149,28 @@ onUnmounted(() => {
   line-height: 1;
 }
 
-/* 移动端适配 */
-@media (max-width: 768px) {
+/* 平板适配 - 组件在移动端被隐藏，仅需处理平板尺寸 */
+@media (max-width: 1024px) and (min-width: 769px) {
   .time-date-component {
     padding: 0.625rem 0.875rem;
     gap: 0.75rem;
     min-width: 180px;
   }
-  
+
   .time {
     font-size: 1rem;
   }
-  
+
   .date {
     font-size: 0.7rem;
   }
-  
+
   .lunar-date {
     font-size: 0.8rem;
   }
-  
+
   .lunar-label {
     font-size: 0.7rem;
-  }
-}
-
-/* 小屏幕手机适配 */
-@media (max-width: 480px) {
-  .time-date-component {
-    padding: 0.5rem 0.75rem;
-    gap: 0.5rem;
-    min-width: 160px;
-  }
-  
-  .time-icon {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .time {
-    font-size: 0.9rem;
-  }
-  
-  .date {
-    font-size: 0.65rem;
-  }
-  
-  .lunar-date {
-    font-size: 0.75rem;
-  }
-  
-  .lunar-label {
-    font-size: 0.65rem;
   }
 }
 </style>
