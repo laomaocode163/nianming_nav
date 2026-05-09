@@ -6,6 +6,7 @@ import { ref, computed } from 'vue'
 import { useDataStore } from '../../stores/data'
 import { ArrowDown, Search } from '@element-plus/icons-vue'
 import MiniPlayer from '../MusicPlayer/MiniPlayer.vue'
+import type { SearchSource } from '../../types'
 
 const emit = defineEmits(['toggle-sidebar'])
 
@@ -23,12 +24,12 @@ const selectedEngine = computed(() => {
   return searchEngines.value.find(e => e.id === dataStore.searchConfig.selectedSourceId) || searchEngines.value[0]
 })
 
-const handleIconError = (engineId, iconUrl) => {
+const handleIconError = (engineId: string, iconUrl: string) => {
   // 记录失败的URL
   iconErrorMap.value[engineId] = iconUrl
 }
 
-const getEngineDisplayIcon = (engine) => {
+const getEngineDisplayIcon = (engine: SearchSource) => {
   if (!engine?.icon) {
     return null // 返回 null 显示首字母
   }
@@ -39,7 +40,7 @@ const getEngineDisplayIcon = (engine) => {
   return engine.icon
 }
 
-const selectEngine = (engineId) => {
+const selectEngine = (engineId: string) => {
   dataStore.updateSearchConfig({ selectedSourceId: engineId })
 }
 
@@ -99,10 +100,10 @@ const handleSearch = () => {
             <div class="engine-selector-content">
               <div v-if="getEngineDisplayIcon(selectedEngine)" class="engine-icon-wrapper">
                 <img
-                  :src="getEngineDisplayIcon(selectedEngine)"
+                  :src="getEngineDisplayIcon(selectedEngine) || undefined"
                   :alt="selectedEngine.name"
                   class="engine-icon-img"
-                  @error="handleIconError(selectedEngine.id, getEngineDisplayIcon(selectedEngine))"
+                  @error="handleIconError(selectedEngine.id, getEngineDisplayIcon(selectedEngine) || '')"
                 />
               </div>
               <!-- Fallback: show first letter when icon fails -->
@@ -121,10 +122,10 @@ const handleSearch = () => {
                 >
                   <div v-if="getEngineDisplayIcon(engine)" class="dropdown-engine-icon-wrapper">
                     <img
-                      :src="getEngineDisplayIcon(engine)"
+                      :src="getEngineDisplayIcon(engine) || undefined"
                       :alt="engine.name"
                       class="dropdown-engine-icon"
-                      @error="handleIconError(engine.id, getEngineDisplayIcon(engine))"
+                      @error="handleIconError(engine.id, getEngineDisplayIcon(engine) || '')"
                     />
                   </div>
                   <div v-else class="dropdown-engine-fallback">
