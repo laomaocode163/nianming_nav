@@ -6,7 +6,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { SITE_CONFIG } from '../config/sites'
 import { extractDomain, getFaviconUrl } from '../utils/faviconService'
-import type { Link, Category, SearchConfig, SiteSettings } from '../types'
+import type { Link, Category, SubCategory, SearchConfig, SiteSettings } from '../types'
 
 export const useDataStore = defineStore('data', () => {
   const links = ref<Link[]>(SITE_CONFIG.links)
@@ -16,12 +16,18 @@ export const useDataStore = defineStore('data', () => {
   const searchQuery = ref('')
   const searchMode = ref('internal') // 'external' 或 'internal'
 
-  const getLinksByCategory = (categoryId: string): Link[] => {
+  // 按分类和可选的二级分类过滤链接
+  const getLinksByCategory = (categoryId: string, subCategoryId?: string | null): Link[] => {
     let filteredLinks
     if (categoryId === 'all') {
       filteredLinks = links.value.filter(link => !link.hidden)
     } else {
       filteredLinks = links.value.filter(link => link.categoryId === categoryId && !link.hidden)
+    }
+
+    // 二级分类过滤
+    if (subCategoryId) {
+      filteredLinks = filteredLinks.filter(link => link.subCategoryId === subCategoryId)
     }
 
     if (searchMode.value === 'internal' && searchQuery.value.trim()) {
@@ -34,6 +40,12 @@ export const useDataStore = defineStore('data', () => {
     }
 
     return filteredLinks.sort((a, b) => (a.order || 0) - (b.order || 0))
+  }
+
+  // 获取指定分类下的二级分类列表
+  const getSubCategories = (categoryId: string): SubCategory[] => {
+    const category = categories.value.find(cat => cat.id === categoryId)
+    return category?.subCategories?.sort((a, b) => (a.order || 0) - (b.order || 0)) || []
   }
 
   const visibleCategories = computed(() => {
@@ -66,6 +78,7 @@ export const useDataStore = defineStore('data', () => {
     searchQuery,
     searchMode,
     getLinksByCategory,
+    getSubCategories,
     visibleCategories,
     getLinkIcon,
     updateSearchConfig,

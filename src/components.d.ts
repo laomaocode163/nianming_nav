@@ -25,6 +25,7 @@ declare module 'vue' {
     ScrollToTop: typeof import('./components/ui/ScrollToTop.vue')['default']
     Sidebar: typeof import('./components/layout/Sidebar.vue')['default']
     SiteCard: typeof import('./components/ui/SiteCard.vue')['default']
+    SubCategoryTabs: typeof import('./components/ui/SubCategoryTabs.vue')['default']
     TimeDateComponent: typeof import('./components/ui/TimeDateComponent.vue')['default']
   }
 }

@@ -2,7 +2,11 @@
   { "id": "common", "name": "常用推荐", "icon": "☆" },
   { "id": "ai", "name": "人工智能", "icon": "⚙️" },
   { "id": "dev", "name": "开发工具", "icon": "</>" },
-  { "id": "frontend-docs", "name": "前端文档", "icon": "📘" },
+  { "id": "frontend-docs", "name": "前端文档", "icon": "📘", "subCategories": [
+    { "id": "frontend-frameworks", "name": "前端框架", "icon": "⚡", "order": 1 },
+    { "id": "frontend-scaffolds", "name": "前端脚手架", "icon": "🏗️", "order": 2 },
+    { "id": "frontend-deploy", "name": "前端部署", "icon": "🚀", "order": 3 }
+  ] },
   { "id": "backend-docs", "name": "后端文档", "icon": "📗" },
   { "id": "design", "name": "设计资源", "icon": "🖌️" },
   { "id": "read", "name": "阅读资讯", "icon": "📖" },

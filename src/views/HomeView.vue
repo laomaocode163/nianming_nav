@@ -6,6 +6,7 @@ import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
 import ScrollToTop from '../components/ui/ScrollToTop.vue'
 import EmptyState from '../components/ui/EmptyState.vue'
+import SubCategoryTabs from '../components/ui/SubCategoryTabs.vue'
 import { defineAsyncComponent } from 'vue'
 const SiteCard = defineAsyncComponent(() => import('../components/ui/SiteCard.vue'))
 
@@ -13,6 +14,7 @@ const dataStore = useDataStore()
 const { isMobile } = useResponsive()
 
 const selectedCategoryId = ref('all')
+const selectedSubCategoryId = ref<string | null>(null)
 const sidebarOpen = ref(true)
 const sidebarCollapsed = ref(false)
 const gridKey = ref(0)
@@ -31,8 +33,16 @@ const closeSidebar = () => {
 
 const categories = computed(() => dataStore.visibleCategories)
 
+const subCategories = computed(() => {
+  return dataStore.getSubCategories(selectedCategoryId.value)
+})
+
+const hasSubCategories = computed(() => {
+  return subCategories.value.length > 0
+})
+
 const links = computed(() => {
-  return dataStore.getLinksByCategory(selectedCategoryId.value)
+  return dataStore.getLinksByCategory(selectedCategoryId.value, selectedSubCategoryId.value)
 })
 
 const currentCategory = computed(() => {
@@ -43,6 +53,10 @@ const selectCategory = (categoryId: string) => {
   selectedCategoryId.value = categoryId
 }
 
+const selectSubCategory = (subCategoryId: string | null) => {
+  selectedSubCategoryId.value = subCategoryId
+}
+
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && isMobile.value && sidebarOpen.value) {
     closeSidebar()
@@ -50,6 +64,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 watch(selectedCategoryId, () => {
+  selectedSubCategoryId.value = null
   gridKey.value++
 })
 
@@ -94,6 +109,15 @@ onUnmounted(() => {
           <h2 class="category-title">{{ selectedCategoryId === 'all' ? '全部网站' : currentCategory?.name || '未知分类' }}</h2>
           <span class="site-count">{{ links.length }} 个网站</span>
         </div>
+
+        <!-- 二级分类标签 -->
+        <SubCategoryTabs
+          v-if="hasSubCategories"
+          :sub-categories="subCategories"
+          :selected-id="selectedSubCategoryId"
+          :total-count="links.length"
+          @select="selectSubCategory"
+        />
 
         <!-- 网站列表 -->
         <div v-if="links.length > 0" class="sites-grid">

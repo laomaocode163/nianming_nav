@@ -1,9 +1,18 @@
+// 二级分类类型
+export interface SubCategory {
+  id: string;
+  name: string;
+  icon?: string;
+  order?: number;
+}
+
 // 网站链接类型
 export interface Link {
   id: string;
   name: string;
   url: string;
   categoryId: string;
+  subCategoryId?: string;
   icon?: string;
   pinned?: boolean;
   pinnedOrder?: number;
@@ -20,6 +29,7 @@ export interface Category {
   icon: string;
   hidden?: boolean;
   order?: number;
+  subCategories?: SubCategory[];
 }
 
 // 搜索配置类型
