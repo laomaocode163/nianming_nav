@@ -18,6 +18,8 @@ const selectedSubCategoryId = ref<string | null>(null)
 const sidebarOpen = ref(true)
 const sidebarCollapsed = ref(false)
 const gridKey = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(20)
 
 const toggleSidebarCollapse = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
@@ -45,6 +47,12 @@ const links = computed(() => {
   return dataStore.getLinksByCategory(selectedCategoryId.value, selectedSubCategoryId.value)
 })
 
+/** 当前页展示的链接，基于 links 做切片，避免单页渲染过多卡片 */
+const paginatedLinks = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return links.value.slice(start, start + pageSize.value)
+})
+
 const currentCategory = computed(() => {
   return categories.value.find(c => c.id === selectedCategoryId.value)
 })
@@ -55,6 +63,7 @@ const selectCategory = (categoryId: string) => {
 
 const selectSubCategory = (subCategoryId: string | null) => {
   selectedSubCategoryId.value = subCategoryId
+  currentPage.value = 1
 }
 
 const handleKeydown = (event: KeyboardEvent) => {
@@ -65,8 +74,17 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 watch(selectedCategoryId, () => {
   selectedSubCategoryId.value = null
+  currentPage.value = 1
   gridKey.value++
 })
+
+/** 翻页后将网站列表滚动到顶部 */
+const handlePageChange = () => {
+  const sitesSection = document.querySelector('.sites-section')
+  if (sitesSection) {
+    sitesSection.scrollTop = 0
+  }
+}
 
 onMounted(() => {
   if (isMobile.value) {
@@ -120,7 +138,7 @@ onUnmounted(() => {
         <!-- 网站列表 -->
         <div v-if="links.length > 0" class="sites-grid">
           <SiteCard
-            v-for="(site, index) in links"
+            v-for="(site, index) in paginatedLinks"
             :key="`${gridKey}-${site.id}`"
             :site="site"
             :style="{ animationDelay: `${index * 0.05}s` }"
@@ -132,6 +150,19 @@ onUnmounted(() => {
           icon="📭"
           title="暂无网站"
           description="该分类下暂无网站"
+        />
+      </div>
+
+      <!-- 分页 -->
+      <div v-if="links.length > pageSize" class="pagination-wrapper">
+        <el-pagination
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="links.length"
+          layout="prev, pager, next"
+          :pager-count="isMobile ? 5 : 7"
+          background
+          @current-change="handlePageChange"
         />
       </div>
     </div>
@@ -161,6 +192,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  overflow-y: auto;
   background: var(--color-bg);
   transition: margin-left var(--transition-normal);
 }
@@ -175,9 +207,7 @@ onUnmounted(() => {
 
 .sites-section {
   flex: 1;
-  min-height: 0;
   padding: 0 1.5rem 2rem;
-  overflow-y: auto;
 }
 
 .category-header {
@@ -312,6 +342,14 @@ onUnmounted(() => {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
+
+  .pagination-wrapper {
+    padding: 1.5rem 0 0.5rem;
+  }
+
+  .pagination-wrapper :deep(.el-pagination) {
+    font-size: 13px;
+  }
 }
 
 /* 小屏幕手机适配 */
@@ -319,5 +357,19 @@ onUnmounted(() => {
   .sites-grid {
     gap: 0.75rem;
   }
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+  flex-shrink: 0;
+}
+
+.pagination-wrapper :deep(.el-pagination) {
+  --el-pagination-bg-color: var(--color-card);
+  --el-pagination-hover-color: var(--color-primary);
 }
 </style>

@@ -17,6 +17,7 @@ declare module 'vue' {
     ElDropdownMenu: typeof import('element-plus/es')['ElDropdownMenu']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
+    ElPagination: typeof import('element-plus/es')['ElPagination']
     EmptyState: typeof import('./components/ui/EmptyState.vue')['default']
     MainHeader: typeof import('./components/layout/MainHeader.vue')['default']
     MiniPlayer: typeof import('./components/MusicPlayer/MiniPlayer.vue')['default']

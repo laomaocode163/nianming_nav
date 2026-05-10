@@ -28,13 +28,13 @@
 
       <!-- 控制区 -->
       <div class="player-controls">
-        <button class="control-btn" @click.stop="playPrev" title="上一首">
+        <button class="control-btn" title="上一首" @click.stop="playPrev">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <rect x="2" y="3" width="1.5" height="10" rx="0.75" fill="currentColor"/>
             <path d="M13 3L5 8L13 13V3Z" fill="currentColor"/>
           </svg>
         </button>
-        <button class="control-btn" @click.stop="playNext" title="下一首">
+        <button class="control-btn" title="下一首" @click.stop="playNext">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M3 3L11 8L3 13V3Z" fill="currentColor"/>
             <rect x="12.5" y="3" width="1.5" height="10" rx="0.75" fill="currentColor"/>
