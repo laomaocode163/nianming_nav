@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { useDataStore } from '../../stores/data'
 import { getDefaultIcon } from '../../utils/constants'
 import type { Link } from '../../types'
@@ -9,6 +10,7 @@ const props = defineProps<{
 }>()
 
 const dataStore = useDataStore()
+const isCopied = ref(false)
 
 const siteIcon = computed(() => {
   return dataStore.getLinkIcon(props.site)
@@ -18,6 +20,25 @@ const onIconError = (event: Event) => {
   const img = event.target as HTMLImageElement
   img.src = getDefaultIcon()
   img.onerror = null
+}
+
+/** 复制网站名称到剪贴板，降级兼容不支持 Clipboard API 的环境 */
+const copyName = async () => {
+  try {
+    await navigator.clipboard.writeText(props.site.name)
+  } catch {
+    const textarea = document.createElement('textarea')
+    textarea.value = props.site.name
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+  }
+  isCopied.value = true
+  ElMessage.success({ message: `已复制「${props.site.name}」`, duration: 1500, grouping: true })
+  setTimeout(() => { isCopied.value = false }, 1500)
 }
 </script>
 
@@ -39,7 +60,23 @@ const onIconError = (event: Event) => {
     </div>
 
     <div class="site-info">
-      <div class="site-name">{{ site.name }}</div>
+      <div class="site-name-row">
+        <span class="site-name">{{ site.name }}</span>
+        <button
+          class="copy-btn"
+          :class="{ copied: isCopied }"
+          title="复制名称"
+          @click.prevent.stop="copyName"
+        >
+          <svg v-if="!isCopied" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <svg v-else viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </button>
+      </div>
       <div v-if="site.description" class="site-desc">{{ site.description }}</div>
       <div v-if="!site.description" class="site-url">{{ site.url }}</div>
     </div>
@@ -123,11 +160,17 @@ const onIconError = (event: Event) => {
   min-width: 0;
 }
 
+.site-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.25rem;
+}
+
 .site-name {
   font-weight: 700;
   font-size: 1.05rem;
   color: var(--color-text);
-  margin-bottom: 0.25rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -137,6 +180,42 @@ const onIconError = (event: Event) => {
 
 .site-card:hover .site-name {
   color: var(--color-primary);
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  color: var(--color-text-secondary);
+  transition: opacity 0.15s ease, color 0.15s ease, background 0.15s ease;
+  padding: 0;
+}
+
+.site-card:hover .copy-btn {
+  opacity: 0.6;
+}
+
+.copy-btn:hover {
+  opacity: 1 !important;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--color-primary);
+}
+
+.dark .copy-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.copy-btn.copied {
+  opacity: 1 !important;
+  color: #10b981;
 }
 
 .site-desc {
@@ -182,6 +261,10 @@ const onIconError = (event: Event) => {
     font-size: 0.9rem;
   }
 
+  .copy-btn {
+    opacity: 0.5;
+  }
+
   .site-desc {
     font-size: 0.78rem;
   }
@@ -223,6 +306,18 @@ const onIconError = (event: Event) => {
     border-color: var(--color-border);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     background: var(--color-card);
+  }
+
+  .site-card:hover .site-name {
+    color: var(--color-text);
+  }
+
+  .copy-btn {
+    opacity: 0.5;
+  }
+
+  .site-card:hover .copy-btn {
+    opacity: 0.5;
   }
 
   .site-card:active {

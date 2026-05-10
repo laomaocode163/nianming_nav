@@ -19,5 +19,15 @@
   { "id": "108", "name": "Nuxt", "url": "https://nuxt.com", "categoryId": "frontend-docs", "subCategoryId": "frontend-scaffolds", "description": "Vue.js全栈框架" },
   { "id": "109", "name": "Vercel", "url": "https://vercel.com", "categoryId": "frontend-docs", "subCategoryId": "frontend-deploy", "description": "前端部署与托管平台" },
   { "id": "110", "name": "Netlify", "url": "https://netlify.com", "categoryId": "frontend-docs", "subCategoryId": "frontend-deploy", "description": "现代Web项目部署平台" },
-  { "id": "111", "name": "GitHub Pages", "url": "https://pages.github.com", "categoryId": "frontend-docs", "subCategoryId": "frontend-deploy", "description": "GitHub静态站点托管" }
+  { "id": "111", "name": "GitHub Pages", "url": "https://pages.github.com", "categoryId": "frontend-docs", "subCategoryId": "frontend-deploy", "description": "GitHub静态站点托管" },
+  { "id": "201", "name": "Java 官方文档", "url": "https://docs.oracle.com/en/java/", "categoryId": "backend-docs", "subCategoryId": "backend-java", "description": "Oracle Java 官方文档" },
+  { "id": "202", "name": "OpenJDK", "url": "https://openjdk.org/", "categoryId": "backend-docs", "subCategoryId": "backend-java", "description": "Java 开源实现" },
+  { "id": "203", "name": "Python 官方文档", "url": "https://docs.python.org/3/", "categoryId": "backend-docs", "subCategoryId": "backend-python", "description": "Python 官方文档" },
+  { "id": "204", "name": "PyPI", "url": "https://pypi.org/", "categoryId": "backend-docs", "subCategoryId": "backend-python", "description": "Python 包索引" },
+  { "id": "205", "name": "Spring 官网", "url": "https://spring.io/", "categoryId": "backend-docs", "subCategoryId": "backend-spring", "description": "Spring 框架官方网站" },
+  { "id": "206", "name": "Spring Boot", "url": "https://spring.io/projects/spring-boot", "categoryId": "backend-docs", "subCategoryId": "backend-spring", "description": "Spring Boot 快速开发框架" },
+  { "id": "207", "name": "Langchain 官网", "url": "https://www.langchain.com/", "categoryId": "backend-docs", "subCategoryId": "backend-langchain", "description": "Langchain 官方网站" },
+  { "id": "208", "name": "Langchain 文档", "url": "https://docs.langchain.com/", "categoryId": "backend-docs", "subCategoryId": "backend-langchain", "description": "Langchain 官方文档" },
+  { "id": "209", "name": "Spring Initializr", "url": "https://start.spring.io/", "categoryId": "backend-docs", "subCategoryId": "backend-scaffolds", "description": "Spring 项目脚手架" },
+  { "id": "210", "name": "FastAPI", "url": "https://fastapi.tiangolo.com/", "categoryId": "backend-docs", "subCategoryId": "backend-scaffolds", "description": "Python 高性能 Web 框架" }
 ]

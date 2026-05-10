@@ -7,7 +7,13 @@
     { "id": "frontend-scaffolds", "name": "前端脚手架", "icon": "🏗️", "order": 2 },
     { "id": "frontend-deploy", "name": "前端部署", "icon": "🚀", "order": 3 }
   ] },
-  { "id": "backend-docs", "name": "后端文档", "icon": "📗" },
+  { "id": "backend-docs", "name": "后端文档", "icon": "📗", "subCategories": [
+    { "id": "backend-java", "name": "Java", "icon": "☕", "order": 1 },
+    { "id": "backend-python", "name": "Python", "icon": "🐍", "order": 2 },
+    { "id": "backend-spring", "name": "Spring", "icon": "🌱", "order": 3 },
+    { "id": "backend-langchain", "name": "Langchain", "icon": "🔗", "order": 4 },
+    { "id": "backend-scaffolds", "name": "脚手架", "icon": "🏗️", "order": 5 }
+  ] },
   { "id": "design", "name": "设计资源", "icon": "🖌️" },
   { "id": "read", "name": "阅读资讯", "icon": "📖" },
   { "id": "ent", "name": "休闲娱乐", "icon": "🧩" }
