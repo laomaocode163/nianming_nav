@@ -16,5 +16,10 @@
   ] },
   { "id": "design", "name": "设计资源", "icon": "🖌️" },
   { "id": "read", "name": "阅读资讯", "icon": "📖" },
-  { "id": "ent", "name": "休闲娱乐", "icon": "🧩" }
+  { "id": "ent", "name": "休闲娱乐", "icon": "🧩", "subCategories": [
+    { "id": "ent-movies", "name": "影视", "icon": "🎬", "order": 1 },
+    { "id": "ent-anime", "name": "动漫", "icon": "🎭", "order": 2 },
+    { "id": "ent-music", "name": "音乐", "icon": "🎵", "order": 3 },
+    { "id": "ent-books", "name": "书籍", "icon": "📚", "order": 4 }
+  ] }
 ]
