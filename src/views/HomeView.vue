@@ -192,7 +192,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden;
   background: var(--color-bg);
   transition: margin-left var(--transition-normal);
 }
@@ -207,6 +207,8 @@ onUnmounted(() => {
 
 .sites-section {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   padding: 0 1.5rem 2rem;
 }
 
@@ -217,10 +219,6 @@ onUnmounted(() => {
   padding: 1.5rem 1.5rem 1.25rem;
   margin-bottom: 1rem;
   border-bottom: 2px solid var(--color-border);
-  position: sticky;
-  top: 60px;
-  z-index: 10;
-  background: var(--color-bg);
 }
 
 .category-icon {
@@ -322,7 +320,6 @@ onUnmounted(() => {
   .category-header {
     flex-wrap: wrap;
     padding: 1rem 1rem 0.75rem;
-    top: 50px;
   }
 
   .category-icon {
