@@ -99,17 +99,15 @@ onUnmounted(() => {
         @toggle-sidebar="toggleSidebar"
       />
 
-
+      <!-- Category Header -->
+      <div class="category-header">
+        <span class="category-icon">{{ selectedCategoryId === 'all' ? '✓' : currentCategory?.icon || '🌐' }}</span>
+        <h2 class="category-title">{{ selectedCategoryId === 'all' ? '全部网站' : currentCategory?.name || '未知分类' }}</h2>
+        <span class="site-count">{{ links.length }} 个网站</span>
+      </div>
 
       <!-- Sites Grid -->
       <div class="sites-section">
-        <!-- Category Header -->
-        <div class="category-header">
-          <span class="category-icon">{{ selectedCategoryId === 'all' ? '✓' : currentCategory?.icon || '🌐' }}</span>
-          <h2 class="category-title">{{ selectedCategoryId === 'all' ? '全部网站' : currentCategory?.name || '未知分类' }}</h2>
-          <span class="site-count">{{ links.length }} 个网站</span>
-        </div>
-
         <!-- 二级分类标签 -->
         <SubCategoryTabs
           v-if="hasSubCategories"
@@ -162,10 +160,9 @@ onUnmounted(() => {
   margin-left: var(--sidebar-width, 240px);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--color-bg);
   transition: margin-left var(--transition-normal);
-  overflow: hidden;
 }
 
 .main-content.sidebar-collapsed {
@@ -178,16 +175,22 @@ onUnmounted(() => {
 
 .sites-section {
   flex: 1;
+  min-height: 0;
   padding: 0 1.5rem 2rem;
+  overflow-y: auto;
 }
 
 .category-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1.5rem 0 1.25rem;
+  padding: 1.5rem 1.5rem 1.25rem;
   margin-bottom: 1rem;
   border-bottom: 2px solid var(--color-border);
+  position: sticky;
+  top: 60px;
+  z-index: 10;
+  background: var(--color-bg);
 }
 
 .category-icon {
@@ -288,7 +291,8 @@ onUnmounted(() => {
 
   .category-header {
     flex-wrap: wrap;
-    padding: 1rem 0 0.75rem;
+    padding: 1rem 1rem 0.75rem;
+    top: 50px;
   }
 
   .category-icon {
@@ -305,7 +309,7 @@ onUnmounted(() => {
   }
 
   .sites-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
 }
