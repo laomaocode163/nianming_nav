@@ -1,31 +1,30 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useDataStore } from '../../stores/data'
 import { useResponsive } from '../../hooks/useResponsive'
 
-defineProps({
-  selectedCategory: {
-    type: String,
-    default: 'all'
-  },
-  isOpen: {
-    type: Boolean,
-    default: true
-  },
-  collapsed: {
-    type: Boolean,
-    default: false
-  }
+withDefaults(defineProps<{
+  selectedCategory?: string
+  isOpen?: boolean
+  collapsed?: boolean
+}>(), {
+  selectedCategory: 'all',
+  isOpen: true,
+  collapsed: false
 })
 
-const emit = defineEmits(['select', 'toggle-collapse', 'close'])
+const emit = defineEmits<{
+  (e: 'select', categoryId: string): void
+  (e: 'toggle-collapse'): void
+  (e: 'close'): void
+}>()
 
 const dataStore = useDataStore()
 const { isMobile } = useResponsive()
 
 const categories = computed(() => dataStore.visibleCategories)
 
-const handleSelect = (categoryId) => {
+const handleSelect = (categoryId: string) => {
   emit('select', categoryId)
   if (isMobile.value) {
     emit('close')

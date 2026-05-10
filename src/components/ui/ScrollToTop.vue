@@ -1,15 +1,17 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ArrowUp } from '@element-plus/icons-vue'
 
-const visible = ref(false)
-const scrollThreshold = 300
+const visible = ref<boolean>(false)
+const scrollThreshold: number = 300
 
-const handleScroll = () => {
+/** 根据滚动位置控制按钮可见性 */
+const handleScroll = (): void => {
   visible.value = window.scrollY > scrollThreshold
 }
 
-const scrollToTop = () => {
+/** 平滑滚动到页面顶部 */
+const scrollToTop = (): void => {
   window.scrollTo({
     top: 0,
     behavior: 'smooth'

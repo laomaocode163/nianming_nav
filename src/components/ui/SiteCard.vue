@@ -1,14 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useDataStore } from '../../stores/data'
 import { getDefaultIcon } from '../../utils/constants'
+import type { Link } from '../../types'
 
-const props = defineProps({
-  site: {
-    type: Object,
-    required: true
-  }
-})
+const props = defineProps<{
+  site: Link
+}>()
 
 const dataStore = useDataStore()
 
@@ -16,8 +14,8 @@ const siteIcon = computed(() => {
   return dataStore.getLinkIcon(props.site)
 })
 
-const onIconError = (event) => {
-  const img = event.target
+const onIconError = (event: Event) => {
+  const img = event.target as HTMLImageElement
   img.src = getDefaultIcon()
   img.onerror = null
 }

@@ -1,30 +1,23 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  icon: {
-    type: String,
-    default: '📭'
-  },
-  title: {
-    type: String,
-    default: '暂无数据'
-  },
-  description: {
-    type: String,
-    default: ''
-  },
-  actionText: {
-    type: String,
-    default: ''
-  },
-  showAction: {
-    type: Boolean,
-    default: false
-  }
+const props = withDefaults(defineProps<{
+  icon?: string
+  title?: string
+  description?: string
+  actionText?: string
+  showAction?: boolean
+}>(), {
+  icon: '📭',
+  title: '暂无数据',
+  description: '',
+  actionText: '',
+  showAction: false
 })
 
-const emit = defineEmits(['action'])
+const emit = defineEmits<{
+  (e: 'action'): void
+}>()
 
 const hasDescription = computed(() => !!props.description)
 const hasAction = computed(() => props.showAction && !!props.actionText)

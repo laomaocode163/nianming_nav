@@ -34,23 +34,29 @@ One exception: the `MiniPlayer` component streams music from an external API (`m
 
 ### Key Directories
 
-- `src/config/data/` — Static JSON data files (links, categories, search engines, settings, music playlist). Edit these files to modify site content — there is no admin UI.
-- `src/config/sites.ts` — Aggregates JSON data into `SITE_CONFIG` export
-- `src/stores/` — Pinia stores: `data.ts` (links, categories, search, settings) and `theme.ts` (light/dark mode with localStorage persistence)
+- `src/config/data/` — Static JSON data files. Edit these to modify site content (no admin UI):
+  - `categories.json` — Category definitions (id, name, icon, hidden, order)
+  - `links.json` — Website link entries (name, url, categoryId, description, order)
+  - `search.json` — External search engine configuration (Bing, Baidu, GitHub)
+  - `settings.json` — Site-wide settings (title, accent color, card style)
+  - `music.json` — Music playlist for the built-in player (Jay Chou songs)
+- `src/config/sites.ts` — Aggregates all JSON data into a single `SITE_CONFIG` export
+- `src/stores/` — Pinia stores: `data.ts` (links, categories, search, settings) and `theme.ts` (light/dark mode with system preference detection and localStorage persistence)
 - `src/components/layout/` — `Sidebar.vue` (category nav, collapsible on desktop, drawer on mobile) and `MainHeader.vue` (search, time widget, music player, theme toggle)
-- `src/components/MusicPlayer/` — `MiniPlayer.vue` (inline music player streaming Jay Chou songs)
-- `src/components/ui/` — Reusable components: `SiteCard.vue`, `Dialog.vue`, `Notification.vue`, `EmptyState.vue`, `Skeleton.vue`, `ScrollToTop.vue`, `KeyboardHint.vue`, `TimeDateComponent.vue`
-- `src/hooks/` — `useNotification.ts` (ElMessage wrapper), `useResponsive.ts` (breakpoint detection)
-- `src/utils/` — `faviconService.ts` (favicon URL via faviconextractor.com, localStorage cache), `constants.ts` (defaults)
+- `src/components/MusicPlayer/` — `MiniPlayer.vue` (inline music player streaming Jay Chou songs via external API)
+- `src/components/ui/` — Reusable components: `SiteCard.vue`, `EmptyState.vue`, `ScrollToTop.vue`, `TimeDateComponent.vue`
+- `src/hooks/` — `useResponsive.ts` (singleton breakpoint detection with shared resize listener)
+- `src/utils/` — `faviconService.ts` (favicon URL via faviconextractor.com), `constants.ts` (defaults)
 - `src/types/` — TypeScript interfaces: `Link`, `Category`, `SearchSource`, `SearchConfig`, `SiteSettings`, `IconMap`
-- `tests/` — Unit tests (stores/, utils/, components/)
+- `tests/` — Unit tests (stores/, utils/)
 
 ### Conventions
 
 - **Path alias**: `@` maps to `src/` (configured in vite.config.ts)
 - **Styling**: Tailwind CSS v4 with custom theme (primary purple, secondary cyan) in `tailwind.config.js`. Global CSS variables and dark mode definitions in `src/assets/main.css`. Use scoped styles in SFCs.
 - **Component style**: Composition API with `<script setup>`, TypeScript throughout
-- **UI library**: Element Plus is globally imported in `main.ts` (not tree-shaken)
+- **UI library**: Element Plus with auto-import via `unplugin-vue-components` and `unplugin-auto-import` (tree-shaken, no global import needed)
+- **Auto-import**: Vue APIs (`ref`, `computed`, etc.) and Element Plus components are auto-imported; see `src/auto-imports.d.ts` and `src/components.d.ts`
 - **Commit style**: Conventional Commits enforced via commitizen and husky pre-commit hook (runs `npm test`)
 - **Data editing**: Edit JSON files in `src/config/data/` to modify navigation content
 
