@@ -109,7 +109,7 @@ onUnmounted(() => {
           v-if="links.length === 0"
           icon="📭"
           title="暂无网站"
-          :description="selectedCategoryId === 'all' ? '还没有添加任何网站' : `该分类下暂无网站`"
+          description="该分类下暂无网站"
         />
       </div>
     </div>

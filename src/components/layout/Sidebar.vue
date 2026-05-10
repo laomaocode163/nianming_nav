@@ -8,7 +8,7 @@ withDefaults(defineProps<{
   isOpen?: boolean
   collapsed?: boolean
 }>(), {
-  selectedCategory: 'all',
+  selectedCategory: '',
   isOpen: true,
   collapsed: false
 })
@@ -72,16 +72,6 @@ const handleClose = () => {
     <!-- Navigation Section -->
     <div class="sidebar-nav-section">
       <nav class="sidebar-nav">
-        <el-button
-          class="nav-item"
-          :class="{ active: selectedCategory === 'all' }"
-          text
-          @click="handleSelect('all')"
-        >
-          <span class="nav-icon">✓</span>
-          <span v-show="!collapsed" class="nav-name">全部网站</span>
-        </el-button>
-
         <el-button
           v-for="category in categories"
           :key="category.id"

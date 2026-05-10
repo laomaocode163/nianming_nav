@@ -244,11 +244,11 @@ const formatTime = (seconds: number): string => {
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
-// 组件挂载时自动播放
+// 组件挂载时加载歌曲但不自动播放
 onMounted(() => {
   const randomIndex = Math.floor(Math.random() * jayzhouSongs.length)
   const song = jayzhouSongs[randomIndex]
-  playSong(song)
+  playSong(song, false)
 })
 
 onUnmounted(() => {
