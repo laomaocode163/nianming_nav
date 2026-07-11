@@ -1,7 +1,7 @@
 <template>
   <div class="mini-player">
     <audio
-      ref="audioPlayer"
+      ref="audioRef"
       @timeupdate="onTimeUpdate"
       @loadedmetadata="onLoadedMetadata"
       @ended="playNext"
@@ -64,198 +64,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import musicPlaylist from '../../config/data/music.json'
+import { ref, onMounted } from 'vue'
+import { useMusicPlayer } from '../../composables/useMusicPlayer'
 
-const API_BASE = 'https://music-api.gdstudio.xyz/api.php'
-const SOURCES = ['kuwo', 'netease']
+const audioRef = ref<HTMLAudioElement | null>(null)
+const { isPlaying, errorMessage, currentTimeDisplay, totalTimeDisplay, progressPercent, playNext, playPrev, togglePlay, onTimeUpdate, onLoadedMetadata, onProgressClick, onAudioError, init } =
+  useMusicPlayer(audioRef)
 
-const jayzhouSongs = musicPlaylist
-
-const audioPlayer = ref<HTMLAudioElement | null>(null)
-const currentSong = ref<{ name: string; keyword: string } | null>(null)
-const isPlaying = ref(false)
-const errorMessage = ref('')
-
-const currentTimeDisplay = ref('0:00')
-const totalTimeDisplay = ref('0:00')
-const progressPercent = ref(0)
-
-interface SongInfo {
-  name: string
-  keyword: string
-  kuwoId?: string
-  neteaseId?: string
-}
-
-const fetchWithTimeout = async (url: string, ms = 10000): Promise<Response> => {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), ms)
-  try {
-    return await fetch(url, { signal: controller.signal })
-  } finally {
-    clearTimeout(timer)
-  }
-}
-
-const getSongUrl = async (source: string, id: string): Promise<string | null> => {
-  try {
-    const res = await fetchWithTimeout(
-      `${API_BASE}?types=url&source=${source}&id=${id}&br=320`
-    )
-    const data = await res.json()
-    return data.url || null
-  } catch (e) {
-    // URL 获取失败
-  }
-  return null
-}
-
-const searchAndPlay = async (keyword: string): Promise<string | null> => {
-  for (const source of SOURCES) {
-    try {
-      const res = await fetchWithTimeout(
-        `${API_BASE}?types=search&source=${source}&name=${encodeURIComponent(keyword)}&count=5`
-      )
-      const data = await res.json()
-      if (Array.isArray(data) && data.length > 0) {
-        const url = await getSongUrl(data[0].source || source, data[0].id)
-        if (url) return url
-      }
-    } catch (e) {
-      // 搜索失败
-    }
-  }
-  return null
-}
-
-const playSong = async (song: SongInfo, autoPlay: boolean = true) => {
-  errorMessage.value = ''
-  currentSong.value = song
-
-  try {
-    let audioUrl: string | null = null
-
-    // 优先使用预定义的 kuwo ID
-    if (song.kuwoId) {
-      audioUrl = await getSongUrl('kuwo', song.kuwoId)
-    }
-    // 其次使用预定义的 netease ID
-    if (!audioUrl && song.neteaseId) {
-      audioUrl = await getSongUrl('netease', song.neteaseId)
-    }
-    // 最后通过搜索
-    if (!audioUrl) {
-      audioUrl = await searchAndPlay(song.keyword)
-    }
-
-    if (!audioUrl) {
-      throw new Error('未找到可用的音频链接')
-    }
-
-    if (!audioPlayer.value) return
-
-    audioPlayer.value.pause()
-    audioPlayer.value.src = audioUrl
-    audioPlayer.value.load()
-
-    if (autoPlay) {
-      try {
-        await audioPlayer.value.play()
-        isPlaying.value = true
-      } catch (playError) {
-        // 自动播放被浏览器阻止
-        isPlaying.value = false
-      }
-    }
-  } catch (error: unknown) {
-    errorMessage.value = error instanceof Error ? error.message : '播放失败'
-    isPlaying.value = false
-  }
-}
-
-const togglePlay = async () => {
-  if (!audioPlayer.value) return
-
-  if (isPlaying.value) {
-    audioPlayer.value.pause()
-    isPlaying.value = false
-  } else {
-    try {
-      await audioPlayer.value.play()
-      isPlaying.value = true
-    } catch {
-      isPlaying.value = false
-    }
-  }
-}
-
-const playNext = async () => {
-  let randomIndex = Math.floor(Math.random() * jayzhouSongs.length)
-  if (currentSong.value && jayzhouSongs[randomIndex].name === currentSong.value.name) {
-    randomIndex = (randomIndex + 1) % jayzhouSongs.length
-  }
-  await playSong(jayzhouSongs[randomIndex], true)
-}
-
-const playPrev = async () => {
-  await playNext()
-}
-
-const onTimeUpdate = () => {
-  if (!audioPlayer.value) return
-
-  const current = audioPlayer.value.currentTime
-  const duration = audioPlayer.value.duration
-
-  if (duration) {
-    progressPercent.value = (current / duration) * 100
-    currentTimeDisplay.value = formatTime(current)
-  }
-}
-
-const onLoadedMetadata = () => {
-  if (!audioPlayer.value) return
-  totalTimeDisplay.value = formatTime(audioPlayer.value.duration)
-}
-
-const onProgressClick = (event: MouseEvent) => {
-  if (!audioPlayer.value) return
-
-  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-  const clickX = event.clientX - rect.left
-  const width = rect.width
-  const percent = clickX / width
-
-  if (audioPlayer.value.duration) {
-    audioPlayer.value.currentTime = percent * audioPlayer.value.duration
-  }
-}
-
-const onAudioError = () => {
-  errorMessage.value = '音频加载失败'
-  isPlaying.value = false
-}
-
-const formatTime = (seconds: number): string => {
-  if (isNaN(seconds)) return '0:00'
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-}
-
-// 组件挂载时加载歌曲但不自动播放
 onMounted(() => {
-  const randomIndex = Math.floor(Math.random() * jayzhouSongs.length)
-  const song = jayzhouSongs[randomIndex]
-  playSong(song, false)
-})
-
-onUnmounted(() => {
-  if (audioPlayer.value) {
-    audioPlayer.value.pause()
-    audioPlayer.value.src = ''
-  }
+  init()
 })
 </script>
 

@@ -32,6 +32,17 @@ export interface Category {
   subCategories?: SubCategory[];
 }
 
+// 搜索模式（站内 / 外部搜索引擎）
+export type SearchMode = 'internal' | 'external';
+
+// 音乐曲目
+export interface MusicTrack {
+  name: string
+  keyword: string
+  kuwoId?: string
+  neteaseId?: string
+}
+
 // 搜索配置类型
 export interface SearchSource {
   id: string;
@@ -50,9 +61,17 @@ export interface SearchConfig {
 
 // 网站设置类型
 export interface SiteSettings {
-  siteName?: string;
-  enableAnimations?: boolean;
-  [key: string]: string | boolean | undefined;
+  title?: string;
+  navTitle?: string;
+  favicon?: string;
+  cardStyle?: string;
+  siteMode?: string;
+  accentColor?: string;
+  grayScale?: string;
+  closeOnBackdrop?: boolean;
+  backgroundImage?: string;
+  backgroundImageEnabled?: boolean;
+  backgroundMotion?: boolean;
 }
 
 // 图标映射类型

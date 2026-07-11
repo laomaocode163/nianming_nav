@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useDataStore } from '../stores/data'
+import { useUiStore } from '../stores/ui'
 import { useResponsive } from '../hooks/useResponsive'
 import Sidebar from '../components/layout/Sidebar.vue'
 import MainHeader from '../components/layout/MainHeader.vue'
@@ -11,32 +12,16 @@ import { defineAsyncComponent } from 'vue'
 const SiteCard = defineAsyncComponent(() => import('../components/ui/SiteCard.vue'))
 
 const dataStore = useDataStore()
+const uiStore = useUiStore()
 const { isMobile } = useResponsive()
 
-const selectedCategoryId = ref('all')
-const selectedSubCategoryId = ref<string | null>(null)
-const sidebarOpen = ref(true)
-const sidebarCollapsed = ref(false)
 const gridKey = ref(0)
-const currentPage = ref(1)
-const pageSize = ref(20)
-
-const toggleSidebarCollapse = () => {
-  sidebarCollapsed.value = !sidebarCollapsed.value
-}
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value
-}
-
-const closeSidebar = () => {
-  sidebarOpen.value = false
-}
+const sitesSectionRef = ref<HTMLElement | null>(null)
 
 const categories = computed(() => dataStore.visibleCategories)
 
 const subCategories = computed(() => {
-  return dataStore.getSubCategories(selectedCategoryId.value)
+  return dataStore.getSubCategories(uiStore.selectedCategoryId)
 })
 
 const hasSubCategories = computed(() => {
@@ -44,51 +29,40 @@ const hasSubCategories = computed(() => {
 })
 
 const links = computed(() => {
-  return dataStore.getLinksByCategory(selectedCategoryId.value, selectedSubCategoryId.value)
+  return dataStore.getLinksByCategory(uiStore.selectedCategoryId, uiStore.selectedSubCategoryId)
 })
 
 /** 当前页展示的链接，基于 links 做切片，避免单页渲染过多卡片 */
 const paginatedLinks = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value
-  return links.value.slice(start, start + pageSize.value)
+  const start = (uiStore.currentPage - 1) * uiStore.pageSize
+  return links.value.slice(start, start + uiStore.pageSize)
 })
 
 const currentCategory = computed(() => {
-  return categories.value.find(c => c.id === selectedCategoryId.value)
+  return categories.value.find(c => c.id === uiStore.selectedCategoryId)
 })
 
-const selectCategory = (categoryId: string) => {
-  selectedCategoryId.value = categoryId
-}
-
-const selectSubCategory = (subCategoryId: string | null) => {
-  selectedSubCategoryId.value = subCategoryId
-  currentPage.value = 1
-}
-
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && isMobile.value && sidebarOpen.value) {
-    closeSidebar()
+  if (event.key === 'Escape' && isMobile.value && uiStore.sidebarOpen) {
+    uiStore.closeSidebar()
   }
 }
 
-watch(selectedCategoryId, () => {
-  selectedSubCategoryId.value = null
-  currentPage.value = 1
+watch(() => uiStore.selectedCategoryId, () => {
+  uiStore.selectSubCategory(null)
   gridKey.value++
 })
 
 /** 翻页后将网站列表滚动到顶部 */
 const handlePageChange = () => {
-  const sitesSection = document.querySelector('.sites-section')
-  if (sitesSection) {
-    sitesSection.scrollTop = 0
+  if (sitesSectionRef.value) {
+    sitesSectionRef.value.scrollTop = 0
   }
 }
 
 onMounted(() => {
   if (isMobile.value) {
-    sidebarOpen.value = false
+    uiStore.sidebarOpen = false
   }
   document.addEventListener('keydown', handleKeydown)
 })
@@ -102,16 +76,16 @@ onUnmounted(() => {
   <div class="home-layout">
     <!-- Sidebar -->
     <Sidebar
-      :selected-category="selectedCategoryId"
-      :is-open="sidebarOpen"
-      :collapsed="sidebarCollapsed"
-      @select="selectCategory"
-      @toggle-collapse="toggleSidebarCollapse"
-      @close="closeSidebar"
+      :selected-category="uiStore.selectedCategoryId"
+      :is-open="uiStore.sidebarOpen"
+      :collapsed="uiStore.sidebarCollapsed"
+      @select="uiStore.selectCategory"
+      @toggle-collapse="uiStore.toggleSidebarCollapse"
+      @close="uiStore.closeSidebar"
     />
 
     <!-- Main Content -->
-    <div class="main-content" :class="{ 'sidebar-closed': !sidebarOpen, 'sidebar-collapsed': sidebarCollapsed, 'is-mobile': isMobile }">
+    <div class="main-content" :class="{ 'sidebar-closed': !uiStore.sidebarOpen, 'sidebar-collapsed': uiStore.sidebarCollapsed, 'is-mobile': isMobile }">
       <!-- Header -->
       <MainHeader
         @toggle-sidebar="toggleSidebar"
@@ -125,7 +99,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Sites Grid -->
-      <div class="sites-section">
+      <div ref="sitesSectionRef" class="sites-section">
         <!-- 二级分类标签 -->
         <SubCategoryTabs
           v-if="hasSubCategories"
@@ -156,8 +130,8 @@ onUnmounted(() => {
       <!-- 分页 -->
       <div v-if="links.length > pageSize" class="pagination-wrapper">
         <el-pagination
-          v-model:current-page="currentPage"
-          :page-size="pageSize"
+          v-model:current-page="uiStore.currentPage"
+          :page-size="uiStore.pageSize"
           :total="links.length"
           layout="prev, pager, next"
           :pager-count="isMobile ? 5 : 7"

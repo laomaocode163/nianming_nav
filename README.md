@@ -90,12 +90,16 @@ nianming_nav/
 │   │   └── MusicPlayer/ # 音乐播放器组件（MiniPlayer）
 │   ├── config/          # 配置
 │   │   ├── data/        # 静态数据文件（categories、links、search、settings、music）
-│   │   └── sites.ts     # 数据聚合入口
+│   │   ├── schema.ts    # Zod 配置校验 Schema
+│   │   ├── sites.ts     # 数据聚合入口（经 Schema 校验）
+│   │   └── music.ts     # 音乐播放列表聚合（经 Schema 校验）
 │   ├── hooks/           # 自定义钩子（useResponsive）
 │   ├── router/          # 路由配置
-│   ├── stores/          # Pinia 状态管理（data、theme）
+│   ├── services/        # 外部依赖抽象（faviconService、musicApi）
+│   ├── stores/          # Pinia 状态管理（data、ui、theme、settings）
+│   ├── composables/     # 组合式逻辑（useMusicPlayer）
 │   ├── types/           # TypeScript 类型定义
-│   ├── utils/           # 工具函数（faviconService、constants）
+│   ├── utils/           # 工具函数（constants）
 │   ├── views/           # 页面视图（HomeView）
 │   ├── App.vue
 │   └── main.ts
@@ -115,12 +119,17 @@ nianming_nav/
    - `sites.ts`: 聚合以上数据为统一的 `SITE_CONFIG` 对象
 
 2. **状态管理模块** (`src/stores/`)
-   - `data.ts`: 从静态配置加载链接、分类、搜索引擎等数据，提供过滤和搜索功能
-   - `theme.ts`: 管理亮色/暗色主题切换，支持跟随系统偏好
+    - `data.ts`: 静态导航数据（链接、分类、搜索引擎等）与派生 getter
+    - `ui.ts`: 交互态（选中分类、搜索词/模式、侧边栏、分页）
+    - `theme.ts`: 管理亮色/暗色主题切换，支持跟随系统偏好
+    - `settings.ts`: 将 `settings.json` 应用到运行时（主题色、背景、卡片样式）
 
-3. **工具函数模块** (`src/utils/`)
-   - `faviconService.ts`: 处理网站图标加载和域名提取
-   - `constants.ts`: 定义常量和默认值
+3. **服务模块** (`src/services/`)
+    - `faviconService.ts`: 网站图标解析，含内存 + localStorage 缓存与降级链
+    - `musicApi.ts`: 外部音乐 API 封装（获取直链 / 搜索）
+
+4. **组合式逻辑** (`src/composables/`)
+    - `useMusicPlayer.ts`: 音乐播放器状态与逻辑，组件仅做视图
 
 4. **组件模块** (`src/components/`)
    - `layout/`: 布局组件（Sidebar 侧边栏、MainHeader 头部）

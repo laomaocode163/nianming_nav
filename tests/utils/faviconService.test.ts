@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { extractDomain, getFaviconUrl } from '../../src/utils/faviconService'
+import { extractDomain, getFaviconUrl, getFaviconFallbacks } from '../../src/services/faviconService'
 import { getDefaultIcon } from '../../src/utils/constants'
 
 describe('faviconService', () => {
@@ -32,6 +32,21 @@ describe('faviconService', () => {
   describe('getDefaultIcon', () => {
     it('should return a data URL', () => {
       expect(getDefaultIcon()).toMatch(/^data:image\/svg\+xml/)
+    })
+  })
+
+  describe('getFaviconFallbacks', () => {
+    it('should return primary + Google S2 + DuckDuckGo for a domain', () => {
+      const fallbacks = getFaviconFallbacks('github.com')
+      expect(fallbacks).toEqual([
+        'https://www.faviconextractor.com/favicon/github.com?larger=true',
+        'https://www.google.com/s2/favicons?domain=github.com&sz=64',
+        'https://icons.duckduckgo.com/ip3/github.com.ico',
+      ])
+    })
+
+    it('should return empty array for empty domain', () => {
+      expect(getFaviconFallbacks('')).toEqual([])
     })
   })
 })

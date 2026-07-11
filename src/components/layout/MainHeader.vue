@@ -4,6 +4,7 @@ import { useResponsive } from '../../hooks/useResponsive'
 import TimeDateComponent from '../ui/TimeDateComponent.vue'
 import { ref, computed } from 'vue'
 import { useDataStore } from '../../stores/data'
+import { useUiStore } from '../../stores/ui'
 import { ArrowDown, Search } from '@element-plus/icons-vue'
 import MiniPlayer from '../MusicPlayer/MiniPlayer.vue'
 import type { SearchSource } from '../../types'
@@ -12,6 +13,7 @@ const emit = defineEmits(['toggle-sidebar'])
 
 const themeStore = useThemeStore()
 const dataStore = useDataStore()
+const uiStore = useUiStore()
 const { isMobile } = useResponsive()
 
 const iconErrorMap = ref<Record<string, string>>({})
@@ -45,14 +47,14 @@ const selectEngine = (engineId: string) => {
 }
 
 const handleSearch = () => {
-  if (!dataStore.searchQuery.trim()) return
+  if (!uiStore.searchQuery.trim()) return
   
-  if (dataStore.searchMode === 'external') {
+  if (uiStore.searchMode === 'external') {
     // 外部搜索（搜索引擎）
     if (selectedEngine.value) {
-      window.open(selectedEngine.value.url + encodeURIComponent(dataStore.searchQuery), '_blank', 'noopener,noreferrer')
+      window.open(selectedEngine.value.url + encodeURIComponent(uiStore.searchQuery), '_blank', 'noopener,noreferrer')
       // 清空搜索框内容
-      dataStore.updateSearchQuery('')
+      uiStore.updateSearchQuery('')
     }
   } else {
     // 内部搜索（网站搜索）
@@ -88,13 +90,13 @@ const handleSearch = () => {
       
       <div class="search-wrapper">
         <!-- Search Mode Toggle -->
-        <div class="search-mode-toggle" @click="dataStore.updateSearchMode(dataStore.searchMode === 'external' ? 'internal' : 'external')">
-          <span class="mode-icon">{{ dataStore.searchMode === 'external' ? '🌐' : '🔍' }}</span>
-          <span class="mode-text">{{ dataStore.searchMode === 'external' ? '搜索' : '站内' }}</span>
+        <div class="search-mode-toggle" @click="uiStore.toggleSearchMode()">
+          <span class="mode-icon">{{ uiStore.searchMode === 'external' ? '🌐' : '🔍' }}</span>
+          <span class="mode-text">{{ uiStore.searchMode === 'external' ? '搜索' : '站内' }}</span>
         </div>
         
         <!-- Search Engine Selector (only show in external mode) -->
-        <div v-if="dataStore.searchMode === 'external'" class="search-engine-selector">
+        <div v-if="uiStore.searchMode === 'external'" class="search-engine-selector">
           <el-dropdown class="search-engine-dropdown" trigger="click" @command="selectEngine">
             <!-- Favicon image with error fallback -->
             <div class="engine-selector-content">
@@ -140,12 +142,12 @@ const handleSearch = () => {
 
         <!-- Search Input -->
         <el-input
-          :model-value="dataStore.searchQuery"
-          :placeholder="dataStore.searchMode === 'external' ? `在 ${selectedEngine?.name || '必应'} 搜索...` : '搜索站内网站...'"
+          :model-value="uiStore.searchQuery"
+          :placeholder="uiStore.searchMode === 'external' ? `在 ${selectedEngine?.name || '必应'} 搜索...` : '搜索站内网站...'"
           :size="isMobile ? 'default' : 'large'"
           clearable
           class="search-input"
-          @update:model-value="dataStore.updateSearchQuery($event)"
+          @update:model-value="uiStore.updateSearchQuery($event)"
           @keyup.enter="handleSearch"
         >
           <template #suffix>

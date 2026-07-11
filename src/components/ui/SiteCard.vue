@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useDataStore } from '../../stores/data'
 import { getDefaultIcon } from '../../utils/constants'
+import { extractDomain, getFaviconFallbacks, cacheFavicon } from '../../services/faviconService'
 import type { Link } from '../../types'
 
 const props = defineProps<{
@@ -11,15 +12,32 @@ const props = defineProps<{
 
 const dataStore = useDataStore()
 const isCopied = ref(false)
+const failedIndex = ref(-1)
 
 const siteIcon = computed(() => {
   return dataStore.getLinkIcon(props.site)
 })
 
+const onIconLoad = (event: Event) => {
+  const img = event.target as HTMLImageElement
+  const domain = extractDomain(props.site.url)
+  if (domain) {
+    cacheFavicon(domain, img.src)
+  }
+}
+
 const onIconError = (event: Event) => {
   const img = event.target as HTMLImageElement
-  img.src = getDefaultIcon()
-  img.onerror = null
+  const domain = extractDomain(props.site.url)
+  const fallbacks = getFaviconFallbacks(domain)
+  const next = failedIndex.value + 1
+  if (next < fallbacks.length) {
+    failedIndex.value = next
+    img.src = fallbacks[next]
+  } else {
+    img.src = getDefaultIcon()
+    img.onerror = null
+  }
 }
 
 /** 复制网站名称到剪贴板，降级兼容不支持 Clipboard API 的环境 */
@@ -50,13 +68,14 @@ const copyName = async () => {
     class="site-card"
   >
     <div class="site-icon-wrapper">
-      <img
-        :src="siteIcon"
-        :alt="site.name"
-        class="site-icon"
-        loading="lazy"
-        @error="onIconError"
-      />
+        <img
+          :src="siteIcon"
+          :alt="site.name"
+          class="site-icon"
+          loading="lazy"
+          @load="onIconLoad"
+          @error="onIconError"
+        />
     </div>
 
     <div class="site-info">
