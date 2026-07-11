@@ -78,12 +78,18 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.625rem 0.875rem;
+  height: 52px;
+  padding: 0 1rem;
   background: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   min-width: 200px;
+  transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.time-date-component:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .time-section {
@@ -146,7 +152,7 @@ onUnmounted(() => {
 /* 平板适配 - 组件在移动端被隐藏，仅需处理平板尺寸 */
 @media (max-width: 1024px) and (min-width: 769px) {
   .time-date-component {
-    padding: 0.625rem 0.875rem;
+    padding: 0 0.875rem;
     gap: 0.75rem;
     min-width: 180px;
   }

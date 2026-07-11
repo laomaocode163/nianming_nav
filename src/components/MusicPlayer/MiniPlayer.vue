@@ -84,24 +84,26 @@ onMounted(() => {
 }
 
 .mini-player-card {
+  --mp-accent: var(--hue-primary), var(--sat-primary), var(--lig-primary);
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.875rem 0.875rem;
+  height: 52px;
+  padding: 0 0.875rem;
   background: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
 }
 
 .mini-player-card:hover {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-md);
 }
 
 .mini-player-card.playing {
-  border-color: rgba(139, 92, 246, 0.3);
-  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.1);
+  border-color: hsl(var(--mp-accent) / 0.35);
+  box-shadow: 0 0 0 1px hsl(var(--mp-accent) / 0.12);
 }
 
 /* 播放区：唱片 + 控制按钮 */
@@ -161,7 +163,7 @@ onMounted(() => {
   width: 44%;
   height: 44%;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary), #9b7fe8);
+  background: var(--gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,7 +187,7 @@ onMounted(() => {
 
 .vinyl-record.spinning .vinyl-disc {
   animation: spin 4s linear infinite;
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2), 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 2px hsl(var(--mp-accent) / 0.25), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes spin {
@@ -216,7 +218,7 @@ onMounted(() => {
 
 .control-btn:hover {
   color: var(--color-primary);
-  background: rgba(139, 92, 246, 0.08);
+  background: hsl(var(--mp-accent) / 0.1);
 }
 
 .control-btn:active {
