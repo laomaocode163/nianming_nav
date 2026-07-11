@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import { useDataStore } from '../../src/stores/data'
+import { getFaviconUrl } from '../../src/services/faviconService'
 
 describe('dataStore', () => {
   beforeEach(() => {
@@ -8,14 +9,35 @@ describe('dataStore', () => {
     setActivePinia(pinia)
   })
 
-  describe('links management', () => {
-    it('should have initial links from config', () => {
+  describe('async initialization', () => {
+    it('should not be ready and have no links before init', () => {
       const store = useDataStore()
-      expect(store.links.length).toBeGreaterThan(0)
+      expect(store.ready).toBe(false)
+      expect(store.links.length).toBe(0)
     })
 
-    it('should get links by category', () => {
+    it('should load links and categories from config after init', async () => {
       const store = useDataStore()
+      await store.init()
+      expect(store.ready).toBe(true)
+      expect(store.links.length).toBeGreaterThan(0)
+      expect(store.categories.length).toBeGreaterThan(0)
+    })
+
+    it('should populate settings and search config after init', async () => {
+      const store = useDataStore()
+      await store.init()
+      expect(store.settings).not.toBeNull()
+      expect(store.settings?.navTitle).toBe('念铭导航')
+      expect(store.searchConfig?.selectedSourceId).toBeDefined()
+      expect(store.searchConfig?.externalSources.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('links management', () => {
+    it('should get links by category', async () => {
+      const store = useDataStore()
+      await store.init()
 
       const allLinks = store.getLinksByCategory('all')
       expect(allLinks.length).toBeGreaterThan(0)
@@ -29,42 +51,24 @@ describe('dataStore', () => {
   })
 
   describe('categories management', () => {
-    it('should have initial categories from config', () => {
+    it('should return visible categories', async () => {
       const store = useDataStore()
-      expect(store.categories.length).toBeGreaterThan(0)
-    })
-
-    it('should return visible categories', () => {
-      const store = useDataStore()
+      await store.init()
       const visibleCats = store.visibleCategories
       expect(visibleCats.length).toBeGreaterThanOrEqual(0)
     })
   })
 
-  describe('search config', () => {
-    it('should have search config from config', () => {
-      const store = useDataStore()
-      expect(store.searchConfig.selectedSourceId).toBeDefined()
-      expect(store.searchConfig.externalSources.length).toBeGreaterThan(0)
-    })
-  })
-
-  describe('settings', () => {
-    it('should have settings from config', () => {
-      const store = useDataStore()
-      expect(store.settings).toBeDefined()
-      expect(store.settings.navTitle).toBe('念铭导航')
-    })
-  })
-
   describe('icon management', () => {
-    it('should get link icon', () => {
+    it('should resolve link icon via the favicon service (local manifest or site favicon)', async () => {
       const store = useDataStore()
+      await store.init()
       if (store.links.length > 0) {
         const link = store.links[0]
         const icon = store.getLinkIcon(link)
         expect(typeof icon).toBe('string')
-        expect(icon).toContain('faviconextractor.com')
+        // 与 faviconService 的解析结果一致：命中本地清单则为 /favicons/*，否则站点自身 favicon
+        expect(icon).toBe(getFaviconUrl(new URL(link.url).hostname))
       }
     })
   })

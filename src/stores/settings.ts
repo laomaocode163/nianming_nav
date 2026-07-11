@@ -6,8 +6,8 @@
  * - cardStyle -> 写到 documentElement 的 data 属性，供 CSS 定向样式
  */
 import { defineStore } from 'pinia'
-import { reactive } from 'vue'
-import { SITE_CONFIG } from '../config/sites'
+import { reactive, ref } from 'vue'
+import { loadSiteConfig } from '../config/loadConfig'
 import type { SiteSettings } from '../types'
 
 const rgbToHsl = (r: number, g: number, b: number): { h: number; s: number; l: number } => {
@@ -39,7 +39,15 @@ const rgbToHsl = (r: number, g: number, b: number): { h: number; s: number; l: n
 }
 
 export const useSettingsStore = defineStore('settings', () => {
-  const settings = reactive({ ...SITE_CONFIG.settings }) as SiteSettings
+  const ready = ref(false)
+  const settings = reactive({}) as SiteSettings
+
+  const init = async (): Promise<void> => {
+    if (ready.value) return
+    const config = await loadSiteConfig()
+    Object.assign(settings, config.settings)
+    ready.value = true
+  }
 
   const apply = (): void => {
     if (typeof document === 'undefined') return
@@ -67,5 +75,5 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   }
 
-  return { settings, apply }
+  return { ready, init, settings, apply }
 })

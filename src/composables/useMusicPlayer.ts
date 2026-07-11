@@ -4,11 +4,12 @@
  * 组件仅负责渲染与事件绑定。音频元素通过 audioRef 传入。
  */
 import { ref, onUnmounted, type Ref } from 'vue'
-import { musicPlaylist } from '../config/music'
+import { loadMusicPlaylist } from '../config/loadMusic'
 import { fetchSongUrl, searchSongUrl } from '../services/musicApi'
 import type { MusicTrack } from '../types'
 
 export function useMusicPlayer(audioRef: Ref<HTMLAudioElement | null>) {
+  const playlist = ref<MusicTrack[]>([])
   const currentSong = ref<MusicTrack | null>(null)
   const isPlaying = ref(false)
   const errorMessage = ref('')
@@ -56,24 +57,24 @@ export function useMusicPlayer(audioRef: Ref<HTMLAudioElement | null>) {
 
   const currentIndex = (): number => {
     if (!currentSong.value) return -1
-    return musicPlaylist.findIndex((s) => s.name === currentSong.value!.name)
+    return playlist.value.findIndex((s) => s.name === currentSong.value!.name)
   }
 
   const playNext = async (): Promise<void> => {
-    if (musicPlaylist.length === 0) return
-    let index = Math.floor(Math.random() * musicPlaylist.length)
+    if (playlist.value.length === 0) return
+    let index = Math.floor(Math.random() * playlist.value.length)
     const cur = currentIndex()
-    if (cur >= 0 && musicPlaylist[index].name === musicPlaylist[cur].name) {
-      index = (index + 1) % musicPlaylist.length
+    if (cur >= 0 && playlist.value[index].name === playlist.value[cur].name) {
+      index = (index + 1) % playlist.value.length
     }
-    await playSong(musicPlaylist[index], true)
+    await playSong(playlist.value[index], true)
   }
 
   const playPrev = async (): Promise<void> => {
-    if (musicPlaylist.length === 0) return
+    if (playlist.value.length === 0) return
     const cur = currentIndex()
-    const index = cur <= 0 ? musicPlaylist.length - 1 : cur - 1
-    await playSong(musicPlaylist[index], true)
+    const index = cur <= 0 ? playlist.value.length - 1 : cur - 1
+    await playSong(playlist.value[index], true)
   }
 
   const togglePlay = async (): Promise<void> => {
@@ -82,6 +83,9 @@ export function useMusicPlayer(audioRef: Ref<HTMLAudioElement | null>) {
     if (isPlaying.value) {
       player.pause()
       isPlaying.value = false
+    } else if (currentSong.value && !player.src) {
+      // 尚未加载音频（init 已选定曲目但未请求），首次播放时再加载
+      await playSong(currentSong.value, true)
     } else {
       try {
         await player.play()
@@ -120,10 +124,12 @@ export function useMusicPlayer(audioRef: Ref<HTMLAudioElement | null>) {
     isPlaying.value = false
   }
 
-  const init = (): void => {
-    if (musicPlaylist.length === 0) return
-    const index = Math.floor(Math.random() * musicPlaylist.length)
-    void playSong(musicPlaylist[index], false)
+  const init = async (): Promise<void> => {
+    playlist.value = await loadMusicPlaylist()
+    if (playlist.value.length === 0) return
+    const index = Math.floor(Math.random() * playlist.value.length)
+    // 仅选定曲目，不立即 load()/请求音频，推迟到用户首次播放，减少首屏网络争用
+    currentSong.value = playlist.value[index]
   }
 
   const dispose = (): void => {

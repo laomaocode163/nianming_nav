@@ -6,8 +6,11 @@ import { ref, computed } from 'vue'
 import { useDataStore } from '../../stores/data'
 import { useUiStore } from '../../stores/ui'
 import { ArrowDown, Search } from '@element-plus/icons-vue'
-import MiniPlayer from '../MusicPlayer/MiniPlayer.vue'
+import { defineAsyncComponent } from 'vue'
 import type { SearchSource } from '../../types'
+
+// MiniPlayer 仅桌面端渲染，懒加载以延迟其 JS
+const MiniPlayer = defineAsyncComponent(() => import('../MusicPlayer/MiniPlayer.vue'))
 
 const emit = defineEmits(['toggle-sidebar'])
 

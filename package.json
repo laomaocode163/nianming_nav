@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix",
     "lint:check": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx",
+    "fetch-favicons": "node scripts/fetch-favicons.mjs",
     "format": "prettier --write .",
     "commit": "git cz",
     "prepare": "husky install",

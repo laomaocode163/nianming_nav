@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus/es'
 import { useDataStore } from '../../stores/data'
 import { getDefaultIcon } from '../../utils/constants'
 import { extractDomain, getFaviconFallbacks, cacheFavicon } from '../../services/faviconService'

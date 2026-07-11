@@ -1,30 +1,59 @@
 /**
  * 网站图标服务
  * - extractDomain: 从 URL 中提取域名
- * - getFaviconUrl: 主图标源（faviconextractor.com）
- * - getFaviconFallbacks: 主源失败时的降级源（Google S2 / DuckDuckGo）
+ * - getFaviconUrl: 主图标源（优先本地 /favicons/，命中清单则同源离线；否则站点自身 /favicon.ico）
+ * - getFaviconFallbacks: 主源失败时的降级链（favicon.im / icon.horse / faviconextractor / DuckDuckGo / Google）
  * - getCachedFavicon / cacheFavicon: 内存 + localStorage 二级缓存，避免重复请求与已知坏链
+ *
+ * 本地图标由 `npm run fetch-favicons` 下载到 public/favicons/ 并生成 faviconManifest.json，
+ * 运行时优先使用，避免依赖外网（GFW 等受限网络下关键）。
+ * 缓存结构：{ [domain]: { url, ts } }，带版本号、过期时间与上限淘汰。
  */
 
-const PRIMARY_PROVIDER = 'https://www.faviconextractor.com/favicon'
-const STORAGE_KEY = 'favicon-cache'
+import faviconManifest from '@/config/faviconManifest.json'
+
+interface CacheEntry {
+  url: string
+  ts: number
+}
+
+const PRIMARY_PROVIDER = 'https://favicon.im'
+const STORAGE_KEY = 'favicon-cache-v2'
+const CACHE_TTL = 30 * 24 * 60 * 60 * 1000 // 30 天
+const CACHE_MAX_SIZE = 200
 
 const memoryCache = new Map<string, string>()
 
-const loadPersistentCache = (): Record<string, string> => {
+// 持久化缓存仅在首次访问时解析一次，避免每次 getCachedFavicon 都 JSON.parse 整库
+let persistentStore: Record<string, CacheEntry> | null = null
+
+const loadPersistentCache = (): Record<string, CacheEntry> => {
+  if (persistentStore) return persistentStore
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Record<string, string>) : {}
+    persistentStore = raw ? (JSON.parse(raw) as Record<string, CacheEntry>) : {}
   } catch {
-    return {}
+    persistentStore = {}
   }
+  return persistentStore
 }
 
-const savePersistentCache = (map: Record<string, string>): void => {
+const savePersistentCache = (map: Record<string, CacheEntry>): void => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(map))
   } catch {
     /* 隐私模式或配额超限时忽略 */
+  }
+}
+
+const evictIfNeeded = (map: Record<string, CacheEntry>): void => {
+  const entries = Object.entries(map)
+  if (entries.length <= CACHE_MAX_SIZE) return
+  const sorted = entries.sort((a, b) => a[1].ts - b[1].ts)
+  const removed = sorted.slice(0, entries.length - CACHE_MAX_SIZE)
+  for (const [domain] of removed) {
+    delete map[domain]
+    memoryCache.delete(domain)
   }
 }
 
@@ -42,16 +71,28 @@ export const extractDomain = (url: string): string => {
 }
 
 export const getFaviconUrl = (domain: string): string => {
-  return `${PRIMARY_PROVIDER}/${domain}?larger=true`
+  if (!domain) return ''
+  // 若本地已下载该域名图标（由 fetch-favicons 脚本生成清单），优先走同源本地文件，离线可用
+  const localFile = (faviconManifest as Record<string, string>)[domain]
+  if (localFile) {
+    return `/favicons/${localFile}`
+  }
+  // 否则回退到站点自身 favicon（浏览器网络通常能直连目标站点）
+  return `https://${domain}/favicon.ico`
 }
 
-/** 图标降级链：主源 -> Google S2 -> DuckDuckGo */
+/**
+ * 图标降级链（不含主源）：主源（站点自身 favicon）失败时使用。
+ * 依次尝试多个第三方聚合服务作为兜底。
+ */
 export const getFaviconFallbacks = (domain: string): string[] => {
   if (!domain) return []
   return [
-    getFaviconUrl(domain),
-    `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
+    `${PRIMARY_PROVIDER}/${domain}`,
+    `https://icon.horse/icon/${domain}`,
+    `https://www.faviconextractor.com/favicon/${domain}?larger=true`,
     `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
   ]
 }
 
@@ -61,9 +102,10 @@ export const getCachedFavicon = (domain: string): string => {
     return memoryCache.get(domain) as string
   }
   const store = loadPersistentCache()
-  if (store[domain]) {
-    memoryCache.set(domain, store[domain])
-    return store[domain]
+  const entry = store[domain]
+  if (entry && Date.now() - entry.ts < CACHE_TTL) {
+    memoryCache.set(domain, entry.url)
+    return entry.url
   }
   return getFaviconUrl(domain)
 }
@@ -73,6 +115,7 @@ export const cacheFavicon = (domain: string, url: string): void => {
   if (!domain) return
   memoryCache.set(domain, url)
   const store = loadPersistentCache()
-  store[domain] = url
+  store[domain] = { url, ts: Date.now() }
+  evictIfNeeded(store)
   savePersistentCache(store)
 }

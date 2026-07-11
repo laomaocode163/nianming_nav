@@ -5,16 +5,28 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { SITE_CONFIG } from '../config/sites'
+import { loadSiteConfig } from '../config/loadConfig'
 import { extractDomain, getCachedFavicon } from '../services/faviconService'
 import { useUiStore } from './ui'
 import type { Link, Category, SubCategory, SearchConfig, SiteSettings } from '../types'
 
 export const useDataStore = defineStore('data', () => {
-  const links = ref<Link[]>(SITE_CONFIG.links)
-  const categories = ref<Category[]>(SITE_CONFIG.categories)
-  const settings = ref<SiteSettings>(SITE_CONFIG.settings)
-  const searchConfig = ref<SearchConfig>(SITE_CONFIG.searchConfig)
+  const ready = ref(false)
+  const links = ref<Link[]>([])
+  const categories = ref<Category[]>([])
+  const settings = ref<SiteSettings | null>(null)
+  const searchConfig = ref<SearchConfig | null>(null)
+
+  /** 异步加载并校验配置（Zod 校验在独立 chunk 中执行，不阻塞首屏） */
+  const init = async (): Promise<void> => {
+    if (ready.value) return
+    const config = await loadSiteConfig()
+    links.value = config.links
+    categories.value = config.categories
+    settings.value = config.settings
+    searchConfig.value = config.searchConfig
+    ready.value = true
+  }
 
   // 按分类和可选的二级分类过滤链接
   const getLinksByCategory = (categoryId: string, subCategoryId?: string | null): Link[] => {
@@ -65,10 +77,13 @@ export const useDataStore = defineStore('data', () => {
   }
 
   const updateSearchConfig = (newConfig: Partial<SearchConfig>): void => {
+    if (!searchConfig.value) return
     searchConfig.value = { ...searchConfig.value, ...newConfig }
   }
 
   return {
+    ready,
+    init,
     links,
     categories,
     settings,
