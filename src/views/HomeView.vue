@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+  import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
   import { useDataStore } from '../stores/data';
   import { useUiStore } from '../stores/ui';
   import { useResponsive } from '../hooks/useResponsive';
@@ -18,6 +18,7 @@
 
   const gridKey = ref(0);
   const sitesSectionRef = ref<HTMLElement | null>(null);
+  const gridRef = ref<HTMLElement | null>(null);
 
   const categories = computed(() => dataStore.visibleCategories);
 
@@ -63,15 +64,78 @@
     }
   };
 
+  /**
+   * 动态计算每页数量，使一页卡片刚好铺满可视区域、不出现内部滚动。
+   * 仅在视图层覆盖 uiStore.pageSize，不改变 store 默认值。
+   */
+  const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280);
+  const gridHeight = ref(0);
+  const cardHeight = ref(0);
+  const GRID_GAP = 24; // 与 --space-lg (1.5rem) 接近的近似像素值
+
+  const columns = computed(() => (windowWidth.value <= 1024 ? 2 : 4));
+
+  const fitPageSize = computed(() => {
+    if (!gridHeight.value || !cardHeight.value) return uiStore.pageSize;
+    const rows = Math.max(
+      1,
+      Math.floor((gridHeight.value + GRID_GAP) / (cardHeight.value + GRID_GAP))
+    );
+    return Math.max(columns.value, rows * columns.value);
+  });
+
+  const measureCardHeight = () => {
+    const firstCard = gridRef.value?.querySelector('.site-card');
+    if (firstCard) {
+      cardHeight.value = firstCard.getBoundingClientRect().height;
+    }
+  };
+
+  const syncPageSize = () => {
+    uiStore.pageSize = fitPageSize.value;
+    const maxPage = Math.max(1, Math.ceil(links.value.length / uiStore.pageSize));
+    if (uiStore.currentPage > maxPage) {
+      uiStore.currentPage = 1;
+    }
+  };
+
+  let gridResizeObserver: ResizeObserver | null = null;
+
+  const handleWindowResize = () => {
+    windowWidth.value = window.innerWidth;
+  };
+
   onMounted(() => {
     if (isMobile.value) {
       uiStore.sidebarOpen = false;
     }
     document.addEventListener('keydown', handleKeydown);
+    window.addEventListener('resize', handleWindowResize);
+    if (gridRef.value) {
+      gridResizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          gridHeight.value = entry.contentRect.height;
+        }
+      });
+      gridResizeObserver.observe(gridRef.value);
+    }
+    nextTick(() => {
+      measureCardHeight();
+      syncPageSize();
+    });
   });
 
   onUnmounted(() => {
     document.removeEventListener('keydown', handleKeydown);
+    window.removeEventListener('resize', handleWindowResize);
+    gridResizeObserver?.disconnect();
+  });
+
+  watch([fitPageSize, () => links.value.length, () => gridKey.value], () => {
+    nextTick(() => {
+      measureCardHeight();
+      syncPageSize();
+    });
   });
 </script>
 
@@ -115,16 +179,17 @@
       <!-- Sites Grid -->
       <div ref="sitesSectionRef" class="sites-section">
         <!-- 二级分类标签 -->
-        <SubCategoryTabs
-          v-if="hasSubCategories"
-          :sub-categories="subCategories"
-          :selected-id="uiStore.selectedSubCategoryId"
-          :total-count="links.length"
-          @select="uiStore.selectSubCategory"
-        />
+        <div v-if="hasSubCategories" class="sub-category-wrapper">
+          <SubCategoryTabs
+            :sub-categories="subCategories"
+            :selected-id="uiStore.selectedSubCategoryId"
+            :total-count="links.length"
+            @select="uiStore.selectSubCategory"
+          />
+        </div>
 
         <!-- 网站列表 -->
-        <div v-if="links.length > 0" class="sites-grid">
+        <div v-if="links.length > 0" ref="gridRef" class="sites-grid">
           <SiteCard
             v-for="(site, index) in paginatedLinks"
             :key="`${gridKey}-${site.id}`"
@@ -194,28 +259,34 @@
   .sites-section {
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     padding: 0 1.5rem 2rem;
+  }
+
+  .sub-category-wrapper {
+    flex-shrink: 0;
   }
 
   .category-header {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 1.5rem 1.5rem 1.25rem;
+    padding: 1.25rem 1.5rem 1rem;
     margin-bottom: 1rem;
     border-bottom: 2px solid var(--color-border);
   }
 
   .category-icon {
-    font-size: 1.75rem;
+    font-size: 1.25rem;
     line-height: 1;
     color: var(--color-primary);
     margin-right: 0.5rem;
   }
 
   .category-title {
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     font-weight: 700;
     color: var(--color-text);
     margin: 0;
@@ -240,9 +311,14 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: var(--space-lg);
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
     max-width: 1400px;
+    width: 100%;
     margin: 0 auto;
     padding: var(--space-lg) 0;
+    align-content: start;
     animation: fadeInUp 0.5s var(--ease-out-expo);
   }
 
@@ -305,15 +381,15 @@
 
     .category-header {
       flex-wrap: wrap;
-      padding: 1rem 1rem 0.75rem;
+      padding: 0.875rem 1rem 0.625rem;
     }
 
     .category-icon {
-      font-size: 1.5rem;
+      font-size: 1.125rem;
     }
 
     .category-title {
-      font-size: 1.25rem;
+      font-size: 1rem;
     }
 
     .site-count {

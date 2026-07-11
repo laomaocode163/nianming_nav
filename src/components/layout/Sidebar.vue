@@ -37,6 +37,13 @@
   const handleClose = () => {
     emit('close');
   };
+
+  const handleLogoClick = () => {
+    emit('select', 'all');
+    if (isMobile.value) {
+      emit('close');
+    }
+  };
 </script>
 
 <template>
@@ -46,7 +53,16 @@
   >
     <!-- Logo Section -->
     <div class="sidebar-logo-section">
-      <div class="logo-content" :class="{ 'logo-collapsed': collapsed }">
+      <div
+        class="logo-content"
+        :class="{ 'logo-collapsed': collapsed }"
+        role="button"
+        tabindex="0"
+        title="返回全部网站"
+        aria-label="返回全部网站"
+        @click="handleLogoClick"
+        @keydown.enter="handleLogoClick"
+      >
         <img src="/signature.png" alt="签名" class="logo-signature" />
         <h1 v-show="!collapsed" class="site-title">念铭导航</h1>
       </div>
@@ -204,6 +220,14 @@
     justify-content: flex-start;
     flex-shrink: 1;
     min-width: 0;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .logo-content:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 6px;
   }
 
   .logo-signature {
