@@ -40,13 +40,13 @@ const onIconError = (event: Event) => {
   }
 }
 
-/** 复制网站名称到剪贴板，降级兼容不支持 Clipboard API 的环境 */
+/** 复制网站地址到剪贴板，降级兼容不支持 Clipboard API 的环境 */
 const copyName = async () => {
   try {
-    await navigator.clipboard.writeText(props.site.name)
+    await navigator.clipboard.writeText(props.site.url)
   } catch {
     const textarea = document.createElement('textarea')
-    textarea.value = props.site.name
+    textarea.value = props.site.url
     textarea.style.position = 'fixed'
     textarea.style.opacity = '0'
     document.body.appendChild(textarea)
@@ -55,7 +55,7 @@ const copyName = async () => {
     document.body.removeChild(textarea)
   }
   isCopied.value = true
-  ElMessage.success({ message: `已复制「${props.site.name}」`, duration: 1500, grouping: true })
+  ElMessage.success({ message: `已复制「${props.site.url}」`, duration: 1500, grouping: true })
   setTimeout(() => { isCopied.value = false }, 1500)
 }
 </script>
