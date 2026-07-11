@@ -11,16 +11,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    ElButton: typeof import('element-plus/es')['ElButton']
-    ElDropdown: typeof import('element-plus/es')['ElDropdown']
-    ElDropdownItem: typeof import('element-plus/es')['ElDropdownItem']
-    ElDropdownMenu: typeof import('element-plus/es')['ElDropdownMenu']
-    ElIcon: typeof import('element-plus/es')['ElIcon']
-    ElInput: typeof import('element-plus/es')['ElInput']
-    ElPagination: typeof import('element-plus/es')['ElPagination']
     EmptyState: typeof import('./components/ui/EmptyState.vue')['default']
     MainHeader: typeof import('./components/layout/MainHeader.vue')['default']
     MiniPlayer: typeof import('./components/MusicPlayer/MiniPlayer.vue')['default']
+    Pagination: typeof import('./components/ui/Pagination.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScrollToTop: typeof import('./components/ui/ScrollToTop.vue')['default']
@@ -28,5 +22,6 @@ declare module 'vue' {
     SiteCard: typeof import('./components/ui/SiteCard.vue')['default']
     SubCategoryTabs: typeof import('./components/ui/SubCategoryTabs.vue')['default']
     TimeDateComponent: typeof import('./components/ui/TimeDateComponent.vue')['default']
+    ToastHost: typeof import('./components/ui/ToastHost.vue')['default']
   }
 }

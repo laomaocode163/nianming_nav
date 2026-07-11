@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 /**
  * 配置 Schema —— 在加载期对静态 JSON 做运行时校验，
@@ -10,7 +10,7 @@ export const subCategorySchema = z.object({
   name: z.string(),
   icon: z.string().optional(),
   order: z.number().optional(),
-})
+});
 
 export const categorySchema = z.object({
   id: z.string(),
@@ -19,7 +19,7 @@ export const categorySchema = z.object({
   hidden: z.boolean().optional(),
   order: z.number().optional(),
   subCategories: z.array(subCategorySchema).optional(),
-})
+});
 
 export const linkSchema = z.object({
   id: z.string(),
@@ -34,7 +34,7 @@ export const linkSchema = z.object({
   hidden: z.boolean().optional(),
   description: z.string().optional(),
   createdAt: z.number().optional(),
-})
+});
 
 export const searchSourceSchema = z.object({
   id: z.string(),
@@ -43,13 +43,12 @@ export const searchSourceSchema = z.object({
   enabled: z.boolean(),
   icon: z.string().optional(),
   createdAt: z.number().optional(),
-})
+});
 
 export const searchConfigSchema = z.object({
-  mode: z.string().optional(),
   selectedSourceId: z.string(),
   externalSources: z.array(searchSourceSchema),
-})
+});
 
 export const siteSettingsSchema = z.object({
   title: z.string().optional(),
@@ -63,10 +62,10 @@ export const siteSettingsSchema = z.object({
   backgroundImage: z.string().optional(),
   backgroundImageEnabled: z.boolean().optional(),
   backgroundMotion: z.boolean().optional(),
-})
+});
 
-export const categoriesSchema = z.array(categorySchema)
-export const linksSchema = z.array(linkSchema)
+export const categoriesSchema = z.array(categorySchema);
+export const linksSchema = z.array(linkSchema);
 
 export const musicSchema = z.array(
   z.object({
@@ -74,5 +73,14 @@ export const musicSchema = z.array(
     keyword: z.string(),
     kuwoId: z.string().optional(),
     neteaseId: z.string().optional(),
-  }),
-)
+  })
+);
+
+// 由 schema 派生的类型，单一事实来源，避免与手写接口漂移
+export type SubCategory = z.infer<typeof subCategorySchema>;
+export type Category = z.infer<typeof categorySchema>;
+export type Link = z.infer<typeof linkSchema>;
+export type SearchSource = z.infer<typeof searchSourceSchema>;
+export type SearchConfig = z.infer<typeof searchConfigSchema>;
+export type SiteSettings = z.infer<typeof siteSettingsSchema>;
+export type MusicTrack = z.infer<typeof musicSchema>[number];
