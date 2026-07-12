@@ -30,6 +30,7 @@
     Image,
     Video,
     Rss,
+    Puzzle,
     type LucideIcon,
   } from 'lucide-vue-next';
 
@@ -74,6 +75,7 @@
     image: Image,
     video: Video,
     rss: Rss,
+    puzzle: Puzzle,
   };
 
   const icon = computed(() => iconMap[props.name] ?? Star);

@@ -14,7 +14,8 @@
       { "id": "dev-terminal", "name": "终端管理工具", "icon": "terminal", "order": 3 },
       { "id": "dev-devops", "name": "测试运维工具", "icon": "shield-check", "order": 4 },
       { "id": "dev-online", "name": "在线开发工具", "icon": "globe", "order": 5 },
-      { "id": "dev-other", "name": "其他辅助工具", "icon": "wrench", "order": 6 }
+      { "id": "dev-other", "name": "其他辅助工具", "icon": "wrench", "order": 6 },
+      { "id": "dev-extensions", "name": "浏览器插件工具", "icon": "puzzle", "order": 7 }
     ] },
   { "id": "frontend-dev", "name": "前端开发", "icon": "book-open", "subCategories": [
       { "id": "frontend-frameworks", "name": "前端框架", "icon": "zap", "order": 1 },
