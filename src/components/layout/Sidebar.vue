@@ -181,7 +181,7 @@
             }"
             @click="handleSelect(category.id)"
           >
-            <span class="nav-icon">{{ category.icon }}</span>
+            <span class="nav-icon"><CategoryIcon :name="category.icon" /></span>
             <span class="nav-name">{{ category.name }}</span>
             <span
               v-if="!collapsed && category.subCategories?.length"
@@ -218,7 +218,7 @@
               :class="{ active: uiStore.selectedSubCategoryId === sub.id }"
               @click="handleSelectSub(sub.id)"
             >
-              <span v-if="sub.icon" class="sub-icon">{{ sub.icon }}</span>
+              <span v-if="sub.icon" class="sub-icon"><CategoryIcon :name="sub.icon" /></span>
               <span v-else class="sub-icon sub-icon--placeholder"></span>
               <span class="sub-name">{{ sub.name }}</span>
             </button>

@@ -1,25 +1,25 @@
 [
-  { "id": "common", "name": "常用推荐", "icon": "☆" },
-  { "id": "ai", "name": "人工智能", "icon": "⚙️" },
-  { "id": "dev", "name": "开发工具", "icon": "</>" },
-  { "id": "frontend-docs", "name": "前端文档", "icon": "📘", "subCategories": [
-      { "id": "frontend-frameworks", "name": "前端框架", "icon": "⚡", "order": 1 },
-      { "id": "frontend-scaffolds", "name": "前端脚手架", "icon": "🏗️", "order": 2 },
-      { "id": "frontend-deploy", "name": "前端部署", "icon": "🚀", "order": 3 }
+  { "id": "common", "name": "常用推荐", "icon": "star" },
+  { "id": "ai", "name": "人工智能", "icon": "bot" },
+  { "id": "dev", "name": "开发工具", "icon": "terminal" },
+  { "id": "frontend-docs", "name": "前端文档", "icon": "book-open", "subCategories": [
+      { "id": "frontend-frameworks", "name": "前端框架", "icon": "zap", "order": 1 },
+      { "id": "frontend-scaffolds", "name": "前端脚手架", "icon": "blocks", "order": 2 },
+      { "id": "frontend-deploy", "name": "前端部署", "icon": "rocket", "order": 3 }
     ] },
-  { "id": "backend-docs", "name": "后端文档", "icon": "📗", "subCategories": [
-      { "id": "backend-java", "name": "Java", "icon": "☕", "order": 1 },
-      { "id": "backend-python", "name": "Python", "icon": "🐍", "order": 2 },
-      { "id": "backend-spring", "name": "Spring", "icon": "🌱", "order": 3 },
-      { "id": "backend-langchain", "name": "Langchain", "icon": "🔗", "order": 4 },
-      { "id": "backend-scaffolds", "name": "脚手架", "icon": "🏗️", "order": 5 }
+  { "id": "backend-docs", "name": "后端文档", "icon": "file-code", "subCategories": [
+      { "id": "backend-java", "name": "Java", "icon": "coffee", "order": 1 },
+      { "id": "backend-python", "name": "Python", "icon": "braces", "order": 2 },
+      { "id": "backend-spring", "name": "Spring", "icon": "leaf", "order": 3 },
+      { "id": "backend-langchain", "name": "Langchain", "icon": "link", "order": 4 },
+      { "id": "backend-scaffolds", "name": "脚手架", "icon": "hammer", "order": 5 }
     ] },
-  { "id": "design", "name": "设计资源", "icon": "🖌️" },
-  { "id": "read", "name": "阅读资讯", "icon": "📖" },
-  { "id": "ent", "name": "休闲娱乐", "icon": "🧩", "subCategories": [
-      { "id": "ent-movies", "name": "影视", "icon": "🎬", "order": 1 },
-      { "id": "ent-anime", "name": "动漫", "icon": "🎭", "order": 2 },
-      { "id": "ent-music", "name": "音乐", "icon": "🎵", "order": 3 },
-      { "id": "ent-books", "name": "书籍", "icon": "📚", "order": 4 }
+  { "id": "design", "name": "设计资源", "icon": "palette" },
+  { "id": "read", "name": "阅读资讯", "icon": "newspaper" },
+  { "id": "ent", "name": "休闲娱乐", "icon": "gamepad-2", "subCategories": [
+      { "id": "ent-movies", "name": "影视", "icon": "film", "order": 1 },
+      { "id": "ent-anime", "name": "动漫", "icon": "clapperboard", "order": 2 },
+      { "id": "ent-music", "name": "音乐", "icon": "music", "order": 3 },
+      { "id": "ent-books", "name": "书籍", "icon": "library", "order": 4 }
     ] }
 ]

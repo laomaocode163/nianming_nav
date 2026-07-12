@@ -12,6 +12,7 @@ export {};
 declare module 'vue' {
   export interface GlobalComponents {
     AdminLinks: typeof import('./components/admin/AdminLinks.vue')['default']
+    CategoryIcon: typeof import('./components/ui/CategoryIcon.vue')['default']
     CategoryTree: typeof import('./components/admin/CategoryTree.vue')['default']
     DevAdminEntry: typeof import('./components/admin/DevAdminEntry.vue')['default']
     EmojiPicker: typeof import('./components/ui/EmojiPicker.vue')['default']
