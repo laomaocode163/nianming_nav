@@ -1,18 +1,33 @@
 [
   { "id": "common", "name": "常用推荐", "icon": "star" },
-  { "id": "ai", "name": "人工智能", "icon": "bot" },
-  { "id": "dev", "name": "开发工具", "icon": "terminal" },
-  { "id": "frontend-docs", "name": "前端文档", "icon": "book-open", "subCategories": [
-      { "id": "frontend-frameworks", "name": "前端框架", "icon": "zap", "order": 1 },
-      { "id": "frontend-scaffolds", "name": "前端脚手架", "icon": "blocks", "order": 2 },
-      { "id": "frontend-deploy", "name": "前端部署", "icon": "rocket", "order": 3 }
+  { "id": "ai", "name": "人工智能", "icon": "bot", "subCategories": [
+      { "id": "ai-agent", "name": "AI智能体", "icon": "bot", "order": 1 },
+      { "id": "ai-coding", "name": "代码编程", "icon": "braces", "order": 2 },
+      { "id": "ai-writing", "name": "文案写作", "icon": "pencil", "order": 3 },
+      { "id": "ai-image", "name": "图像绘画", "icon": "image", "order": 4 },
+      { "id": "ai-video", "name": "视频生成", "icon": "video", "order": 5 },
+      { "id": "ai-audio", "name": "音频音乐", "icon": "music", "order": 6 }
     ] },
-  { "id": "backend-docs", "name": "后端文档", "icon": "file-code", "subCategories": [
+  { "id": "dev", "name": "开发工具", "icon": "terminal", "subCategories": [
+      { "id": "dev-editors", "name": "文本编辑器", "icon": "file-text", "order": 1 },
+      { "id": "dev-ides", "name": "集成开发环境", "icon": "monitor", "order": 2 },
+      { "id": "dev-terminal", "name": "终端管理工具", "icon": "terminal", "order": 3 },
+      { "id": "dev-devops", "name": "测试运维工具", "icon": "shield-check", "order": 4 },
+      { "id": "dev-online", "name": "在线开发工具", "icon": "globe", "order": 5 },
+      { "id": "dev-other", "name": "其他辅助工具", "icon": "wrench", "order": 6 }
+    ] },
+  { "id": "frontend-dev", "name": "前端开发", "icon": "book-open", "subCategories": [
+      { "id": "frontend-frameworks", "name": "前端框架", "icon": "zap", "order": 1 },
+      { "id": "frontend-deploy", "name": "前端部署", "icon": "rocket", "order": 2 },
+      { "id": "frontend-blog", "name": "前端博客", "icon": "rss", "order": 3 },
+      { "id": "frontend-scaffolds", "name": "前端脚手架", "icon": "blocks", "order": 4 }
+    ] },
+  { "id": "backend-dev", "name": "后端开发", "icon": "file-code", "subCategories": [
       { "id": "backend-java", "name": "Java", "icon": "coffee", "order": 1 },
-      { "id": "backend-python", "name": "Python", "icon": "braces", "order": 2 },
-      { "id": "backend-spring", "name": "Spring", "icon": "leaf", "order": 3 },
+      { "id": "backend-spring", "name": "Spring", "icon": "leaf", "order": 2 },
+      { "id": "backend-python", "name": "Python", "icon": "braces", "order": 3 },
       { "id": "backend-langchain", "name": "Langchain", "icon": "link", "order": 4 },
-      { "id": "backend-scaffolds", "name": "脚手架", "icon": "hammer", "order": 5 }
+      { "id": "backend-scaffolds", "name": "开发脚手架", "icon": "hammer", "order": 5 }
     ] },
   { "id": "design", "name": "设计资源", "icon": "palette" },
   { "id": "read", "name": "阅读资讯", "icon": "newspaper" },

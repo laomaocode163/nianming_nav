@@ -9,6 +9,7 @@
     Blocks,
     Rocket,
     FileCode,
+    FileText,
     Coffee,
     Braces,
     Leaf,
@@ -21,6 +22,14 @@
     Clapperboard,
     Music,
     Library,
+    Monitor,
+    ShieldCheck,
+    Globe,
+    Wrench,
+    Pencil,
+    Image,
+    Video,
+    Rss,
     type LucideIcon,
   } from 'lucide-vue-next';
 
@@ -44,6 +53,7 @@
     blocks: Blocks,
     rocket: Rocket,
     'file-code': FileCode,
+    'file-text': FileText,
     coffee: Coffee,
     braces: Braces,
     leaf: Leaf,
@@ -56,6 +66,14 @@
     clapperboard: Clapperboard,
     music: Music,
     library: Library,
+    monitor: Monitor,
+    'shield-check': ShieldCheck,
+    globe: Globe,
+    wrench: Wrench,
+    pencil: Pencil,
+    image: Image,
+    video: Video,
+    rss: Rss,
   };
 
   const icon = computed(() => iconMap[props.name] ?? Star);
