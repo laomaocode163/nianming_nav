@@ -4,7 +4,7 @@
   import { useUiStore } from '../../stores/ui';
   import { useResponsive } from '../../hooks/useResponsive';
 
-  withDefaults(
+  const props = withDefaults(
     defineProps<{
       selectedCategory?: string;
       isOpen?: boolean;
@@ -31,7 +31,6 @@
 
   // 已展开（显示二级分类）的一级分类集合；默认展开当前选中的有子分类项
   const expandedCats = ref<Set<string>>(new Set());
-
   // 手风琴式展开：同一时刻仅展开当前选中的、含二级分类的一级分类，其余收起
   watch(
     () => uiStore.selectedCategoryId,
@@ -42,7 +41,28 @@
     { immediate: true }
   );
 
+  // 收起侧边栏时一并收起所有二级分类；重新展开时恢复当前分类的二级树
+  watch(
+    () => props.collapsed,
+    (isCollapsed) => {
+      if (isCollapsed) {
+        expandedCats.value = new Set();
+        return;
+      }
+      const cat = dataStore.categories.find((c) => c.id === uiStore.selectedCategoryId);
+      expandedCats.value = cat?.subCategories?.length ? new Set([cat.id]) : new Set();
+    }
+  );
+
   const isExpanded = (categoryId: string) => expandedCats.value.has(categoryId);
+
+  // 父级导航激活判定：
+  // - 展开态：仅当选中该分类且处于“全部”（未选子分类）时高亮；
+  // - 收起态：子树不可见，选中其任意子分类时仍高亮父级瓷砖。
+  const isNavActive = (categoryId: string): boolean => {
+    if (props.selectedCategory !== categoryId) return false;
+    return props.collapsed || !uiStore.selectedSubCategoryId;
+  };
 
   const toggleExpand = (categoryId: string) => {
     const next = new Set(expandedCats.value);
@@ -102,7 +122,7 @@
         @keydown.enter="handleLogoClick"
       >
         <img src="/signature.png" alt="签名" class="logo-signature" />
-        <h1 v-show="!collapsed" class="site-title">念铭导航</h1>
+        <h1 class="site-title">念铭导航</h1>
       </div>
       <div class="logo-actions">
         <!-- 移动端关闭按钮 -->
@@ -128,10 +148,22 @@
           v-else
           type="button"
           class="collapse-btn"
+          :class="{ collapsed }"
           :title="collapsed ? '展开侧边栏' : '收起侧边栏'"
+          aria-label="收起/展开侧边栏"
           @click="emit('toggle-collapse')"
         >
-          <span class="collapse-icon">{{ collapsed ? '→' : '←' }}</span>
+          <svg
+            class="collapse-icon"
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
         </button>
       </div>
     </div>
@@ -144,12 +176,12 @@
             type="button"
             class="nav-item"
             :class="{
-              active: selectedCategory === category.id && !uiStore.selectedSubCategoryId,
+              active: isNavActive(category.id),
             }"
             @click="handleSelect(category.id)"
           >
             <span class="nav-icon">{{ category.icon }}</span>
-            <span v-show="!collapsed" class="nav-name">{{ category.name }}</span>
+            <span class="nav-name">{{ category.name }}</span>
             <span
               v-if="!collapsed && category.subCategories?.length"
               class="nav-expand"
@@ -209,8 +241,8 @@
     top: 0;
     z-index: 100;
     transition:
-      width 200ms cubic-bezier(0.4, 0, 0.2, 1),
-      transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      width 280ms cubic-bezier(0.65, 0, 0.35, 1),
+      transform 280ms cubic-bezier(0.65, 0, 0.35, 1);
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     will-change: width, transform;
@@ -221,7 +253,7 @@
   }
 
   .sidebar.sidebar-collapsed {
-    width: 64px;
+    width: 72px;
   }
 
   /* 移动端侧边栏样式 */
@@ -326,6 +358,14 @@
     width: 100%;
   }
 
+  .sidebar-collapsed .site-title {
+    opacity: 0;
+    max-width: 0;
+    width: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+
   .logo-actions {
     display: flex;
     align-items: center;
@@ -342,44 +382,52 @@
   }
 
   .collapse-btn {
-    width: 28px !important;
-    height: 28px !important;
+    width: 32px !important;
+    height: 32px !important;
     padding: 0 !important;
-    border-radius: 6px !important;
-    background: transparent !important;
+    border-radius: 50% !important;
+    background: var(--color-card) !important;
     border: 1px solid var(--color-border) !important;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
     cursor: pointer;
     position: relative;
-    overflow: hidden;
     margin: 0 auto;
     color: var(--color-text-secondary);
     font-family: inherit;
   }
 
   .collapse-btn:hover {
-    background: hsl(var(--hue-primary), 15%, 96%) !important;
-    border-color: var(--color-primary) !important;
-    color: var(--color-primary) !important;
+    background: var(--gradient-primary) !important;
+    border-color: transparent !important;
+    color: #fff !important;
+    box-shadow: var(--shadow-glow) !important;
   }
 
   .dark .collapse-btn:hover {
-    background: hsl(var(--hue-primary), 20%, 18%) !important;
+    background: var(--gradient-primary) !important;
   }
 
   .collapse-btn:active {
-    transform: scale(0.95);
+    transform: scale(0.92);
+  }
+
+  .collapse-btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   .collapse-icon {
-    font-size: 0.875rem;
-    font-weight: 600;
-    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-block;
+  }
+
+  /* 收起态：箭头旋转 180° 指向右侧（展开） */
+  .collapse-btn.collapsed .collapse-icon {
+    transform: rotate(180deg);
   }
 
   /* 移动端关闭按钮 */
@@ -457,7 +505,14 @@
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      background 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      width 240ms cubic-bezier(0.65, 0, 0.35, 1),
+      border-radius 240ms cubic-bezier(0.65, 0, 0.35, 1),
+      margin 240ms cubic-bezier(0.65, 0, 0.35, 1),
+      padding 240ms cubic-bezier(0.65, 0, 0.35, 1);
     position: relative;
     overflow: hidden;
     justify-content: flex-start;
@@ -469,10 +524,48 @@
 
   .sidebar-collapsed .nav-item {
     justify-content: center !important;
-    padding: var(--space-sm) 0.375rem !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
     gap: 0 !important;
-    width: 100% !important;
-    margin: 0.125rem 0 !important;
+    margin: 0.375rem auto !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    background: transparent !important;
+  }
+
+  .sidebar-collapsed .nav-icon {
+    margin: 0;
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 1.15rem !important;
+  }
+
+  .sidebar-collapsed .nav-item:hover {
+    background: hsl(var(--hue-primary), 12%, 95%) !important;
+    color: var(--color-primary) !important;
+    transform: scale(1.04);
+  }
+
+  .dark .sidebar-collapsed .nav-item:hover {
+    background: hsl(var(--hue-primary), 20%, 20%) !important;
+  }
+
+  .sidebar-collapsed .nav-item.active {
+    background: var(--gradient-primary) !important;
+    color: #fff !important;
+    box-shadow:
+      inset 3px 0 0 var(--color-primary),
+      var(--shadow-glow) !important;
+  }
+
+  .sidebar-collapsed .nav-item.active .nav-icon {
+    color: #fff !important;
+  }
+
+  .sidebar-collapsed .nav-item:active {
+    transform: scale(0.96);
   }
 
   .nav-item:hover {
@@ -544,6 +637,16 @@
     align-items: center;
     position: relative;
     z-index: 1;
+    transition:
+      opacity 200ms cubic-bezier(0.65, 0, 0.35, 1),
+      max-width 240ms cubic-bezier(0.65, 0, 0.35, 1),
+      margin 240ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .sidebar-collapsed .nav-name {
+    opacity: 0;
+    max-width: 0;
+    margin: 0;
   }
 
   @media (max-width: 480px) {
