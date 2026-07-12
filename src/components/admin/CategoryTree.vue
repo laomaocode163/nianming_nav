@@ -210,10 +210,8 @@
               <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
-          <span class="admin-tree-icon">{{ cat.icon }}</span>
           <span class="admin-tree-name">{{ cat.name }}</span>
           <span v-if="cat.hidden" class="admin-chip muted">隐藏</span>
-          <span class="admin-tree-meta mono">{{ cat.id }}</span>
           <span class="admin-chip">{{ sortedSubs(cat).length }} 子项</span>
           <span class="admin-spacer"></span>
           <span class="admin-tree-order">#{{ cat.order ?? 0 }}</span>
@@ -225,9 +223,7 @@
         <ul v-if="isExpanded(cat.id)" class="admin-tree-children">
           <li v-for="sub in sortedSubs(cat)" :key="sub.id" class="admin-tree-node">
             <div class="admin-tree-row admin-tree-row--sub">
-              <span class="admin-tree-icon admin-tree-icon--sub">{{ sub.icon || '·' }}</span>
               <span class="admin-tree-name">{{ sub.name }}</span>
-              <span class="admin-tree-meta mono">{{ sub.id }}</span>
               <span class="admin-spacer"></span>
               <span class="admin-tree-order">#{{ sub.order ?? 0 }}</span>
               <button class="admin-link-btn" @click="openEditSub(cat.id, sub)">编辑</button>
@@ -243,7 +239,7 @@
     <div v-if="catModal" class="admin-modal-mask" @click.self="catModal = false">
       <div class="admin-modal">
         <h3 class="admin-modal-title">
-          <span class="admin-modal-icon">{{ catForm.icon || '🗂️' }}</span>
+          <span v-if="catForm.icon" class="admin-modal-icon">{{ catForm.icon }}</span>
           {{ editingCatId ? '编辑分类' : '新增分类' }}
         </h3>
         <div class="admin-field">
@@ -284,7 +280,7 @@
     <div v-if="subModal" class="admin-modal-mask" @click.self="subModal = false">
       <div class="admin-modal">
         <h3 class="admin-modal-title">
-          <span class="admin-modal-icon">{{ subForm.icon || '🔹' }}</span>
+          <span v-if="subForm.icon" class="admin-modal-icon">{{ subForm.icon }}</span>
           {{ editingSubId ? '编辑子分类' : '新增子分类' }}
         </h3>
         <div class="admin-field">

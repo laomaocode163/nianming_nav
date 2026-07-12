@@ -62,6 +62,9 @@
   background: var(--color-card);
   font-weight: 600;
   transition: all 150ms var(--ease-out-expo);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .admin-back:hover {
@@ -102,6 +105,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 200ms var(--ease-out-expo);
+  display: inline-flex;
+  align-items: center;
+}
+
+.admin-tab svg {
+  margin-right: 0.3rem;
 }
 
 .admin-tab:hover {
@@ -332,6 +341,17 @@
 
 .admin-modal-icon {
   font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.admin-modal-icon svg {
+  color: var(--color-primary);
+}
+
+.admin-modal-emoji {
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .admin-modal-actions {
@@ -447,7 +467,15 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  transition: transform 200ms var(--ease-out-expo);
+  transition:
+    transform 220ms var(--ease-out-expo),
+    color 150ms var(--ease-out-expo),
+    background 150ms var(--ease-out-expo);
+}
+
+.admin-tree-toggle:hover {
+  background: hsl(var(--hue-primary), 80%, 55%, 0.1);
+  color: var(--color-primary);
 }
 
 .admin-tree-toggle.open {
@@ -478,9 +506,18 @@
 .admin-tree-icon--link {
   width: 24px;
   height: 24px;
-  font-size: 1rem;
+  font-size: 0.875rem;
   background: hsl(var(--hue-primary), 30%, 96%);
   border-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-tree-icon--link svg {
+  width: 14px;
+  height: 14px;
+  color: var(--color-primary);
 }
 
 .dark .admin-tree-icon--link {

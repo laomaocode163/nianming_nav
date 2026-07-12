@@ -249,9 +249,7 @@
               <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
           </button>
-          <span class="admin-tree-icon">{{ g.cat.icon }}</span>
           <span class="admin-tree-name">{{ g.cat.name }}</span>
-          <span class="admin-tree-meta mono">{{ g.cat.id }}</span>
           <span class="admin-chip">{{ subCount(g) }} 链接</span>
           <span class="admin-spacer"></span>
           <button class="admin-link-btn" @click="openCreateAt(g.cat.id)">＋链接</button>
@@ -260,7 +258,21 @@
         <ul v-if="isExpanded('c:' + g.cat.id)" class="admin-tree-children">
           <li v-for="l in g.directLinks" :key="l.id" class="admin-tree-node">
             <div class="admin-tree-row admin-tree-row--link">
-              <span class="admin-tree-icon admin-tree-icon--link">🔗</span>
+              <span class="admin-tree-icon admin-tree-icon--link">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+              </span>
               <span class="admin-tree-name">{{ l.name }}</span>
               <span class="admin-tree-url">
                 <a :href="l.url" target="_blank" rel="noopener noreferrer">{{ l.url }}</a>
@@ -292,9 +304,7 @@
                   <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </button>
-              <span class="admin-tree-icon admin-tree-icon--sub">{{ sg.sub.icon || '·' }}</span>
               <span class="admin-tree-name">{{ sg.sub.name }}</span>
-              <span class="admin-tree-meta mono">{{ sg.sub.id }}</span>
               <span class="admin-chip">{{ sg.links.length }} 链接</span>
               <span class="admin-spacer"></span>
               <button class="admin-link-btn" @click="openCreateAt(g.cat.id, sg.sub.id)">
@@ -305,7 +315,21 @@
             <ul v-if="isExpanded('s:' + g.cat.id + ':' + sg.sub.id)" class="admin-tree-children">
               <li v-for="l in sg.links" :key="l.id" class="admin-tree-node">
                 <div class="admin-tree-row admin-tree-row--link">
-                  <span class="admin-tree-icon admin-tree-icon--link">🔗</span>
+                  <span class="admin-tree-icon admin-tree-icon--link">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                  </span>
                   <span class="admin-tree-name">{{ l.name }}</span>
                   <span class="admin-tree-url">
                     <a :href="l.url" target="_blank" rel="noopener noreferrer">{{ l.url }}</a>
@@ -326,7 +350,21 @@
     <div v-if="showForm" class="admin-modal-mask" @click.self="closeForm">
       <div class="admin-modal">
         <h3 class="admin-modal-title">
-          <span class="admin-modal-icon">🔗</span>
+          <span class="admin-modal-icon">
+            <svg
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+          </span>
           {{ editingId ? '编辑链接' : '新增链接' }}
         </h3>
         <div class="admin-field">
