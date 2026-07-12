@@ -5,14 +5,17 @@
   { "id": "336", "name": "iui.su", "url": "https://iui.su/", "categoryId": "common", "description": "高效导航索引站" },
   { "id": "337", "name": "Hsya", "url": "https://hsya.top/", "categoryId": "common", "description": "个人资源导航" },
   { "id": "338", "name": "小众软件", "url": "https://www.appinn.com/", "categoryId": "common", "description": "分享免费、小巧的实用软件" },
+  { "id": "340", "name": "Oracle", "url": "https://www.oracle.com/cn/", "categoryId": "common", "description": "Oracle 官方网站" },
   { "id": "2", "name": "ChatGPT", "url": "https://chat.openai.com", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "OpenAI聊天机器人", "pinned": true },
   { "id": "3", "name": "Claude", "url": "https://claude.ai", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "Anthropic AI助手", "pinned": true },
   { "id": "6", "name": "VS Code", "url": "https://code.visualstudio.com", "categoryId": "dev", "subCategoryId": "dev-editors", "description": "微软开源代码编辑器" },
+  { "id": "339", "name": "科技lion Shell", "url": "https://kejilion.pro/kejilion_shell/", "categoryId": "dev", "subCategoryId": "dev-other", "description": "Linux运维管理一键脚本" },
   { "id": "9", "name": "Tailwind CSS", "url": "https://tailwindcss.com", "categoryId": "frontend-dev", "subCategoryId": "frontend-frameworks", "description": "原子化CSS框架" },
   { "id": "10", "name": "Figma", "url": "https://figma.com", "categoryId": "design", "description": "在线协作界面设计工具" },
   { "id": "11", "name": "Dribbble", "url": "https://dribbble.com", "categoryId": "design", "description": "设计师作品分享社区" },
   { "id": "12", "name": "Hacker News", "url": "https://news.ycombinator.com", "categoryId": "read", "description": "极客新闻聚合社区" },
   { "id": "333", "name": "摸鱼热榜", "url": "https://moyuhot.com/", "categoryId": "read", "description": "全网热点资讯聚合平台" },
+  { "id": "341", "name": "最右", "url": "https://www.izuiyou.com/", "categoryId": "read", "description": "搞笑社区内容平台" },
   { "id": "15", "name": "Midjourney", "url": "https://www.midjourney.com", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "AI图像生成工具" },
   { "id": "16", "name": "Gemini", "url": "https://gemini.google.com", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "Google AI助手" },
   { "id": "101", "name": "Vue.js", "url": "https://vuejs.org", "categoryId": "frontend-dev", "subCategoryId": "frontend-frameworks", "description": "渐进式JavaScript框架" },
@@ -62,5 +65,6 @@
   { "id": "329", "name": "歌曲宝", "url": "https://www.gequbao.com/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐播放平台" },
   { "id": "330", "name": "歌曲海", "url": "https://www.gequhai.com/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐播放平台" },
   { "id": "331", "name": "QQMP3音乐", "url": "https://www.qqmp3.vip/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐播放平台" },
-  { "id": "332", "name": "XCloud音乐", "url": "https://music.xcloudv.top/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐播放平台" }
+  { "id": "332", "name": "XCloud音乐", "url": "https://music.xcloudv.top/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐播放平台" },
+  { "id": "342", "name": "MusicBox", "url": "https://mu-jie.cc/musicBox/#/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐搜索播放平台" }
 ]
