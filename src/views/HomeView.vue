@@ -266,11 +266,11 @@
     height: 100vh;
     overflow: hidden;
     background: var(--color-bg);
-    transition: margin-left var(--transition-normal);
+    transition: margin-left 300ms var(--ease-out-expo);
   }
 
   .main-content.sidebar-collapsed {
-    margin-left: 64px;
+    margin-left: 72px;
   }
 
   .main-content.sidebar-closed {

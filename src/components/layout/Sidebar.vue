@@ -171,10 +171,11 @@
     <!-- Navigation Section -->
     <div class="sidebar-nav-section">
       <nav class="sidebar-nav">
-        <template v-for="category in categories" :key="category.id">
+        <template v-for="(category, index) in categories" :key="category.id">
           <button
             type="button"
             class="nav-item"
+            :style="{ '--item-index': index }"
             :class="{
               active: isNavActive(category.id),
             }"
@@ -241,8 +242,8 @@
     top: 0;
     z-index: 100;
     transition:
-      width 280ms cubic-bezier(0.65, 0, 0.35, 1),
-      transform 280ms cubic-bezier(0.65, 0, 0.35, 1);
+      width 300ms var(--ease-out-expo),
+      transform 300ms var(--ease-out-expo);
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     will-change: width, transform;
@@ -506,13 +507,13 @@
     border: none !important;
     box-shadow: none !important;
     transition:
-      background 150ms cubic-bezier(0.4, 0, 0.2, 1),
-      color 150ms cubic-bezier(0.4, 0, 0.2, 1),
-      transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
-      width 240ms cubic-bezier(0.65, 0, 0.35, 1),
-      border-radius 240ms cubic-bezier(0.65, 0, 0.35, 1),
-      margin 240ms cubic-bezier(0.65, 0, 0.35, 1),
-      padding 240ms cubic-bezier(0.65, 0, 0.35, 1);
+      background 150ms var(--ease-out-expo),
+      color 150ms var(--ease-out-expo),
+      transform 150ms var(--ease-out-expo),
+      width 300ms var(--ease-out-expo),
+      border-radius 300ms var(--ease-out-expo),
+      margin 300ms var(--ease-out-expo),
+      padding 300ms var(--ease-out-expo);
     position: relative;
     overflow: hidden;
     justify-content: flex-start;
@@ -533,6 +534,19 @@
     border-radius: 14px !important;
     overflow: hidden !important;
     background: transparent !important;
+    animation: navItemIn 320ms var(--ease-out-expo) backwards;
+    animation-delay: calc(var(--item-index, 0) * 28ms);
+  }
+
+  @keyframes navItemIn {
+    from {
+      opacity: 0;
+      transform: scale(0.85) translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 
   .sidebar-collapsed .nav-icon {
@@ -637,16 +651,15 @@
     align-items: center;
     position: relative;
     z-index: 1;
+    transform-origin: left center;
     transition:
-      opacity 200ms cubic-bezier(0.65, 0, 0.35, 1),
-      max-width 240ms cubic-bezier(0.65, 0, 0.35, 1),
-      margin 240ms cubic-bezier(0.65, 0, 0.35, 1);
+      opacity 250ms var(--ease-out-expo),
+      transform 250ms var(--ease-out-expo);
   }
 
   .sidebar-collapsed .nav-name {
     opacity: 0;
-    max-width: 0;
-    margin: 0;
+    transform: scale(0.92) translateX(-6px);
   }
 
   @media (max-width: 480px) {
