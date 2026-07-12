@@ -32,14 +32,12 @@
   // 已展开（显示二级分类）的一级分类集合；默认展开当前选中的有子分类项
   const expandedCats = ref<Set<string>>(new Set());
 
-  // 自动展开当前选中的、含二级分类的一级分类
+  // 手风琴式展开：同一时刻仅展开当前选中的、含二级分类的一级分类，其余收起
   watch(
     () => uiStore.selectedCategoryId,
     (catId) => {
       const cat = dataStore.categories.find((c) => c.id === catId);
-      if (cat?.subCategories?.length) {
-        expandedCats.value.add(catId);
-      }
+      expandedCats.value = cat?.subCategories?.length ? new Set([catId]) : new Set();
     },
     { immediate: true }
   );
@@ -49,8 +47,11 @@
   const toggleExpand = (categoryId: string) => {
     const next = new Set(expandedCats.value);
     if (next.has(categoryId)) {
+      // 再次点击当前已展开项 → 收起
       next.delete(categoryId);
     } else {
+      // 展开新项时收起其他项，保持手风琴行为
+      next.clear();
       next.add(categoryId);
     }
     expandedCats.value = next;
