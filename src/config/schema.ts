@@ -52,22 +52,10 @@ export const searchConfigSchema = z.object({
 
 export const siteSettingsSchema = z.object({
   accentColor: z.string().optional(),
-  backgroundImage: z.string().optional(),
-  backgroundImageEnabled: z.boolean().optional(),
-  backgroundMotion: z.boolean().optional(),
 });
 
 export const categoriesSchema = z.array(categorySchema);
 export const linksSchema = z.array(linkSchema);
-
-export const musicSchema = z.array(
-  z.object({
-    name: z.string(),
-    keyword: z.string(),
-    kuwoId: z.string().optional(),
-    neteaseId: z.string().optional(),
-  })
-);
 
 // 由 schema 派生的类型，单一事实来源，避免与手写接口漂移
 export type SubCategory = z.infer<typeof subCategorySchema>;
@@ -76,4 +64,3 @@ export type Link = z.infer<typeof linkSchema>;
 export type SearchSource = z.infer<typeof searchSourceSchema>;
 export type SearchConfig = z.infer<typeof searchConfigSchema>;
 export type SiteSettings = z.infer<typeof siteSettingsSchema>;
-export type MusicTrack = z.infer<typeof musicSchema>[number];

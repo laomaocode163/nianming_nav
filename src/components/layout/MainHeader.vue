@@ -5,12 +5,8 @@
   import { ref, computed, onMounted, onUnmounted } from 'vue';
   import { useDataStore } from '../../stores/data';
   import { useUiStore } from '../../stores/ui';
-  import { defineAsyncComponent } from 'vue';
   import type { SearchSource } from '../../types';
   import { safeUrl } from '../../utils/url';
-
-  // MiniPlayer 仅桌面端渲染，懒加载以延迟其 JS
-  const MiniPlayer = defineAsyncComponent(() => import('../MusicPlayer/MiniPlayer.vue'));
 
   const emit = defineEmits(['toggle-sidebar']);
 
@@ -127,9 +123,6 @@
     <div class="header-center">
       <!-- Time Date Component -->
       <TimeDateComponent v-if="!isMobile" />
-
-      <!-- Mini Player (常驻显示) -->
-      <MiniPlayer v-if="!isMobile" />
 
       <div class="search-wrapper">
         <!-- Search Mode Toggle -->

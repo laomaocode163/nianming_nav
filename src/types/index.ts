@@ -6,7 +6,6 @@ export type {
   SearchSource,
   SearchConfig,
   SiteSettings,
-  MusicTrack,
 } from '../config/schema';
 
 // 搜索模式（站内 / 外部搜索引擎）

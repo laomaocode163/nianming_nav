@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { loadSiteConfig, invalidateSiteConfigCache } from '../../src/config/loadConfig';
-import { loadMusicPlaylist } from '../../src/config/loadMusic';
 
 describe('loadConfig', () => {
   it('should asynchronously load and validate site config', async () => {
@@ -28,11 +27,5 @@ describe('loadConfig', () => {
     const second = await freshPromise;
     expect(second.categories.length).toBe(first.categories.length);
     expect(second.links.length).toBe(first.links.length);
-  });
-
-  it('should load and validate the music playlist', async () => {
-    const playlist = await loadMusicPlaylist();
-    expect(Array.isArray(playlist)).toBe(true);
-    expect(playlist.length).toBeGreaterThan(0);
   });
 });

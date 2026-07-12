@@ -2,7 +2,6 @@
  * 设置 store
  * 将 settings.json 中定义的运行时设置真正应用到界面：
  * - accentColor -> 主色 HSL CSS 变量（让配置闭环生效）
- * - backgroundImage / backgroundImageEnabled / backgroundMotion -> 应用背景
  */
 import { defineStore } from 'pinia';
 import { reactive, ref } from 'vue';
@@ -60,13 +59,6 @@ export const useSettingsStore = defineStore('settings', () => {
         root.style.setProperty('--sat-primary', `${s}%`);
         root.style.setProperty('--lig-primary', `${l}%`);
       }
-    }
-
-    if (settings.backgroundImageEnabled && settings.backgroundImage) {
-      root.style.setProperty('--app-bg-image', `url("${settings.backgroundImage}")`);
-      root.style.setProperty('--app-bg-attachment', settings.backgroundMotion ? 'fixed' : 'scroll');
-    } else {
-      root.style.setProperty('--app-bg-image', 'none');
     }
   };
 

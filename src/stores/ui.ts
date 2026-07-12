@@ -41,10 +41,6 @@ export const useUiStore = defineStore('ui', () => {
     currentPage.value = 1;
   };
 
-  const updateSearchMode = (mode: SearchMode): void => {
-    searchMode.value = mode;
-  };
-
   const toggleSearchMode = (): void => {
     searchMode.value = searchMode.value === 'external' ? 'internal' : 'external';
   };
@@ -61,10 +57,6 @@ export const useUiStore = defineStore('ui', () => {
     sidebarCollapsed.value = !sidebarCollapsed.value;
   };
 
-  const setPage = (page: number): void => {
-    currentPage.value = page;
-  };
-
   return {
     selectedCategoryId,
     selectedSubCategoryId,
@@ -77,11 +69,9 @@ export const useUiStore = defineStore('ui', () => {
     selectCategory,
     selectSubCategory,
     updateSearchQuery,
-    updateSearchMode,
     toggleSearchMode,
     toggleSidebar,
     closeSidebar,
     toggleSidebarCollapse,
-    setPage,
   };
 });
