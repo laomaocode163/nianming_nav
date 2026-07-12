@@ -3,7 +3,8 @@
   import { useAdminStore } from '../../stores/admin';
   import { showToast } from '../../composables/useToast';
   import { linkSchema } from '../../config/schema';
-  import type { Link } from '../../types';
+  import type { Category, Link, SubCategory } from '../../types';
+  import '../../components/admin/admin.css';
 
   const adminStore = useAdminStore();
 
@@ -11,20 +12,70 @@
   const editingId = ref<string | null>(null);
   const search = ref('');
 
-  const filteredLinks = computed(() => {
+  const sortedCategories = computed<Category[]>(() =>
+    [...adminStore.categories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  );
+
+  interface LinkSubGroup {
+    sub: SubCategory;
+    links: Link[];
+  }
+  interface LinkCatGroup {
+    cat: Category;
+    directLinks: Link[];
+    subs: LinkSubGroup[];
+  }
+
+  const matchLink = (l: Link, q: string): boolean => {
+    if (!q) return true;
+    return (
+      l.name.toLowerCase().includes(q) ||
+      l.url.toLowerCase().includes(q) ||
+      categoryNameOf(l.categoryId).toLowerCase().includes(q) ||
+      subNameOf(l.categoryId, l.subCategoryId).toLowerCase().includes(q)
+    );
+  };
+
+  const treeGroups = computed<LinkCatGroup[]>(() => {
     const q = search.value.trim().toLowerCase();
-    if (!q) return adminStore.links;
-    return adminStore.links.filter((l) => {
-      const cat = categoryNameOf(l.categoryId).toLowerCase();
-      const sub = subNameOf(l.categoryId, l.subCategoryId).toLowerCase();
-      return (
-        l.name.toLowerCase().includes(q) ||
-        l.url.toLowerCase().includes(q) ||
-        cat.includes(q) ||
-        sub.includes(q)
-      );
-    });
+    return sortedCategories.value
+      .map((cat) => {
+        const catLinks = adminStore.links.filter((l) => l.categoryId === cat.id);
+        const directLinks = catLinks.filter((l) => !l.subCategoryId).filter((l) => matchLink(l, q));
+        const subs: LinkSubGroup[] = (cat.subCategories ?? [])
+          .map((sub) => ({
+            sub,
+            links: catLinks
+              .filter((l) => l.subCategoryId === sub.id)
+              .filter((l) => matchLink(l, q)),
+          }))
+          .filter((g) => g.links.length > 0);
+        return { cat, directLinks, subs };
+      })
+      .filter((g) => g.directLinks.length > 0 || g.subs.length > 0);
   });
+
+  const totalMatched = computed(() =>
+    treeGroups.value.reduce(
+      (sum, g) => sum + g.directLinks.length + g.subs.reduce((s, sg) => s + sg.links.length, 0),
+      0
+    )
+  );
+
+  const expanded = reactive<Record<string, boolean>>({});
+
+  const isExpanded = (key: string): boolean => {
+    // 搜索时自动展开所有含命中项的节点
+    return !!search.value.trim() || !!expanded[key];
+  };
+
+  const toggleExpand = (key: string): void => {
+    if (search.value.trim()) return;
+    expanded[key] = !expanded[key];
+  };
+
+  const subCount = (g: LinkCatGroup): number =>
+    g.directLinks.length + g.subs.reduce((s, sg) => s + sg.links.length, 0);
 
   const emptyForm = () => ({
     id: '',
@@ -55,6 +106,14 @@
 
   const openCreate = (): void => {
     Object.assign(form, emptyForm());
+    editingId.value = null;
+    showForm.value = true;
+  };
+
+  const openCreateAt = (categoryId: string, subId?: string): void => {
+    Object.assign(form, emptyForm());
+    form.categoryId = categoryId;
+    form.subCategoryId = subId ?? '';
     editingId.value = null;
     showForm.value = true;
   };
@@ -148,91 +207,164 @@
 
 <template>
   <section>
-    <div class="toolbar">
-      <button class="btn-primary" @click="openCreate">+ 新增链接</button>
-      <label class="fetch-toggle">
+    <div class="admin-toolbar">
+      <button class="admin-btn admin-btn-primary" @click="openCreate">＋ 新增链接</button>
+      <label class="admin-check admin-fetch-toggle">
         <input v-model="adminStore.autoFetchFavicons" type="checkbox" />
         保存后自动抓取 favicon
       </label>
-      <button class="btn-ghost" @click="manualFetch">抓取全部 favicon</button>
-      <input v-model="search" class="search" type="search" placeholder="搜索名称 / URL / 分类…" />
-      <span class="count">共 {{ filteredLinks.length }} 条</span>
+      <button class="admin-btn admin-btn-ghost" @click="manualFetch">抓取全部 favicon</button>
+      <input
+        v-model="search"
+        class="admin-search"
+        type="search"
+        placeholder="搜索名称 / URL / 分类…"
+      />
+      <span class="admin-count">共 {{ totalMatched }} 条</span>
     </div>
 
-    <div v-if="adminStore.loading && adminStore.links.length === 0" class="hint">加载中…</div>
-    <div v-else-if="adminStore.links.length === 0" class="hint">暂无链接</div>
-    <div v-else-if="filteredLinks.length === 0" class="hint">无匹配结果</div>
+    <div v-if="adminStore.loading && adminStore.links.length === 0" class="admin-hint">加载中…</div>
+    <div v-else-if="adminStore.links.length === 0" class="admin-hint">
+      暂无链接，点击上方「新增链接」创建
+    </div>
+    <div v-else-if="treeGroups.length === 0" class="admin-hint">无匹配结果</div>
 
-    <table v-else class="data-table">
-      <thead>
-        <tr>
-          <th>名称</th>
-          <th>URL</th>
-          <th>分类</th>
-          <th>二级分类</th>
-          <th>置顶</th>
-          <th>隐藏</th>
-          <th class="col-actions">操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="link in filteredLinks" :key="link.id">
-          <td>{{ link.name }}</td>
-          <td class="cell-url">
-            <a :href="link.url" target="_blank" rel="noopener noreferrer">{{ link.url }}</a>
-          </td>
-          <td>{{ categoryNameOf(link.categoryId) }}</td>
-          <td>{{ subNameOf(link.categoryId, link.subCategoryId) }}</td>
-          <td>{{ link.pinned ? '✓' : '' }}</td>
-          <td>{{ link.hidden ? '✓' : '' }}</td>
-          <td class="col-actions">
-            <button class="btn-link" @click="openEdit(link)">编辑</button>
-            <button class="btn-link danger" @click="remove(link)">删除</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <ul v-else class="admin-tree">
+      <li v-for="g in treeGroups" :key="g.cat.id" class="admin-tree-node">
+        <div class="admin-tree-row admin-tree-row--cat">
+          <button
+            class="admin-tree-toggle"
+            :class="{ open: isExpanded('c:' + g.cat.id) }"
+            :aria-label="isExpanded('c:' + g.cat.id) ? '收起' : '展开'"
+            @click="toggleExpand('c:' + g.cat.id)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <span class="admin-tree-icon">{{ g.cat.icon }}</span>
+          <span class="admin-tree-name">{{ g.cat.name }}</span>
+          <span class="admin-tree-meta mono">{{ g.cat.id }}</span>
+          <span class="admin-chip">{{ subCount(g) }} 链接</span>
+          <span class="admin-spacer"></span>
+          <button class="admin-link-btn" @click="openCreateAt(g.cat.id)">＋链接</button>
+        </div>
 
-    <!-- 表单弹窗 -->
-    <div v-if="showForm" class="modal-mask" @click.self="closeForm">
-      <div class="modal">
-        <h3 class="modal-title">{{ editingId ? '编辑链接' : '新增链接' }}</h3>
-        <div class="field">
-          <label>名称 *</label>
-          <input v-model="form.name" type="text" placeholder="如 GitHub" />
+        <ul v-if="isExpanded('c:' + g.cat.id)" class="admin-tree-children">
+          <li v-for="l in g.directLinks" :key="l.id" class="admin-tree-node">
+            <div class="admin-tree-row admin-tree-row--link">
+              <span class="admin-tree-icon admin-tree-icon--link">🔗</span>
+              <span class="admin-tree-name">{{ l.name }}</span>
+              <span class="admin-tree-url">
+                <a :href="l.url" target="_blank" rel="noopener noreferrer">{{ l.url }}</a>
+              </span>
+              <span v-if="l.pinned" class="admin-chip">置顶</span>
+              <span v-if="l.hidden" class="admin-chip muted">隐藏</span>
+              <span class="admin-spacer"></span>
+              <button class="admin-link-btn" @click="openEdit(l)">编辑</button>
+              <button class="admin-link-btn danger" @click="remove(l)">删除</button>
+            </div>
+          </li>
+
+          <li v-for="sg in g.subs" :key="sg.sub.id" class="admin-tree-node">
+            <div class="admin-tree-row admin-tree-row--sub">
+              <button
+                class="admin-tree-toggle"
+                :class="{ open: isExpanded('s:' + g.cat.id + ':' + sg.sub.id) }"
+                :aria-label="isExpanded('s:' + g.cat.id + ':' + sg.sub.id) ? '收起' : '展开'"
+                @click="toggleExpand('s:' + g.cat.id + ':' + sg.sub.id)"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <span class="admin-tree-icon admin-tree-icon--sub">{{ sg.sub.icon || '·' }}</span>
+              <span class="admin-tree-name">{{ sg.sub.name }}</span>
+              <span class="admin-tree-meta mono">{{ sg.sub.id }}</span>
+              <span class="admin-chip">{{ sg.links.length }} 链接</span>
+              <span class="admin-spacer"></span>
+              <button class="admin-link-btn" @click="openCreateAt(g.cat.id, sg.sub.id)">
+                ＋链接
+              </button>
+            </div>
+
+            <ul v-if="isExpanded('s:' + g.cat.id + ':' + sg.sub.id)" class="admin-tree-children">
+              <li v-for="l in sg.links" :key="l.id" class="admin-tree-node">
+                <div class="admin-tree-row admin-tree-row--link">
+                  <span class="admin-tree-icon admin-tree-icon--link">🔗</span>
+                  <span class="admin-tree-name">{{ l.name }}</span>
+                  <span class="admin-tree-url">
+                    <a :href="l.url" target="_blank" rel="noopener noreferrer">{{ l.url }}</a>
+                  </span>
+                  <span v-if="l.pinned" class="admin-chip">置顶</span>
+                  <span v-if="l.hidden" class="admin-chip muted">隐藏</span>
+                  <span class="admin-spacer"></span>
+                  <button class="admin-link-btn" @click="openEdit(l)">编辑</button>
+                  <button class="admin-link-btn danger" @click="remove(l)">删除</button>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+    <div v-if="showForm" class="admin-modal-mask" @click.self="closeForm">
+      <div class="admin-modal">
+        <h3 class="admin-modal-title">
+          <span class="admin-modal-icon">🔗</span>
+          {{ editingId ? '编辑链接' : '新增链接' }}
+        </h3>
+        <div class="admin-field">
+          <label class="admin-label">名称 *</label>
+          <input v-model="form.name" class="admin-input" type="text" placeholder="如 GitHub" />
         </div>
-        <div class="field">
-          <label>URL *</label>
-          <input v-model="form.url" type="text" placeholder="https://..." />
+        <div class="admin-field">
+          <label class="admin-label">URL *</label>
+          <input v-model="form.url" class="admin-input" type="text" placeholder="https://..." />
         </div>
-        <div class="field-row">
-          <div class="field">
-            <label>分类 *</label>
-            <select v-model="form.categoryId" @change="onCategoryChange">
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label class="admin-label">分类 *</label>
+            <select v-model="form.categoryId" class="admin-select" @change="onCategoryChange">
               <option v-for="c in adminStore.categories" :key="c.id" :value="c.id">
                 {{ c.name }}
               </option>
             </select>
           </div>
-          <div class="field">
-            <label>二级分类</label>
-            <select v-model="form.subCategoryId">
+          <div class="admin-field">
+            <label class="admin-label">二级分类</label>
+            <select v-model="form.subCategoryId" class="admin-select">
               <option value="">（无）</option>
               <option v-for="s in subOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
           </div>
         </div>
-        <div class="field">
-          <label>描述</label>
-          <input v-model="form.description" type="text" placeholder="可选" />
+        <div class="admin-field">
+          <label class="admin-label">描述</label>
+          <input v-model="form.description" class="admin-input" type="text" placeholder="可选" />
         </div>
-        <div class="field-row">
-          <label class="check"><input v-model="form.pinned" type="checkbox" /> 置顶</label>
-          <label class="check"><input v-model="form.hidden" type="checkbox" /> 隐藏</label>
+        <div class="admin-field-row">
+          <label class="admin-check"><input v-model="form.pinned" type="checkbox" /> 置顶</label>
+          <label class="admin-check"><input v-model="form.hidden" type="checkbox" /> 隐藏</label>
         </div>
-        <div class="modal-actions">
-          <button class="btn-ghost" @click="closeForm">取消</button>
-          <button class="btn-primary" @click="save">保存</button>
+        <div class="admin-modal-actions">
+          <button class="admin-btn admin-btn-ghost" @click="closeForm">取消</button>
+          <button class="admin-btn admin-btn-primary" @click="save">保存</button>
         </div>
       </div>
     </div>
@@ -240,198 +372,8 @@
 </template>
 
 <style scoped>
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .fetch-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
+  .admin-fetch-toggle {
     font-size: 0.8125rem;
     color: var(--color-text-secondary);
-  }
-
-  .search {
-    margin-left: auto;
-    padding: 0.5rem 0.625rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-bg);
-    color: var(--color-text);
-    font-size: 0.875rem;
-    min-width: 220px;
-  }
-
-  .count {
-    font-size: 0.8125rem;
-    color: var(--color-text-secondary);
-    white-space: nowrap;
-  }
-
-  .hint {
-    padding: 2rem;
-    text-align: center;
-    color: var(--color-text-secondary);
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-  }
-
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
-
-  .data-table th,
-  .data-table td {
-    padding: 0.625rem 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid var(--color-border);
-    font-size: 0.875rem;
-  }
-
-  .data-table th {
-    background: hsl(var(--hue-primary), 12%, 96%);
-    color: var(--color-text);
-    font-weight: 600;
-  }
-
-  .dark .data-table th {
-    background: hsl(var(--hue-primary), 20%, 20%);
-  }
-
-  .cell-url {
-    max-width: 280px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .cell-url a {
-    color: var(--color-primary);
-    text-decoration: none;
-  }
-
-  .col-actions {
-    width: 120px;
-    white-space: nowrap;
-  }
-
-  .btn-primary {
-    background: var(--gradient-primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius-md);
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 150ms var(--ease-out-expo);
-  }
-
-  .btn-ghost {
-    background: var(--color-card);
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 150ms var(--ease-out-expo);
-  }
-
-  .btn-ghost:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-  }
-
-  .btn-link {
-    background: none;
-    border: none;
-    color: var(--color-primary);
-    cursor: pointer;
-    font-size: 0.8125rem;
-    margin-right: 0.5rem;
-  }
-
-  .btn-link.danger {
-    color: var(--color-danger);
-  }
-
-  .modal-mask {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-  }
-
-  .modal {
-    width: min(520px, 92vw);
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-lg);
-  }
-
-  .modal-title {
-    margin: 0 0 1rem;
-    font-size: 1.125rem;
-  }
-
-  .field {
-    margin-bottom: 0.875rem;
-    flex: 1;
-  }
-
-  .field label {
-    display: block;
-    font-size: 0.8125rem;
-    color: var(--color-text-secondary);
-    margin-bottom: 0.25rem;
-  }
-
-  .field input,
-  .field select {
-    width: 100%;
-    padding: 0.5rem 0.625rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-bg);
-    color: var(--color-text);
-    font-size: 0.875rem;
-  }
-
-  .field-row {
-    display: flex;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .check {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.875rem;
-    color: var(--color-text);
-  }
-
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 1rem;
   }
 </style>

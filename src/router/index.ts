@@ -11,7 +11,8 @@ const routes: RouteRecordRaw[] = [
 ];
 
 // 管理后台仅本地开发可见；生产构建中 import.meta.env.DEV 为 false，
-// 该动态 import 会被 tree-shake，且 /admin 仅做重定向兜底。
+// 该动态 import 会被 tree-shake。生产下不保留任何 /admin 字面量，
+// 用通配兜底把未知路径（含 /admin）重定向回首页。
 if (import.meta.env.DEV) {
   routes.push({
     path: '/admin',
@@ -19,7 +20,7 @@ if (import.meta.env.DEV) {
     component: () => import('../views/AdminView.vue'),
   });
 } else {
-  routes.push({ path: '/admin', redirect: '/' });
+  routes.push({ path: '/:pathMatch(.*)*', redirect: '/' });
 }
 
 const router = createRouter({

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, ref } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { onMounted, ref, shallowRef, type Component } from 'vue';
   import { useThemeStore } from './stores/theme';
   import { useSettingsStore } from './stores/settings';
   import { useDataStore } from './stores/data';
@@ -9,19 +8,16 @@
   const themeStore = useThemeStore();
   const settingsStore = useSettingsStore();
   const dataStore = useDataStore();
-  const router = useRouter();
 
-  const openAdmin = (): void => {
-    router.push('/admin');
-  };
+  // 管理后台入口：仅本地开发动态加载，生产构建中该 import() 被
+  // 死代码消除，对应 chunk 不会进入产物 → 对外完全不可见。
+  const DevAdminEntry = shallowRef<Component | null>(null);
 
   const ready = ref(false);
   const error = ref<string | null>(null);
-  const isDev = ref(import.meta.env.DEV);
 
   onMounted(async () => {
     themeStore.initTheme();
-    // 配置（含 Zod 校验）异步加载，期间展示骨架，不阻塞首屏绘制
     try {
       await dataStore.init();
       await settingsStore.init();
@@ -30,6 +26,9 @@
     } catch (e) {
       error.value = e instanceof Error ? e.message : '加载配置失败，请检查数据文件';
       ready.value = true;
+    }
+    if (import.meta.env.DEV) {
+      DevAdminEntry.value = (await import('./components/admin/DevAdminEntry.vue')).default;
     }
   });
 </script>
@@ -40,16 +39,7 @@
   </div>
   <ToastHost />
 
-  <!-- 管理后台入口：仅本地开发可见，生产构建被 tree-shake -->
-  <button
-    v-if="isDev"
-    class="dev-admin-entry"
-    title="管理后台（仅开发环境）"
-    aria-label="打开管理后台"
-    @click="openAdmin"
-  >
-    ⚙
-  </button>
+  <component :is="DevAdminEntry" v-if="DevAdminEntry" />
 
   <div v-if="!ready" class="app-splash" aria-hidden="true">
     <div class="app-splash__logo">念</div>
@@ -145,28 +135,5 @@
     to {
       transform: rotate(360deg);
     }
-  }
-
-  .dev-admin-entry {
-    position: fixed;
-    left: 1rem;
-    bottom: 1rem;
-    z-index: 9998;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
-    color: var(--color-text-secondary);
-    font-size: 1.125rem;
-    cursor: pointer;
-    box-shadow: var(--shadow-md);
-    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .dev-admin-entry:hover {
-    color: var(--color-primary);
-    border-color: var(--color-primary);
-    transform: scale(1.05);
   }
 </style>
