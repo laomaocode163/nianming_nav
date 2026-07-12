@@ -182,9 +182,6 @@
 
       <!-- Category Header -->
       <div class="category-header">
-        <span class="category-icon">{{
-          uiStore.selectedCategoryId === 'all' ? '✓' : currentCategory?.icon || '🌐'
-        }}</span>
         <h2 class="category-title">
           {{
             uiStore.selectedCategoryId === 'all' ? '全部网站' : currentCategory?.name || '未知分类'
@@ -299,13 +296,6 @@
     border-bottom: 2px solid var(--color-border);
   }
 
-  .category-icon {
-    font-size: 1.25rem;
-    line-height: 1;
-    color: var(--color-primary);
-    margin-right: 0.5rem;
-  }
-
   .category-title {
     font-size: 1.125rem;
     font-weight: 700;
@@ -403,10 +393,6 @@
     .category-header {
       flex-wrap: wrap;
       padding: 0.875rem 1rem 0.625rem;
-    }
-
-    .category-icon {
-      font-size: 1.125rem;
     }
 
     .category-title {

@@ -84,8 +84,6 @@
         :title="sub.name"
         @click="$emit('select', sub.id)"
       >
-        <span v-if="sub.icon" class="tab-icon">{{ sub.icon }}</span>
-        <span v-else class="tab-icon tab-icon--placeholder"></span>
         {{ sub.name }}
         <span v-if="props.counts[sub.id] !== undefined" class="tab-count">{{
           props.counts[sub.id]
@@ -241,30 +239,6 @@
     opacity: 0.8;
     padding-left: 0.125rem;
     font-variant-numeric: tabular-nums;
-  }
-
-  .tab-icon {
-    font-size: 1rem;
-    width: 1.1rem;
-    height: 1.1rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    line-height: 1;
-  }
-
-  .tab-icon--placeholder {
-    position: relative;
-  }
-
-  .tab-icon--placeholder::after {
-    content: '';
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.45;
   }
 
   @media (max-width: 768px) {
