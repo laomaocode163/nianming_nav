@@ -30,6 +30,16 @@
     return subCategories.value.length > 0;
   });
 
+  // 每个二级分类下的链接数量，用于标签栏计数徽标
+  const subCounts = computed<Record<string, number>>(() => {
+    const map: Record<string, number> = {};
+    const catId = uiStore.selectedCategoryId;
+    for (const sub of subCategories.value) {
+      map[sub.id] = dataStore.getLinksByCategory(catId, sub.id).length;
+    }
+    return map;
+  });
+
   const links = computed(() => {
     return dataStore.getLinksByCategory(uiStore.selectedCategoryId, uiStore.selectedSubCategoryId);
   });
@@ -185,12 +195,16 @@
 
       <!-- Sites Grid -->
       <div ref="sitesSectionRef" class="sites-section">
-        <!-- 二级分类标签 -->
-        <div v-if="hasSubCategories" class="sub-category-wrapper">
+        <!-- 二级分类标签：侧边栏展开（桌面）时已由侧边栏树提供导航，此处仅在折叠/移动端显示 -->
+        <div
+          v-if="hasSubCategories && (uiStore.sidebarCollapsed || isMobile)"
+          class="sub-category-wrapper"
+        >
           <SubCategoryTabs
             :sub-categories="subCategories"
             :selected-id="uiStore.selectedSubCategoryId"
             :total-count="links.length"
+            :counts="subCounts"
             @select="uiStore.selectSubCategory"
           />
         </div>

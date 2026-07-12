@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import { useDataStore } from '../../stores/data';
+  import { useUiStore } from '../../stores/ui';
   import { useResponsive } from '../../hooks/useResponsive';
 
   withDefaults(
@@ -23,12 +24,48 @@
   }>();
 
   const dataStore = useDataStore();
+  const uiStore = useUiStore();
   const { isMobile } = useResponsive();
 
   const categories = computed(() => dataStore.visibleCategories);
 
+  // 已展开（显示二级分类）的一级分类集合；默认展开当前选中的有子分类项
+  const expandedCats = ref<Set<string>>(new Set());
+
+  // 自动展开当前选中的、含二级分类的一级分类
+  watch(
+    () => uiStore.selectedCategoryId,
+    (catId) => {
+      const cat = dataStore.categories.find((c) => c.id === catId);
+      if (cat?.subCategories?.length) {
+        expandedCats.value.add(catId);
+      }
+    },
+    { immediate: true }
+  );
+
+  const isExpanded = (categoryId: string) => expandedCats.value.has(categoryId);
+
+  const toggleExpand = (categoryId: string) => {
+    const next = new Set(expandedCats.value);
+    if (next.has(categoryId)) {
+      next.delete(categoryId);
+    } else {
+      next.add(categoryId);
+    }
+    expandedCats.value = next;
+  };
+
   const handleSelect = (categoryId: string) => {
     emit('select', categoryId);
+    if (isMobile.value) {
+      emit('close');
+    }
+  };
+
+  // 直接选择二级分类（保留父级选中，不关闭嵌套）
+  const handleSelectSub = (subId: string) => {
+    uiStore.selectSubCategory(subId);
     if (isMobile.value) {
       emit('close');
     }
@@ -101,17 +138,58 @@
     <!-- Navigation Section -->
     <div class="sidebar-nav-section">
       <nav class="sidebar-nav">
-        <button
-          v-for="category in categories"
-          :key="category.id"
-          type="button"
-          class="nav-item"
-          :class="{ active: selectedCategory === category.id }"
-          @click="handleSelect(category.id)"
-        >
-          <span class="nav-icon">{{ category.icon }}</span>
-          <span v-show="!collapsed" class="nav-name">{{ category.name }}</span>
-        </button>
+        <template v-for="category in categories" :key="category.id">
+          <button
+            type="button"
+            class="nav-item"
+            :class="{
+              active: selectedCategory === category.id && !uiStore.selectedSubCategoryId,
+            }"
+            @click="handleSelect(category.id)"
+          >
+            <span class="nav-icon">{{ category.icon }}</span>
+            <span v-show="!collapsed" class="nav-name">{{ category.name }}</span>
+            <span
+              v-if="!collapsed && category.subCategories?.length"
+              class="nav-expand"
+              :class="{ expanded: isExpanded(category.id) }"
+              role="button"
+              tabindex="-1"
+              :aria-label="isExpanded(category.id) ? '收起子分类' : '展开子分类'"
+              @click.stop="toggleExpand(category.id)"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+          </button>
+
+          <!-- 二级分类树 -->
+          <div
+            v-if="!collapsed && category.subCategories?.length && isExpanded(category.id)"
+            class="sidebar-sub"
+          >
+            <button
+              v-for="sub in dataStore.getSubCategories(category.id)"
+              :key="sub.id"
+              type="button"
+              class="sub-item"
+              :class="{ active: uiStore.selectedSubCategoryId === sub.id }"
+              @click="handleSelectSub(sub.id)"
+            >
+              <span v-if="sub.icon" class="sub-icon">{{ sub.icon }}</span>
+              <span v-else class="sub-icon sub-icon--placeholder"></span>
+              <span class="sub-name">{{ sub.name }}</span>
+            </button>
+          </div>
+        </template>
       </nav>
     </div>
   </aside>
@@ -563,5 +641,181 @@
   .sidebar-nav::-webkit-scrollbar-thumb {
     background: var(--color-border);
     border-radius: 2px;
+  }
+
+  /* 二级分类展开箭头 */
+  .nav-expand {
+    margin-left: auto;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+    transition:
+      transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+      background 150ms cubic-bezier(0.4, 0, 0.2, 1),
+      color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .nav-expand:hover {
+    background: hsl(var(--hue-primary), 15%, 92%);
+    color: var(--color-primary);
+  }
+
+  .dark .nav-expand:hover {
+    background: hsl(var(--hue-primary), 20%, 22%);
+  }
+
+  .nav-expand svg {
+    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-expand.expanded svg {
+    transform: rotate(90deg);
+  }
+
+  .nav-item.active .nav-expand {
+    color: var(--color-primary);
+  }
+
+  /* 二级分类树 */
+  .sidebar-sub {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    margin: 0 0.5rem 0.25rem 0.5rem;
+    padding-left: 1.25rem;
+    border-left: 1px solid var(--color-border);
+    animation: subTreeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes subTreeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .sub-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+    min-height: 38px;
+    width: 100%;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    position: relative;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sub-item::before {
+    content: '';
+    position: absolute;
+    left: -1.25rem;
+    top: 50%;
+    width: 0.875rem;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  .sub-item:hover {
+    background: hsl(var(--hue-primary), 10%, 96%);
+    color: var(--color-primary);
+  }
+
+  .dark .sub-item:hover {
+    background: hsl(var(--hue-primary), 20%, 18%);
+  }
+
+  .sub-item.active {
+    background: hsl(var(--hue-primary), 15%, 96%);
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  .dark .sub-item.active {
+    background: hsl(var(--hue-primary), 25%, 20%);
+  }
+
+  .sub-item.active::after {
+    content: '';
+    position: absolute;
+    left: -1.25rem;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    box-shadow: 0 0 0 3px hsl(var(--hue-primary), 15%, 96%);
+  }
+
+  .dark .sub-item.active::after {
+    box-shadow: 0 0 0 3px hsl(var(--hue-primary), 25%, 20%);
+  }
+
+  .sub-icon {
+    font-size: 0.95rem;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .sub-icon--placeholder {
+    position: relative;
+  }
+
+  .sub-icon--placeholder::after {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.4;
+  }
+
+  .sub-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media (max-width: 480px) {
+    .sub-item {
+      min-height: 42px;
+      font-size: 0.8125rem;
+    }
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .sub-item:active {
+      transform: scale(0.98);
+      background: hsl(var(--hue-primary), 20%, 94%);
+    }
+
+    .dark .sub-item:active {
+      background: hsl(var(--hue-primary), 20%, 18%);
+    }
   }
 </style>
