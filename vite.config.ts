@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
+import { devAdminApi } from './plugins/devAdminApi';
 
 export default defineConfig({
   plugins: [
@@ -15,6 +16,7 @@ export default defineConfig({
       dirs: ['src/components'],
       dts: 'src/components.d.ts',
     }),
+    devAdminApi(),
   ],
   resolve: {
     alias: {

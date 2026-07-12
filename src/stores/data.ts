@@ -5,7 +5,7 @@
  */
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { loadSiteConfig } from '../config/loadConfig';
+import { loadSiteConfig, invalidateSiteConfigCache } from '../config/loadConfig';
 import { extractDomain, getCachedFavicon } from '../services/faviconService';
 import { useUiStore } from './ui';
 import type { Link, Category, SubCategory, SearchConfig } from '../types';
@@ -34,6 +34,13 @@ export const useDataStore = defineStore('data', () => {
     } catch {
       /* 隐私模式等读取失败时忽略 */
     }
+  };
+
+  /** 重新加载配置（dev 管理后台写盘后调用），即时反映最新数据 */
+  const reload = async (): Promise<void> => {
+    ready.value = false;
+    invalidateSiteConfigCache();
+    await init();
   };
 
   // 按分类和可选的二级分类过滤链接
@@ -90,6 +97,7 @@ export const useDataStore = defineStore('data', () => {
   return {
     ready,
     init,
+    reload,
     links,
     categories,
     searchConfig,

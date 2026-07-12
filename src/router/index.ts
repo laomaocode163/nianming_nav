@@ -10,6 +10,18 @@ const routes: RouteRecordRaw[] = [
   },
 ];
 
+// 管理后台仅本地开发可见；生产构建中 import.meta.env.DEV 为 false，
+// 该动态 import 会被 tree-shake，且 /admin 仅做重定向兜底。
+if (import.meta.env.DEV) {
+  routes.push({
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/AdminView.vue'),
+  });
+} else {
+  routes.push({ path: '/admin', redirect: '/' });
+}
+
 const router = createRouter({
   history: createWebHistory(),
   routes,

@@ -79,3 +79,8 @@ export const loadSiteConfig = (): Promise<SiteConfig> => {
   if (!cached) cached = doLoad();
   return cached;
 };
+
+/** 使已缓存的配置失效，下次 loadSiteConfig 会重新读取（dev 管理后台写盘后调用） */
+export const invalidateSiteConfigCache = (): void => {
+  cached = null;
+};
