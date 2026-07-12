@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed, ref, onMounted } from 'vue';
   import { useDataStore } from '../../stores/data';
   import { getDefaultIcon } from '../../utils/constants';
   import {
@@ -19,6 +19,14 @@
   const dataStore = useDataStore();
   const isCopied = ref(false);
   const failedIndex = ref(-1);
+  const nameRef = ref<HTMLElement | null>(null);
+  const isNameTruncated = ref(false);
+
+  onMounted(() => {
+    if (nameRef.value) {
+      isNameTruncated.value = nameRef.value.scrollWidth > nameRef.value.clientWidth;
+    }
+  });
 
   const siteIcon = computed(() => {
     return dataStore.getLinkIcon(props.site);
@@ -85,7 +93,9 @@
 
     <div class="site-info">
       <div class="site-name-row">
-        <span class="site-name">{{ site.name }}</span>
+        <span ref="nameRef" class="site-name" :title="isNameTruncated ? site.name : undefined">{{
+          site.name
+        }}</span>
         <button
           class="copy-btn"
           :class="{ copied: isCopied }"
