@@ -3,144 +3,141 @@
  * 承载原本散落在 MiniPlayer.vue 中的网络请求、音频控制与状态，
  * 组件仅负责渲染与事件绑定。音频元素通过 audioRef 传入。
  */
-import { ref, onUnmounted, type Ref } from 'vue'
-import { loadMusicPlaylist } from '../config/loadMusic'
-import { fetchSongUrl, searchSongUrl } from '../services/musicApi'
-import type { MusicTrack } from '../types'
+import { ref, onUnmounted, type Ref } from 'vue';
+import { loadMusicPlaylist } from '../config/loadMusic';
+import { fetchSongUrl, searchSongUrl } from '../services/musicApi';
+import type { MusicTrack } from '../types';
 
 export function useMusicPlayer(audioRef: Ref<HTMLAudioElement | null>) {
-  const playlist = ref<MusicTrack[]>([])
-  const currentSong = ref<MusicTrack | null>(null)
-  const isPlaying = ref(false)
-  const errorMessage = ref('')
-  const currentTimeDisplay = ref('0:00')
-  const totalTimeDisplay = ref('0:00')
-  const progressPercent = ref(0)
+  const playlist = ref<MusicTrack[]>([]);
+  const currentSong = ref<MusicTrack | null>(null);
+  const isPlaying = ref(false);
+  const errorMessage = ref('');
+  const currentTimeDisplay = ref('0:00');
+  const totalTimeDisplay = ref('0:00');
+  const progressPercent = ref(0);
 
   const formatTime = (seconds: number): string => {
-    if (Number.isNaN(seconds)) return '0:00'
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
+    if (Number.isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const playSong = async (song: MusicTrack, autoPlay = true): Promise<void> => {
-    errorMessage.value = ''
-    currentSong.value = song
+    errorMessage.value = '';
+    currentSong.value = song;
     try {
-      let audioUrl: string | null = null
-      if (song.kuwoId) audioUrl = await fetchSongUrl('kuwo', song.kuwoId)
-      if (!audioUrl && song.neteaseId) audioUrl = await fetchSongUrl('netease', song.neteaseId)
-      if (!audioUrl) audioUrl = await searchSongUrl(song.keyword)
-      if (!audioUrl) throw new Error('未找到可用的音频链接')
+      let audioUrl: string | null = null;
+      if (song.kuwoId) audioUrl = await fetchSongUrl('kuwo', song.kuwoId);
+      if (!audioUrl && song.neteaseId) audioUrl = await fetchSongUrl('netease', song.neteaseId);
+      if (!audioUrl) audioUrl = await searchSongUrl(song.keyword);
+      if (!audioUrl) throw new Error('未找到可用的音频链接');
 
-      const player = audioRef.value
-      if (!player) return
-      player.pause()
-      player.src = audioUrl
-      player.load()
+      const player = audioRef.value;
+      if (!player) return;
+      player.pause();
+      player.src = audioUrl;
+      player.load();
 
       if (autoPlay) {
         try {
-          await player.play()
-          isPlaying.value = true
+          await player.play();
+          isPlaying.value = true;
         } catch {
           // 自动播放被浏览器阻止
-          isPlaying.value = false
+          isPlaying.value = false;
         }
       }
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : '播放失败'
-      isPlaying.value = false
+      errorMessage.value = error instanceof Error ? error.message : '播放失败';
+      isPlaying.value = false;
     }
-  }
+  };
 
   const currentIndex = (): number => {
-    if (!currentSong.value) return -1
-    return playlist.value.findIndex((s) => s.name === currentSong.value!.name)
-  }
+    if (!currentSong.value) return -1;
+    return playlist.value.findIndex((s) => s.name === currentSong.value!.name);
+  };
 
   const playNext = async (): Promise<void> => {
-    if (playlist.value.length === 0) return
-    let index = Math.floor(Math.random() * playlist.value.length)
-    const cur = currentIndex()
-    if (cur >= 0 && playlist.value[index].name === playlist.value[cur].name) {
-      index = (index + 1) % playlist.value.length
-    }
-    await playSong(playlist.value[index], true)
-  }
+    if (playlist.value.length === 0) return;
+    const cur = currentIndex();
+    const index = cur < 0 ? 0 : (cur + 1) % playlist.value.length;
+    await playSong(playlist.value[index], true);
+  };
 
   const playPrev = async (): Promise<void> => {
-    if (playlist.value.length === 0) return
-    const cur = currentIndex()
-    const index = cur <= 0 ? playlist.value.length - 1 : cur - 1
-    await playSong(playlist.value[index], true)
-  }
+    if (playlist.value.length === 0) return;
+    const cur = currentIndex();
+    const index = cur <= 0 ? playlist.value.length - 1 : cur - 1;
+    await playSong(playlist.value[index], true);
+  };
 
   const togglePlay = async (): Promise<void> => {
-    const player = audioRef.value
-    if (!player) return
+    const player = audioRef.value;
+    if (!player) return;
     if (isPlaying.value) {
-      player.pause()
-      isPlaying.value = false
+      player.pause();
+      isPlaying.value = false;
     } else if (currentSong.value && !player.src) {
       // 尚未加载音频（init 已选定曲目但未请求），首次播放时再加载
-      await playSong(currentSong.value, true)
+      await playSong(currentSong.value, true);
     } else {
       try {
-        await player.play()
-        isPlaying.value = true
+        await player.play();
+        isPlaying.value = true;
       } catch {
-        isPlaying.value = false
+        isPlaying.value = false;
       }
     }
-  }
+  };
 
   const onTimeUpdate = (): void => {
-    const player = audioRef.value
-    if (!player) return
-    const { currentTime, duration } = player
+    const player = audioRef.value;
+    if (!player) return;
+    const { currentTime, duration } = player;
     if (duration) {
-      progressPercent.value = (currentTime / duration) * 100
-      currentTimeDisplay.value = formatTime(currentTime)
+      progressPercent.value = (currentTime / duration) * 100;
+      currentTimeDisplay.value = formatTime(currentTime);
     }
-  }
+  };
 
   const onLoadedMetadata = (): void => {
-    const player = audioRef.value
-    if (player) totalTimeDisplay.value = formatTime(player.duration)
-  }
+    const player = audioRef.value;
+    if (player) totalTimeDisplay.value = formatTime(player.duration);
+  };
 
   const onProgressClick = (event: MouseEvent): void => {
-    const player = audioRef.value
-    if (!player || !player.duration) return
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-    const percent = (event.clientX - rect.left) / rect.width
-    player.currentTime = percent * player.duration
-  }
+    const player = audioRef.value;
+    if (!player || !player.duration) return;
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const percent = (event.clientX - rect.left) / rect.width;
+    player.currentTime = percent * player.duration;
+  };
 
   const onAudioError = (): void => {
-    errorMessage.value = '音频加载失败'
-    isPlaying.value = false
-  }
+    errorMessage.value = '音频加载失败';
+    isPlaying.value = false;
+  };
 
   const init = async (): Promise<void> => {
-    playlist.value = await loadMusicPlaylist()
-    if (playlist.value.length === 0) return
-    const index = Math.floor(Math.random() * playlist.value.length)
+    playlist.value = await loadMusicPlaylist();
+    if (playlist.value.length === 0) return;
+    const index = Math.floor(Math.random() * playlist.value.length);
     // 仅选定曲目，不立即 load()/请求音频，推迟到用户首次播放，减少首屏网络争用
-    currentSong.value = playlist.value[index]
-  }
+    currentSong.value = playlist.value[index];
+  };
 
   const dispose = (): void => {
-    const player = audioRef.value
+    const player = audioRef.value;
     if (player) {
-      player.pause()
-      player.src = ''
+      player.pause();
+      player.src = '';
     }
-  }
+  };
 
-  onUnmounted(dispose)
+  onUnmounted(dispose);
 
   return {
     currentSong,
@@ -158,5 +155,5 @@ export function useMusicPlayer(audioRef: Ref<HTMLAudioElement | null>) {
     onProgressClick,
     onAudioError,
     init,
-  }
+  };
 }

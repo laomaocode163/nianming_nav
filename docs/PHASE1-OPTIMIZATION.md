@@ -7,7 +7,7 @@
 
 ### 1. 配置加载加 Zod 运行时校验
 - 新增 `src/config/schema.ts`：用 Zod 定义 `category / subCategory / link / searchSource / searchConfig / siteSettings` 的 Schema，以及 `categoriesSchema = z.array(categorySchema)`、`linksSchema = z.array(linkSchema)`。
-- `src/config/sites.ts` 改为用 `*.parse(...)` 校验后聚合为 `SITE_CONFIG`，不再用 `as` 强转。
+- `src/config/loadConfig.ts` 改为用 `*.parse(...)` 校验后聚合为 `SITE_CONFIG`，不再用 `as` 强转。
 - 新增依赖：`zod`。
 - **校验即时收益**：首次运行即发现 `categories.json` / `links.json` 顶层是数组（原 `as` 强转会静默接受错误结构），已据实修正 Schema。
 
@@ -43,7 +43,7 @@
 ## 目录结构变化
 ```
 src/
-├── config/{ data/*.json, schema.ts(新增), sites.ts(校验), music.ts(新增,校验) }
+├── config/{ data/*.json, schema.ts(新增), loadConfig.ts(校验), loadMusic.ts(新增,校验) }
 ├── services/{ faviconService.ts(由 utils/ 迁入并增强), musicApi.ts(新增) }
 ├── stores/{ data.ts(仅静态+getter), ui.ts(新增), theme.ts, settings.ts(新增) }
 ├── composables/useMusicPlayer.ts (新增)

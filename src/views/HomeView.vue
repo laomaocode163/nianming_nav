@@ -14,7 +14,7 @@
 
   const dataStore = useDataStore();
   const uiStore = useUiStore();
-  const { isMobile } = useResponsive();
+  const { isMobile, windowWidth } = useResponsive();
 
   const gridKey = ref(0);
   const sitesSectionRef = ref<HTMLElement | null>(null);
@@ -68,7 +68,6 @@
    * 动态计算每页数量，使一页卡片刚好铺满可视区域、不出现内部滚动。
    * 仅在视图层覆盖 uiStore.pageSize，不改变 store 默认值。
    */
-  const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1280);
   const gridHeight = ref(0);
   const cardHeight = ref(0);
   const GRID_GAP = 24; // 与 --space-lg (1.5rem) 接近的近似像素值
@@ -101,16 +100,11 @@
 
   let gridResizeObserver: ResizeObserver | null = null;
 
-  const handleWindowResize = () => {
-    windowWidth.value = window.innerWidth;
-  };
-
   onMounted(() => {
     if (isMobile.value) {
       uiStore.sidebarOpen = false;
     }
     document.addEventListener('keydown', handleKeydown);
-    window.addEventListener('resize', handleWindowResize);
     if (gridRef.value) {
       gridResizeObserver = new ResizeObserver((entries) => {
         for (const entry of entries) {
@@ -127,7 +121,6 @@
 
   onUnmounted(() => {
     document.removeEventListener('keydown', handleKeydown);
-    window.removeEventListener('resize', handleWindowResize);
     gridResizeObserver?.disconnect();
   });
 

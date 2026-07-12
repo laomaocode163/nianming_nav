@@ -17,9 +17,9 @@ describe('useResponsive', () => {
     setInnerWidth(1024);
     window.dispatchEvent(new Event('resize'));
     await tick();
-    const { isMobile, isDesktop } = useResponsive();
+    const { isMobile, windowWidth } = useResponsive();
     expect(isMobile.value).toBe(false);
-    expect(isDesktop.value).toBe(true);
+    expect(windowWidth.value).toBe(1024);
   });
 
   it('treats < md as mobile', async () => {

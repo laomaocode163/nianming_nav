@@ -51,14 +51,7 @@ export const searchConfigSchema = z.object({
 });
 
 export const siteSettingsSchema = z.object({
-  title: z.string().optional(),
-  navTitle: z.string().optional(),
-  favicon: z.string().optional(),
-  cardStyle: z.string().optional(),
-  siteMode: z.string().optional(),
   accentColor: z.string().optional(),
-  grayScale: z.string().optional(),
-  closeOnBackdrop: z.boolean().optional(),
   backgroundImage: z.string().optional(),
   backgroundImageEnabled: z.boolean().optional(),
   backgroundMotion: z.boolean().optional(),

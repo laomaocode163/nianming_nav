@@ -119,7 +119,6 @@
     </div>
     <div class="lunar-section">
       <div class="lunar-date">{{ solarDate }}</div>
-      <div class="lunar-label">公历</div>
     </div>
   </div>
 </template>
@@ -191,12 +190,6 @@
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-text);
-    line-height: 1;
-  }
-
-  .lunar-label {
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
     line-height: 1;
   }
 

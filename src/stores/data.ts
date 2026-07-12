@@ -1,6 +1,6 @@
 /**
  * 数据存储模块
- * 仅承载静态导航数据（来自 src/config/sites.ts）与派生 getter。
+ * 仅承载静态导航数据（来自 src/config/loadConfig.ts）与派生 getter。
  * 交互态（搜索词、搜索模式、选中分类、侧边栏、分页等）统一放在 useUiStore。
  */
 import { defineStore } from 'pinia';
@@ -24,6 +24,16 @@ export const useDataStore = defineStore('data', () => {
     categories.value = config.categories;
     searchConfig.value = config.searchConfig;
     ready.value = true;
+
+    // 记忆上次选中的搜索引擎（刷新后保持）
+    try {
+      const saved = localStorage.getItem('selected-search-source');
+      if (saved && config.searchConfig.externalSources.some((s) => s.id === saved)) {
+        updateSearchConfig({ selectedSourceId: saved });
+      }
+    } catch {
+      /* 隐私模式等读取失败时忽略 */
+    }
   };
 
   // 按分类和可选的二级分类过滤链接

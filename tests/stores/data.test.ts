@@ -36,7 +36,7 @@ describe('dataStore', () => {
       const settingsStore = useSettingsStore();
       await settingsStore.init();
       expect(settingsStore.settings).not.toBeNull();
-      expect(settingsStore.settings?.navTitle).toBe('念铭导航');
+      expect(settingsStore.settings?.accentColor).toBeDefined();
     });
   });
 

@@ -58,6 +58,11 @@
 
   const selectEngine = (engineId: string) => {
     dataStore.updateSearchConfig({ selectedSourceId: engineId });
+    try {
+      localStorage.setItem('selected-search-source', engineId);
+    } catch {
+      /* 隐私模式等写入失败时忽略 */
+    }
     showEngineMenu.value = false;
   };
 
