@@ -299,13 +299,13 @@
 
   /* Logo Section */
   .sidebar-logo-section {
-    padding: 1rem 0.875rem;
+    padding: 1rem 0.75rem 1rem 1rem;
     border-bottom: 1px solid var(--color-border);
     background: transparent;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-xs);
+    gap: var(--space-sm);
     flex-shrink: 0;
     position: relative;
     overflow: visible;
@@ -315,7 +315,9 @@
   .logo-content {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.625rem;
+    padding: 0.375rem 0.5rem 0.375rem 0.375rem;
+    border-radius: 10px;
     animation: logoFadeIn 0.5s ease-out;
     overflow: hidden;
     justify-content: flex-start;
@@ -323,24 +325,37 @@
     min-width: 0;
     cursor: pointer;
     user-select: none;
+    transition:
+      background 200ms var(--ease-out-expo),
+      transform 200ms var(--ease-out-expo);
+  }
+
+  .logo-content:hover {
+    background: hsl(var(--hue-primary), 12%, 96%);
+    transform: translateX(2px);
+  }
+
+  .dark .logo-content:hover {
+    background: hsl(var(--hue-primary), 20%, 18%);
   }
 
   .logo-content:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
-    border-radius: 6px;
+    border-radius: 10px;
   }
 
   .logo-signature {
-    height: 32px;
+    height: 34px;
     width: auto;
     flex-shrink: 0;
     object-fit: contain;
     vertical-align: middle;
+    opacity: 0.95;
   }
 
   .site-title {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     font-weight: 800;
     white-space: nowrap;
     margin: 0;
@@ -349,7 +364,7 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
     line-height: 1;
     vertical-align: middle;
   }
@@ -357,6 +372,7 @@
   .logo-content.logo-collapsed {
     justify-content: center;
     width: 100%;
+    padding: 0.375rem;
   }
 
   .sidebar-collapsed .site-title {
@@ -370,13 +386,15 @@
   .logo-actions {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    gap: 0.375rem;
     flex-shrink: 0;
     margin-left: auto;
   }
 
   .sidebar-collapsed .sidebar-logo-section {
     justify-content: center;
+    padding: 1rem 0.75rem;
   }
 
   .sidebar-collapsed .logo-content {
@@ -391,12 +409,12 @@
   }
 
   .collapse-btn {
-    width: 32px !important;
-    height: 32px !important;
+    width: 30px !important;
+    height: 30px !important;
     padding: 0 !important;
     border-radius: 50% !important;
-    background: var(--color-card) !important;
-    border: 1px solid var(--color-border) !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -414,6 +432,7 @@
     border-color: transparent !important;
     color: #fff !important;
     box-shadow: var(--shadow-glow) !important;
+    transform: translateX(-1px);
   }
 
   .dark .collapse-btn:hover {
@@ -427,6 +446,7 @@
   .collapse-btn:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
+    border-color: var(--color-primary) !important;
   }
 
   .collapse-icon {
@@ -441,13 +461,13 @@
 
   /* 移动端关闭按钮 */
   .mobile-close-btn {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     padding: 0;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    background: var(--color-bg);
-    color: var(--color-text);
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -465,6 +485,11 @@
 
   .mobile-close-btn:active {
     transform: scale(0.95);
+  }
+
+  .mobile-close-btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   @keyframes logoFadeIn {
