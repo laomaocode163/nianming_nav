@@ -72,7 +72,16 @@
   const cardHeight = ref(0);
   const GRID_GAP = 24; // 与 --space-lg (1.5rem) 接近的近似像素值
 
-  const columns = computed(() => (windowWidth.value <= 1024 ? 2 : 4));
+  // 实际网格列数：直接读取网格元素的已计算样式，兼容侧边栏折叠态下的 auto-fill 布局，
+  // 避免硬编码 2/4 列导致分页铺不满或溢出。
+  const columns = ref(windowWidth.value <= 1024 ? 2 : 4);
+
+  const measureColumns = (): void => {
+    if (!gridRef.value) return;
+    const template = getComputedStyle(gridRef.value).gridTemplateColumns;
+    const count = template.split(' ').filter((t) => t.trim().length > 0).length;
+    if (count > 0) columns.value = Math.max(1, count);
+  };
 
   const fitPageSize = computed(() => {
     if (!gridHeight.value || !cardHeight.value) return uiStore.pageSize;
@@ -115,6 +124,7 @@
     }
     nextTick(() => {
       measureCardHeight();
+      measureColumns();
       syncPageSize();
     });
   });
@@ -124,12 +134,16 @@
     gridResizeObserver?.disconnect();
   });
 
-  watch([fitPageSize, () => links.value.length, () => gridKey.value], () => {
-    nextTick(() => {
-      measureCardHeight();
-      syncPageSize();
-    });
-  });
+  watch(
+    [fitPageSize, () => links.value.length, () => gridKey.value, () => uiStore.sidebarCollapsed],
+    () => {
+      nextTick(() => {
+        measureCardHeight();
+        measureColumns();
+        syncPageSize();
+      });
+    }
+  );
 </script>
 
 <template>

@@ -49,6 +49,15 @@ describe('uiStore', () => {
     expect(store.currentPage).toBe(7);
   });
 
+  it('updateSearchQuery resets currentPage to 1', () => {
+    const store = useUiStore();
+    store.setPage(4);
+    store.updateSearchQuery('vue');
+    expect(store.searchQuery).toBe('vue');
+    // 搜索词变化后结果集可能不足当前页码，应重置到第一页避免空白页
+    expect(store.currentPage).toBe(1);
+  });
+
   it('toggleSidebar / closeSidebar manage sidebarOpen', () => {
     const store = useUiStore();
     const initial = store.sidebarOpen;

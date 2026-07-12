@@ -7,6 +7,7 @@
   import { useUiStore } from '../../stores/ui';
   import { defineAsyncComponent } from 'vue';
   import type { SearchSource } from '../../types';
+  import { safeUrl } from '../../utils/url';
 
   // MiniPlayer 仅桌面端渲染，懒加载以延迟其 JS
   const MiniPlayer = defineAsyncComponent(() => import('../MusicPlayer/MiniPlayer.vue'));
@@ -18,7 +19,9 @@
   const uiStore = useUiStore();
   const { isMobile } = useResponsive();
 
-  const iconErrorMap = ref<Record<string, string>>({});
+  // 搜索引擎图标加载失败记录：按「引擎 id + 图标 url」维度记录，带 TTL，过期后允许重试
+  const ICON_ERROR_TTL = 5 * 60 * 1000;
+  const iconErrorMap = ref<Record<string, { url: string; ts: number }>>({});
   const showEngineMenu = ref(false);
   const engineSelectorRef = ref<HTMLElement | null>(null);
 
@@ -37,17 +40,24 @@
   });
 
   const handleIconError = (engineId: string, iconUrl: string) => {
-    // 记录失败的URL
-    iconErrorMap.value[engineId] = iconUrl;
+    if (!engineId || !iconUrl) return;
+    const key = `${engineId}|${iconUrl}`;
+    iconErrorMap.value[key] = { url: iconUrl, ts: Date.now() };
   };
 
   const getEngineDisplayIcon = (engine: SearchSource | null) => {
     if (!engine?.icon) {
       return null; // 返回 null 显示首字母
     }
-    // 如果当前URL加载失败过，则显示fallback
-    if (iconErrorMap.value[engine.id] === engine.icon) {
-      return null;
+    const key = `${engine.id}|${engine.icon}`;
+    const record = iconErrorMap.value[key];
+    if (record) {
+      // 记录已过期则清除，允许后续重试
+      if (Date.now() - record.ts > ICON_ERROR_TTL) {
+        delete iconErrorMap.value[key];
+      } else {
+        return null; // 近期加载失败过，显示首字母 fallback
+      }
     }
     return engine.icon;
   };
@@ -82,7 +92,7 @@
       // 外部搜索（搜索引擎）
       if (selectedEngine.value) {
         window.open(
-          selectedEngine.value.url + encodeURIComponent(uiStore.searchQuery),
+          safeUrl(selectedEngine.value.url + encodeURIComponent(uiStore.searchQuery)),
           '_blank',
           'noopener,noreferrer'
         );

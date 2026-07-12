@@ -107,7 +107,13 @@ export const getFaviconFallbacks = (domain: string): string[] => {
   ];
 };
 
-/** 读取缓存的可用图标地址，未命中则返回主源 */
+/**
+ * 读取缓存的可用图标地址，未命中则返回主源。
+ * 注意：未命中时【不】写入内存缓存——主源尚未经过加载验证，
+ * 若缓存它，主源失败时无法走 fallback 链且会重复请求。
+ * 验证通过的地址由 cacheFavicon 在 onIconLoad 时写入；
+ * 主源与全部 fallback 均失败时由 cacheBrokenFavicon 标记占位图。
+ */
 export const getCachedFavicon = (domain: string): string => {
   if (memoryCache.has(domain)) {
     return memoryCache.get(domain) as string;
@@ -118,9 +124,16 @@ export const getCachedFavicon = (domain: string): string => {
     memoryCache.set(domain, entry.url);
     return entry.url;
   }
-  const primary = getFaviconUrl(domain);
-  memoryCache.set(domain, primary);
-  return primary;
+  return getFaviconUrl(domain);
+};
+
+/**
+ * 标记某域名主源与全部 fallback 均失败：仅将占位图写入内存缓存（不持久化），
+ * 使后续重渲染直接命中占位图、不再重复发起请求，避免图标反复闪烁。
+ */
+export const cacheBrokenFavicon = (domain: string): void => {
+  if (!domain) return;
+  memoryCache.set(domain, getDefaultIcon());
 };
 
 /** 判断是否为占位图（不应作为有效图标缓存） */

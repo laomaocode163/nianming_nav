@@ -5,6 +5,7 @@ import {
   getFaviconFallbacks,
   getCachedFavicon,
   cacheFavicon,
+  cacheBrokenFavicon,
 } from '../../src/services/faviconService';
 import { getDefaultIcon } from '../../src/utils/constants';
 
@@ -124,6 +125,21 @@ describe('faviconService', () => {
       expect(Object.keys(store).length).toBeLessThanOrEqual(200);
       expect(store['domain-0.com']).toBeUndefined();
       expect(store['domain-249.com']).toBeDefined();
+    });
+
+    it('should return primary source (not a cached placeholder) on cache miss and not persist it', () => {
+      const url = getCachedFavicon('never-cached.com');
+      expect(url).toBe('https://never-cached.com/favicon.ico');
+      const store = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      // 未经验证的主源不应被持久化，避免失败时重复请求
+      expect(store['never-cached.com']).toBeUndefined();
+    });
+
+    it('should cache placeholder for fully-broken favicons and reuse it', () => {
+      cacheBrokenFavicon('broken.com');
+      expect(getCachedFavicon('broken.com')).toBe(getDefaultIcon());
+      // 第二次读取直接命中内存占位，不再回退主源 / fallback 链
+      expect(getCachedFavicon('broken.com')).toBe(getDefaultIcon());
     });
   });
 });

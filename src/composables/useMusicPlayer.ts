@@ -57,7 +57,8 @@ export function useMusicPlayer(audioRef: Ref<HTMLAudioElement | null>) {
 
   const currentIndex = (): number => {
     if (!currentSong.value) return -1;
-    return playlist.value.findIndex((s) => s.name === currentSong.value!.name);
+    // 用对象引用定位，正确处理歌单中存在同名曲目的情况（避免跳到首个同名项）
+    return playlist.value.indexOf(currentSong.value);
   };
 
   const playNext = async (): Promise<void> => {
@@ -140,6 +141,7 @@ export function useMusicPlayer(audioRef: Ref<HTMLAudioElement | null>) {
   onUnmounted(dispose);
 
   return {
+    playlist,
     currentSong,
     isPlaying,
     errorMessage,

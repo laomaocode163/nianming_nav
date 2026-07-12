@@ -62,4 +62,18 @@ describe('useMusicPlayer', () => {
     await player.togglePlay();
     expect(player.isPlaying.value).toBe(true);
   });
+
+  it('playNext skips to the correct track when the playlist has duplicate names', async () => {
+    const player = useMusicPlayer(audioRef);
+    await player.init();
+    player.playlist.value = [
+      { name: 'Same', keyword: 'a' },
+      { name: 'Same', keyword: 'b' },
+      { name: 'Other', keyword: 'c' },
+    ];
+    // 当前曲目为第二个「Same」（同名），应以对象引用定位而非首个同名项
+    player.currentSong.value = player.playlist.value[1];
+    await player.playNext();
+    expect(player.currentSong.value).toBe(player.playlist.value[2]);
+  });
 });

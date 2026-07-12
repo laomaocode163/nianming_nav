@@ -2,7 +2,13 @@
   import { computed, ref } from 'vue';
   import { useDataStore } from '../../stores/data';
   import { getDefaultIcon } from '../../utils/constants';
-  import { extractDomain, getFaviconFallbacks, cacheFavicon } from '../../services/faviconService';
+  import {
+    extractDomain,
+    getFaviconFallbacks,
+    cacheFavicon,
+    cacheBrokenFavicon,
+  } from '../../services/faviconService';
+  import { safeUrl } from '../../utils/url';
   import { showToast } from '../../composables/useToast';
   import type { Link } from '../../types';
 
@@ -35,6 +41,8 @@
       failedIndex.value = next;
       img.src = fallbacks[next];
     } else {
+      // 主源与所有 fallback 均失败：标记占位图，避免后续重渲染重复请求
+      cacheBrokenFavicon(domain);
       img.src = getDefaultIcon();
       img.onerror = null;
     }
@@ -63,7 +71,7 @@
 </script>
 
 <template>
-  <a :href="site.url" target="_blank" rel="noopener noreferrer" class="site-card">
+  <a :href="safeUrl(site.url)" target="_blank" rel="noopener noreferrer" class="site-card">
     <div class="site-icon-wrapper">
       <img
         :src="siteIcon"

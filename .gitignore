@@ -46,3 +46,6 @@ coverage
 # Trae IDE
 .trae
 .lingma
+
+# CodeBuddy
+.codebuddy
