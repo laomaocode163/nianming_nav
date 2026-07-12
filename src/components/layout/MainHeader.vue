@@ -7,6 +7,7 @@
   import { useUiStore } from '../../stores/ui';
   import type { SearchSource } from '../../types';
   import { safeUrl } from '../../utils/url';
+  import { Sun, Moon, Globe, Search, X, ChevronDown } from 'lucide-vue-next';
 
   const emit = defineEmits(['toggle-sidebar']);
 
@@ -128,35 +129,8 @@
         <!-- Search Mode Toggle -->
         <div class="search-mode-toggle" @click="uiStore.toggleSearchMode()">
           <span class="mode-icon">
-            <svg
-              v-if="uiStore.searchMode === 'external'"
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M3 12h18"></path>
-              <path d="M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18Z"></path>
-            </svg>
-            <svg
-              v-else
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="11" cy="11" r="7"></circle>
-              <path d="m20 20-3.5-3.5"></path>
-            </svg>
+            <Globe v-if="uiStore.searchMode === 'external'" :size="16" :stroke-width="2" />
+            <Search v-else :size="16" :stroke-width="2" />
           </span>
           <span class="mode-text">{{ uiStore.searchMode === 'external' ? '搜索' : '站内' }}</span>
         </div>
@@ -187,21 +161,13 @@
               {{ selectedEngine?.name?.charAt(0) || 'G' }}
             </div>
             <span class="engine-name">{{ selectedEngine?.name || 'Bing' }}</span>
-            <svg
+            <ChevronDown
               class="dropdown-arrow"
               :class="{ open: showEngineMenu }"
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              :size="14"
+              :stroke-width="2"
               aria-hidden="true"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
+            />
           </div>
           <div v-if="showEngineMenu" class="engine-dropdown-menu">
             <div
@@ -247,23 +213,10 @@
           aria-label="清空搜索"
           @click="uiStore.updateSearchQuery('')"
         >
-          ×
+          <X :size="16" :stroke-width="2.25" />
         </button>
         <button class="search-button" type="button" aria-label="搜索" @click="handleSearch">
-          <svg
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-3.5-3.5" />
-          </svg>
+          <Search :size="18" :stroke-width="2.25" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -275,8 +228,8 @@
         :title="themeStore.isDark ? '切换到亮色模式' : '切换到暗色模式'"
         @click="themeStore.toggleTheme"
       >
-        <span v-if="themeStore.isDark">☀️</span>
-        <span v-else>🌙</span>
+        <Sun v-if="themeStore.isDark" class="theme-icon" :size="20" :stroke-width="2" />
+        <Moon v-else class="theme-icon" :size="20" :stroke-width="2" />
       </button>
     </div>
   </header>
@@ -372,7 +325,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-card);
-    font-size: 1.25rem;
+    cursor: pointer;
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
@@ -397,9 +350,13 @@
   }
 
   /* 图标动画 */
-  .theme-btn span {
-    display: inline-block;
-    transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  .theme-icon {
+    display: block;
+    transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .theme-btn:hover .theme-icon {
+    transform: rotate(20deg) scale(1.1);
   }
 
   /* Search Styles */
@@ -704,13 +661,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     padding: 0;
     border: none;
     background: transparent;
     color: var(--color-text-secondary);
-    font-size: 1.25rem;
     line-height: 1;
     cursor: pointer;
     border-radius: 50%;
@@ -731,27 +687,39 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     padding: 0;
-    margin: 0;
+    margin: 0 2px 0 4px;
     border: none;
     cursor: pointer;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     background: var(--gradient-button);
     color: #fff;
-    box-shadow: 0 1px 3px hsl(var(--header-accent) / 0.25);
-    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px hsl(var(--header-accent) / 0.3);
+    transition:
+      transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 180ms cubic-bezier(0.4, 0, 0.2, 1),
+      filter 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .search-button svg {
+    transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .search-button:hover {
-    filter: brightness(1.05);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px hsl(var(--header-accent) / 0.35);
+    filter: brightness(1.06);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px hsl(var(--header-accent) / 0.4);
+  }
+
+  .search-button:hover svg {
+    transform: scale(1.12) rotate(-6deg);
   }
 
   .search-button:active {
-    transform: translateY(0px) scale(0.97);
+    transform: translateY(0) scale(0.94);
+    box-shadow: 0 1px 4px hsl(var(--header-accent) / 0.3);
   }
 
   @media (max-width: 768px) {
@@ -789,8 +757,9 @@
     }
 
     .search-button {
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
+      margin: 0 1px 0 3px;
     }
 
     .search-clear {
@@ -798,8 +767,9 @@
       height: 22px;
     }
 
-    .theme-btn {
-      font-size: 1.05rem;
+    .theme-icon {
+      width: 18px;
+      height: 18px;
     }
 
     .hamburger-btn {
@@ -824,10 +794,6 @@
 
     .header-right {
       gap: 0.5rem;
-    }
-
-    .theme-btn {
-      font-size: 1rem;
     }
 
     .hamburger-line {
