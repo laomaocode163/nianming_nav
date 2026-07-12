@@ -7,6 +7,7 @@
   { "id": "10", "name": "Figma", "url": "https://figma.com", "categoryId": "design", "description": "在线协作界面设计工具" },
   { "id": "11", "name": "Dribbble", "url": "https://dribbble.com", "categoryId": "design", "description": "设计师作品分享社区" },
   { "id": "12", "name": "Hacker News", "url": "https://news.ycombinator.com", "categoryId": "read", "description": "极客新闻聚合社区" },
+  { "id": "333", "name": "摸鱼热榜", "url": "https://moyuhot.com/", "categoryId": "read", "description": "全网热点资讯聚合平台" },
   { "id": "15", "name": "Midjourney", "url": "https://www.midjourney.com", "categoryId": "ai", "description": "AI图像生成工具" },
   { "id": "16", "name": "Gemini", "url": "https://gemini.google.com", "categoryId": "ai", "description": "Google AI助手" },
   { "id": "101", "name": "Vue.js", "url": "https://vuejs.org", "categoryId": "frontend-docs", "subCategoryId": "frontend-frameworks", "description": "渐进式JavaScript框架" },
