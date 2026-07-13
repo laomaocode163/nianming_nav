@@ -102,5 +102,10 @@
   { "id": "375", "name": "西瓜封面设计", "url": "https://cover.xgdh.cn/", "categoryId": "dev", "subCategoryId": "dev-creator", "description": "免费封面图片制作工具，简单操作精美输出，无需登录" },
   { "id": "376", "name": "懒人封面 LazyCover", "url": "https://cover.lazyso.com/editor", "categoryId": "dev", "subCategoryId": "dev-creator", "description": "程序员与自媒体必备的极简封面生成器" },
   { "id": "377", "name": "青空次元", "url": "https://www.sorani.net/", "categoryId": "ent", "subCategoryId": "ent-anime", "description": "动漫资源与追踪平台，番剧、剧场版与热门排行榜" },
-  { "id": "378", "name": "ChatGPT 橙皮书", "url": "https://codex.bozhouai.com/", "categoryId": "ai", "subCategoryId": "ai-tutorial", "description": "Codex 从安装到实战全链路使用指南，开源持续更新" }
+  { "id": "378", "name": "ChatGPT 橙皮书", "url": "https://codex.bozhouai.com/", "categoryId": "ai", "subCategoryId": "ai-tutorial", "description": "Codex 从安装到实战全链路使用指南，开源持续更新" },
+  { "id": "379", "name": "ClawHub 中国镜像", "url": "https://cn.clawhub-mirror.com/", "categoryId": "ai", "subCategoryId": "ai-skills", "description": "OpenClaw Skills 国内高速镜像，全量实时同步官方技能包与节点库" },
+  { "id": "380", "name": "SkillsBot", "url": "https://www.skillsbot.cn/", "categoryId": "ai", "subCategoryId": "ai-skills", "description": "OpenClaw 中文社区与 ClawHub 中文技能库，3万+技能中文分类教程" },
+  { "id": "381", "name": "MARVIS 马维斯", "url": "https://marvis.qq.com/", "categoryId": "ai", "subCategoryId": "ai-agent", "description": "腾讯 AI 助手，本地大模型+端云协同，文件整理、电脑设置一句话搞定" },
+  { "id": "382", "name": "SOLO 独立开发者社区", "url": "https://solo.xin/", "categoryId": "design", "subCategoryId": "design-community", "description": "独立开发者社区，发布产品、拿到真实反馈、获得第一批用户和变现灵感" },
+  { "id": "383", "name": "XG-Icons-Hub", "url": "https://icon.xiaoge.org/", "categoryId": "design", "subCategoryId": "design-image", "description": "图标资源合集站点，海量图标在线搜索与下载" }
 ]
