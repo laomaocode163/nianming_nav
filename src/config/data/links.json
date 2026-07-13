@@ -90,5 +90,17 @@
   { "id": "363", "name": "互联网沟通指北", "url": "https://bk.0x0.cat/", "categoryId": "interview", "subCategoryId": "interview-guide", "description": "互联网沟通礼仪与反模式，帮助成为更高效友善的网络公民" },
   { "id": "364", "name": "ScreenKite", "url": "https://www.screenkite.com/zh-CN", "categoryId": "software", "subCategoryId": "software-mac", "description": "免费 macOS 原生屏幕录制工具，AI 驱动编辑、Metal 硬件加速" },
   { "id": "365", "name": "TempMail.ing", "url": "https://tempmail.ing/", "categoryId": "dev", "subCategoryId": "dev-other", "description": "安全私密临时邮箱，过期自动删除，无需注册" },
-  { "id": "366", "name": "高德地图", "url": "https://ditu.amap.com/", "categoryId": "common", "description": "数字地图、导航与位置服务，提供路线规划与实时交通" }
+  { "id": "366", "name": "高德地图", "url": "https://ditu.amap.com/", "categoryId": "common", "description": "数字地图、导航与位置服务，提供路线规划与实时交通" },
+  { "id": "367", "name": "Recordly", "url": "https://recordly.dev/", "categoryId": "software", "subCategoryId": "software-oss", "description": "开源屏幕录制工具，自动缩放、光标动画、多音源录制" },
+  { "id": "368", "name": "下蛋 XiaDown", "url": "https://xiadown.app/", "categoryId": "software", "subCategoryId": "software-oss", "description": "开源双引擎视频下载工具，支持多平台视频音频提取与转码" },
+  { "id": "369", "name": "PixZip Lite", "url": "https://xiangsu.fun/", "categoryId": "software", "subCategoryId": "software-oss", "description": "免费开源图片批量压缩工具，本地处理、视觉无损高压缩比" },
+  { "id": "370", "name": "Ghost Downloader", "url": "https://gd.xychr.com/zh/", "categoryId": "software", "subCategoryId": "software-oss", "description": "多协议跨平台下载中枢，256 线程并发、流媒体嗅探" },
+  { "id": "371", "name": "FluxDown", "url": "https://fluxdown.zerx.dev/", "categoryId": "software", "subCategoryId": "software-oss", "description": "Rust 构建的免费下载管理器，支持 HTTP/BT/HLS/DASH" },
+  { "id": "372", "name": "AI RSS Hub", "url": "https://airsshub.721579.xyz/", "categoryId": "read", "subCategoryId": "read-misc", "description": "一站式 RSS 管理与 AI 智能摘要平台，支持关键词订阅与邮件推送" },
+  { "id": "373", "name": "句方便", "url": "https://seneasy.cloud/", "categoryId": "dev", "subCategoryId": "dev-creator", "description": "公众号排版配图工具，Markdown 一键排版，丰富主题套用" },
+  { "id": "374", "name": "WeMD", "url": "https://wemd.app/", "categoryId": "dev", "subCategoryId": "dev-creator", "description": "微信公众号 Markdown 排版编辑器，开源免费、本地存储" },
+  { "id": "375", "name": "西瓜封面设计", "url": "https://cover.xgdh.cn/", "categoryId": "dev", "subCategoryId": "dev-creator", "description": "免费封面图片制作工具，简单操作精美输出，无需登录" },
+  { "id": "376", "name": "懒人封面 LazyCover", "url": "https://cover.lazyso.com/editor", "categoryId": "dev", "subCategoryId": "dev-creator", "description": "程序员与自媒体必备的极简封面生成器" },
+  { "id": "377", "name": "青空次元", "url": "https://www.sorani.net/", "categoryId": "ent", "subCategoryId": "ent-anime", "description": "动漫资源与追踪平台，番剧、剧场版与热门排行榜" },
+  { "id": "378", "name": "ChatGPT 橙皮书", "url": "https://codex.bozhouai.com/", "categoryId": "ai", "subCategoryId": "ai-tutorial", "description": "Codex 从安装到实战全链路使用指南，开源持续更新" }
 ]
