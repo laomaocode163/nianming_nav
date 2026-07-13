@@ -37,6 +37,9 @@
     PenLine,
     SmilePlus,
     Ellipsis,
+    Sparkles,
+    Plug,
+    BarChart3,
     type LucideIcon,
   } from 'lucide-vue-next';
 
@@ -88,6 +91,9 @@
     'pen-line': PenLine,
     'smile-plus': SmilePlus,
     ellipsis: Ellipsis,
+    sparkles: Sparkles,
+    plug: Plug,
+    'bar-chart': BarChart3,
   };
 
   const icon = computed(() => iconMap[props.name] ?? Star);

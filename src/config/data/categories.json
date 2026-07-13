@@ -1,12 +1,16 @@
 [
   { "id": "common", "name": "常用推荐", "icon": "star" },
   { "id": "ai", "name": "人工智能", "icon": "bot", "subCategories": [
-      { "id": "ai-agent", "name": "AI智能体", "icon": "bot", "order": 1 },
-      { "id": "ai-coding", "name": "代码编程", "icon": "braces", "order": 2 },
-      { "id": "ai-writing", "name": "文案写作", "icon": "pencil", "order": 3 },
-      { "id": "ai-image", "name": "图像绘画", "icon": "image", "order": 4 },
-      { "id": "ai-video", "name": "视频生成", "icon": "video", "order": 5 },
-      { "id": "ai-audio", "name": "音频音乐", "icon": "music", "order": 6 }
+      { "id": "ai-tutorial", "name": "工具教程", "icon": "book-open", "order": 1 },
+      { "id": "ai-benchmark", "name": "模型评测", "icon": "bar-chart", "order": 2 },
+      { "id": "ai-agent", "name": "AI智能体", "icon": "bot", "order": 3 },
+      { "id": "ai-coding", "name": "代码编程", "icon": "braces", "order": 4 },
+      { "id": "ai-skills", "name": "Agent Skills", "icon": "sparkles", "order": 5 },
+      { "id": "ai-mcp", "name": "MCP Tools", "icon": "plug", "order": 6 },
+      { "id": "ai-writing", "name": "文案写作", "icon": "pencil", "order": 7 },
+      { "id": "ai-image", "name": "图像绘画", "icon": "image", "order": 8 },
+      { "id": "ai-video", "name": "视频生成", "icon": "video", "order": 9 },
+      { "id": "ai-audio", "name": "音频音乐", "icon": "music", "order": 10 }
     ] },
   { "id": "dev", "name": "开发工具", "icon": "terminal", "subCategories": [
       { "id": "dev-editors", "name": "文本编辑器", "icon": "file-text", "order": 1 },

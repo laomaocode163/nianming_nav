@@ -7,10 +7,13 @@
   import { useUiStore } from '../../stores/ui';
   import type { SearchSource } from '../../types';
   import { safeUrl } from '../../utils/url';
-  import { Sun, Moon, Globe, Search, X, ChevronDown } from 'lucide-vue-next';
+  import { useRouter } from 'vue-router';
+  import { Sun, Moon, Globe, Search, X, ChevronDown, Settings } from 'lucide-vue-next';
 
   const emit = defineEmits(['toggle-sidebar']);
 
+  const router = useRouter();
+  const isDev = import.meta.env.DEV;
   const themeStore = useThemeStore();
   const dataStore = useDataStore();
   const uiStore = useUiStore();
@@ -223,6 +226,16 @@
 
     <div class="header-right">
       <button
+        v-if="isDev"
+        class="admin-btn"
+        type="button"
+        title="管理后台"
+        aria-label="打开管理后台"
+        @click="router.push('/admin')"
+      >
+        <Settings class="admin-icon" :size="20" :stroke-width="2" />
+      </button>
+      <button
         class="theme-btn"
         type="button"
         :title="themeStore.isDark ? '切换到亮色模式' : '切换到暗色模式'"
@@ -347,6 +360,44 @@
 
   .theme-btn:active {
     transform: scale(0.95);
+  }
+
+  .admin-btn {
+    width: var(--header-module-h);
+    height: var(--header-module-h);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-card);
+    cursor: pointer;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .admin-btn:hover {
+    border-color: var(--color-primary);
+    background: hsl(var(--hue-primary), 10%, 96%);
+    color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+  }
+
+  .dark .admin-btn:hover {
+    background: hsl(var(--hue-primary), 20%, 18%);
+  }
+
+  .admin-btn:active {
+    transform: scale(0.95);
+  }
+
+  .admin-icon {
+    transition: transform 500ms var(--ease-in-out-quint);
+  }
+
+  .admin-btn:hover .admin-icon {
+    transform: rotate(90deg);
   }
 
   /* 图标动画 */

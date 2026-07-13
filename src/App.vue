@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, ref, shallowRef, type Component } from 'vue';
+  import { onMounted, ref } from 'vue';
   import { useThemeStore } from './stores/theme';
   import { useSettingsStore } from './stores/settings';
   import { useDataStore } from './stores/data';
@@ -8,10 +8,6 @@
   const themeStore = useThemeStore();
   const settingsStore = useSettingsStore();
   const dataStore = useDataStore();
-
-  // 管理后台入口：仅本地开发动态加载，生产构建中该 import() 被
-  // 死代码消除，对应 chunk 不会进入产物 → 对外完全不可见。
-  const DevAdminEntry = shallowRef<Component | null>(null);
 
   const ready = ref(false);
   const error = ref<string | null>(null);
@@ -27,9 +23,6 @@
       error.value = e instanceof Error ? e.message : '加载配置失败，请检查数据文件';
       ready.value = true;
     }
-    if (import.meta.env.DEV) {
-      DevAdminEntry.value = (await import('./components/admin/DevAdminEntry.vue')).default;
-    }
   });
 </script>
 
@@ -38,8 +31,6 @@
     <router-view />
   </div>
   <ToastHost />
-
-  <component :is="DevAdminEntry" v-if="DevAdminEntry" />
 
   <div v-if="!ready" class="app-splash" aria-hidden="true">
     <div class="app-splash__logo">念</div>
