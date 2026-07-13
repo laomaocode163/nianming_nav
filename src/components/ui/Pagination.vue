@@ -1,11 +1,12 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
 
   const props = defineProps<{
     currentPage: number;
     pageSize: number;
     total: number;
-    pagerCount?: number;
+    /** 导航栏连续展示的页码按钮上限（默认 5）。 */
+    maxVisible?: number;
   }>();
 
   const emit = defineEmits<{
@@ -14,9 +15,15 @@
   }>();
 
   const totalPages = computed(() => Math.max(1, Math.ceil(props.total / props.pageSize)));
+  const maxVisible = computed(() => Math.max(1, props.maxVisible ?? 5));
 
-  const pages = computed<(number | '...')[]>(() => {
-    const count = props.pagerCount ?? 7;
+  /**
+   * 纯连续滑动窗口：始终展示 `maxVisible` 个连续页码，无省略号、无首尾固定。
+   * 窗口以当前页为中心，贴近边界时自动贴边。
+   * 例如 maxVisible=5 时：1-5 → 5-10 → 10-15，以此类推。
+   */
+  const pages = computed<number[]>(() => {
+    const count = maxVisible.value;
     const cur = props.currentPage;
     const max = totalPages.value;
     if (max <= count) {
@@ -24,20 +31,10 @@
     }
     const half = Math.floor(count / 2);
     let start = Math.max(1, cur - half);
-    let end = Math.min(max, start + count - 1);
+    const end = Math.min(max, start + count - 1);
+    // 贴近右边界时向左对齐
     start = Math.max(1, end - count + 1);
-
-    const list: (number | '...')[] = [];
-    if (start > 1) {
-      list.push(1);
-      if (start > 2) list.push('...');
-    }
-    for (let i = start; i <= end; i++) list.push(i);
-    if (end < max) {
-      if (end < max - 1) list.push('...');
-      list.push(max);
-    }
-    return list;
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   });
 
   const go = (page: number): void => {
@@ -49,6 +46,14 @@
 
   const prev = (): void => go(props.currentPage - 1);
   const next = (): void => go(props.currentPage + 1);
+
+  // 跳转到指定页：输入框 + 跳转按钮，所有页面均可直达，不丢内容
+  const jumpValue = ref<number | null>(null);
+  const submitJump = (): void => {
+    if (jumpValue.value == null || Number.isNaN(jumpValue.value)) return;
+    go(Math.floor(jumpValue.value));
+    jumpValue.value = null;
+  };
 </script>
 
 <template>
@@ -56,18 +61,16 @@
     <button class="pager-btn" aria-label="上一页" :disabled="currentPage <= 1" @click="prev">
       ‹
     </button>
-    <template v-for="(p, i) in pages" :key="i">
-      <span v-if="p === '...'" class="pager-ellipsis" aria-hidden="true">…</span>
-      <button
-        v-else
-        class="pager-btn"
-        :class="{ active: p === currentPage }"
-        :aria-current="p === currentPage ? 'page' : undefined"
-        @click="go(p)"
-      >
-        {{ p }}
-      </button>
-    </template>
+    <button
+      v-for="p in pages"
+      :key="p"
+      class="pager-btn"
+      :class="{ active: p === currentPage }"
+      :aria-current="p === currentPage ? 'page' : undefined"
+      @click="go(p)"
+    >
+      {{ p }}
+    </button>
     <button
       class="pager-btn"
       aria-label="下一页"
@@ -76,6 +79,20 @@
     >
       ›
     </button>
+
+    <!-- 跳转：页面数超过导航栏上限时显示，直达任意页 -->
+    <span v-if="totalPages > maxVisible" class="pager-jump">
+      <input
+        v-model.number="jumpValue"
+        class="pager-jump-input"
+        type="number"
+        :min="1"
+        :max="totalPages"
+        :aria-label="`跳转到第 1 至 ${totalPages} 页中的某一页`"
+        @keyup.enter="submitJump"
+      />
+      <button class="pager-btn pager-jump-btn" type="button" @click="submitJump">跳转</button>
+    </span>
   </nav>
 </template>
 
@@ -120,15 +137,56 @@
     cursor: not-allowed;
   }
 
-  .pager-ellipsis {
-    color: var(--color-text-secondary);
-    padding: 0 0.25rem;
-    user-select: none;
+  .pager-jump {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-left: 0.25rem;
+  }
+
+  .pager-jump-input {
+    width: 3.25rem;
+    height: 34px;
+    padding: 0 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    text-align: center;
+    outline: none;
+    transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .pager-jump-input:focus {
+    border-color: var(--color-primary);
+  }
+
+  /* 隐藏 number 输入的上下箭头，保持外观整洁 */
+  .pager-jump-input::-webkit-outer-spin-button,
+  .pager-jump-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .pager-jump-input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .pager-jump-btn {
+    padding: 0 0.75rem;
   }
 
   @media (max-width: 480px) {
     .pager-btn {
       min-width: 30px;
+      height: 30px;
+      font-size: 0.8125rem;
+    }
+
+    .pager-jump-input {
+      width: 2.75rem;
       height: 30px;
       font-size: 0.8125rem;
     }

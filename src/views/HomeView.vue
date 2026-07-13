@@ -190,7 +190,7 @@
           :current-page="uiStore.currentPage"
           :page-size="uiStore.pageSize"
           :total="links.length"
-          :pager-count="isMobile ? 5 : 7"
+          :max-visible="5"
           @update:current-page="uiStore.currentPage = $event"
           @change="handlePageChange"
         />
