@@ -18,10 +18,11 @@
   { "id": "9", "name": "Tailwind CSS", "url": "https://tailwindcss.com", "categoryId": "frontend-dev", "subCategoryId": "frontend-frameworks", "description": "原子化CSS框架" },
   { "id": "10", "name": "Figma", "url": "https://figma.com", "categoryId": "design", "description": "在线协作界面设计工具" },
   { "id": "11", "name": "Dribbble", "url": "https://dribbble.com", "categoryId": "design", "description": "设计师作品分享社区" },
-  { "id": "12", "name": "Hacker News", "url": "https://news.ycombinator.com", "categoryId": "read", "description": "极客新闻聚合社区" },
-  { "id": "333", "name": "摸鱼热榜", "url": "https://moyuhot.com/", "categoryId": "read", "description": "全网热点资讯聚合平台" },
-  { "id": "341", "name": "最右", "url": "https://www.izuiyou.com/", "categoryId": "read", "description": "搞笑社区内容平台" },
-  { "id": "348", "name": "Github热门中文精选", "url": "https://sj.damo.plus/#/", "categoryId": "read", "description": "Github热门精选" },
+  { "id": "12", "name": "Hacker News", "url": "https://news.ycombinator.com", "categoryId": "read", "subCategoryId": "read-tech", "description": "极客新闻聚合社区" },
+  { "id": "333", "name": "摸鱼热榜", "url": "https://moyuhot.com/", "categoryId": "read", "subCategoryId": "read-news", "description": "全网热点资讯聚合平台" },
+  { "id": "341", "name": "最右", "url": "https://www.izuiyou.com/", "categoryId": "read", "subCategoryId": "read-fun", "description": "搞笑社区内容平台" },
+  { "id": "348", "name": "Github热门中文精选", "url": "https://sj.damo.plus/#/", "categoryId": "read", "subCategoryId": "read-tech", "description": "Github热门精选" },
+  { "id": "351", "name": "DIGVPS", "url": "https://digvps.com/", "categoryId": "read", "subCategoryId": "read-tutorial", "description": "专注服务器测评，提供VPS性能/网络/路由等测试数据" },
   { "id": "15", "name": "Midjourney", "url": "https://www.midjourney.com", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "AI图像生成工具" },
   { "id": "16", "name": "Gemini", "url": "https://gemini.google.com", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "Google AI助手" },
   { "id": "101", "name": "Vue.js", "url": "https://vuejs.org", "categoryId": "frontend-dev", "subCategoryId": "frontend-frameworks", "description": "渐进式JavaScript框架" },
@@ -58,6 +59,7 @@
   { "id": "318", "name": "奈飞影视", "url": "https://www.naifei2.org/", "categoryId": "ent", "subCategoryId": "ent-movies", "description": "在线影视观看平台" },
   { "id": "319", "name": "影视狗", "url": "https://www.yingshi.dog/", "categoryId": "ent", "subCategoryId": "ent-movies", "description": "在线影视观看平台" },
   { "id": "320", "name": "南瓜影视", "url": "https://www.ncat23.com/", "categoryId": "ent", "subCategoryId": "ent-movies", "description": "在线影视观看平台" },
+  { "id": "350", "name": "Pomo", "url": "https://pomo.mom/", "categoryId": "ent", "subCategoryId": "ent-movies", "description": "在线影视观看平台" },
   { "id": "321", "name": "飞速动漫", "url": "https://www.fsdm02.com/", "categoryId": "ent", "subCategoryId": "ent-anime", "description": "在线动漫观看平台" },
   { "id": "322", "name": "爱弹幕", "url": "https://www.agedm.io/", "categoryId": "ent", "subCategoryId": "ent-anime", "description": "在线动漫观看平台" },
   { "id": "323", "name": "211动漫", "url": "https://cn.211dm.com/", "categoryId": "ent", "subCategoryId": "ent-anime", "description": "在线动漫观看平台" },
@@ -72,5 +74,6 @@
   { "id": "330", "name": "歌曲海", "url": "https://www.gequhai.com/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐播放平台" },
   { "id": "331", "name": "QQMP3音乐", "url": "https://www.qqmp3.vip/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐播放平台" },
   { "id": "332", "name": "XCloud音乐", "url": "https://music.xcloudv.top/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐播放平台" },
-  { "id": "342", "name": "MusicBox", "url": "https://mu-jie.cc/musicBox/#/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐搜索播放平台" }
+  { "id": "342", "name": "MusicBox", "url": "https://mu-jie.cc/musicBox/#/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐搜索播放平台" },
+  { "id": "349", "name": "Lofi Music", "url": "https://lofi.88lin.eu.org/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "Lofi 风格在线音乐" }
 ]

@@ -31,7 +31,14 @@
       { "id": "backend-scaffolds", "name": "开发脚手架", "icon": "hammer", "order": 5 }
     ] },
   { "id": "design", "name": "设计资源", "icon": "palette" },
-  { "id": "read", "name": "阅读资讯", "icon": "newspaper" },
+  { "id": "read", "name": "阅读资讯", "icon": "newspaper", "subCategories": [
+      { "id": "read-news", "name": "新闻热点", "icon": "radio", "order": 1 },
+      { "id": "read-tech", "name": "科技前沿", "icon": "cpu", "order": 2 },
+      { "id": "read-tutorial", "name": "科普教程", "icon": "lightbulb", "order": 3 },
+      { "id": "read-blog", "name": "技术博客", "icon": "pen-line", "order": 4 },
+      { "id": "read-fun", "name": "搞笑段子", "icon": "smile-plus", "order": 5 },
+      { "id": "read-misc", "name": "杂七杂八", "icon": "ellipsis", "order": 6 }
+    ] },
   { "id": "ent", "name": "休闲娱乐", "icon": "gamepad-2", "subCategories": [
       { "id": "ent-movies", "name": "影视", "icon": "film", "order": 1 },
       { "id": "ent-anime", "name": "动漫", "icon": "clapperboard", "order": 2 },

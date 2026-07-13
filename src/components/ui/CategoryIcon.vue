@@ -31,6 +31,12 @@
     Video,
     Rss,
     Puzzle,
+    Radio,
+    Cpu,
+    Lightbulb,
+    PenLine,
+    SmilePlus,
+    Ellipsis,
     type LucideIcon,
   } from 'lucide-vue-next';
 
@@ -76,6 +82,12 @@
     video: Video,
     rss: Rss,
     puzzle: Puzzle,
+    radio: Radio,
+    cpu: Cpu,
+    lightbulb: Lightbulb,
+    'pen-line': PenLine,
+    'smile-plus': SmilePlus,
+    ellipsis: Ellipsis,
   };
 
   const icon = computed(() => iconMap[props.name] ?? Star);
