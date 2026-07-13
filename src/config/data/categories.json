@@ -60,5 +60,10 @@
       { "id": "ent-anime", "name": "动漫", "icon": "clapperboard", "order": 2 },
       { "id": "ent-music", "name": "音乐", "icon": "music", "order": 3 },
       { "id": "ent-books", "name": "书籍", "icon": "library", "order": 4 }
+    ] },
+  { "id": "software", "name": "软件安装", "icon": "download", "subCategories": [
+      { "id": "software-oss", "name": "开源软件下载", "icon": "github", "order": 1 },
+      { "id": "software-mac", "name": "Mac软件下载", "icon": "apple", "order": 2 },
+      { "id": "software-windows", "name": "Windows软件下载", "icon": "monitor", "order": 3 }
     ] }
 ]

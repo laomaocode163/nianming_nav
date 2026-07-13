@@ -84,5 +84,11 @@
   { "id": "331", "name": "QQMP3音乐", "url": "https://www.qqmp3.vip/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐播放平台" },
   { "id": "332", "name": "XCloud音乐", "url": "https://music.xcloudv.top/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐播放平台" },
   { "id": "342", "name": "MusicBox", "url": "https://mu-jie.cc/musicBox/#/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "在线音乐搜索播放平台" },
-  { "id": "349", "name": "Lofi Music", "url": "https://lofi.88lin.eu.org/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "Lofi 风格在线音乐" }
+  { "id": "349", "name": "Lofi Music", "url": "https://lofi.88lin.eu.org/", "categoryId": "ent", "subCategoryId": "ent-music", "description": "Lofi 风格在线音乐" },
+  { "id": "361", "name": "纯净派", "url": "https://chunjing.app/", "categoryId": "software", "subCategoryId": "software-oss", "description": "精选软件库，纯净专业、零捆绑，提供官方直链下载" },
+  { "id": "362", "name": "简中文档", "url": "https://www.zhcndoc.com/", "categoryId": "frontend-dev", "subCategoryId": "frontend-blog", "description": "收录开源项目简体中文文档的公共档案库" },
+  { "id": "363", "name": "互联网沟通指北", "url": "https://bk.0x0.cat/", "categoryId": "interview", "subCategoryId": "interview-guide", "description": "互联网沟通礼仪与反模式，帮助成为更高效友善的网络公民" },
+  { "id": "364", "name": "ScreenKite", "url": "https://www.screenkite.com/zh-CN", "categoryId": "software", "subCategoryId": "software-mac", "description": "免费 macOS 原生屏幕录制工具，AI 驱动编辑、Metal 硬件加速" },
+  { "id": "365", "name": "TempMail.ing", "url": "https://tempmail.ing/", "categoryId": "dev", "subCategoryId": "dev-other", "description": "安全私密临时邮箱，过期自动删除，无需注册" },
+  { "id": "366", "name": "高德地图", "url": "https://ditu.amap.com/", "categoryId": "common", "description": "数字地图、导航与位置服务，提供路线规划与实时交通" }
 ]

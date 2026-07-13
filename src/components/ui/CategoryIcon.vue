@@ -45,6 +45,9 @@
     Compass,
     Paintbrush,
     Users,
+    Download,
+    Apple,
+    Github,
     type LucideIcon,
   } from 'lucide-vue-next';
 
@@ -104,6 +107,9 @@
     compass: Compass,
     paintbrush: Paintbrush,
     users: Users,
+    download: Download,
+    apple: Apple,
+    github: Github,
   };
 
   const icon = computed(() => iconMap[props.name] ?? Star);
