@@ -34,7 +34,19 @@
       { "id": "backend-langchain", "name": "Langchain", "icon": "link", "order": 4 },
       { "id": "backend-scaffolds", "name": "开发脚手架", "icon": "hammer", "order": 5 }
     ] },
-  { "id": "design", "name": "设计资源", "icon": "palette" },
+  { "id": "interview", "name": "招聘面试", "icon": "briefcase", "subCategories": [
+      { "id": "interview-sites", "name": "招聘网站", "icon": "search", "order": 1 },
+      { "id": "interview-ai", "name": "人工智能", "icon": "bot", "order": 2 },
+      { "id": "interview-backend", "name": "后端开发", "icon": "file-code", "order": 3 },
+      { "id": "interview-frontend", "name": "前端开发", "icon": "monitor", "order": 4 },
+      { "id": "interview-guide", "name": "工作指南", "icon": "compass", "order": 5 }
+    ] },
+  { "id": "design", "name": "设计资源", "icon": "palette", "subCategories": [
+      { "id": "design-ui", "name": "UI设计", "icon": "paintbrush", "order": 1 },
+      { "id": "design-video", "name": "视频剪辑", "icon": "film", "order": 2 },
+      { "id": "design-image", "name": "在线图片", "icon": "image", "order": 3 },
+      { "id": "design-community", "name": "产品社区", "icon": "users", "order": 4 }
+    ] },
   { "id": "read", "name": "阅读资讯", "icon": "newspaper", "subCategories": [
       { "id": "read-news", "name": "新闻热点", "icon": "radio", "order": 1 },
       { "id": "read-tech", "name": "科技前沿", "icon": "cpu", "order": 2 },

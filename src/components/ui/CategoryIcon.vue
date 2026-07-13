@@ -40,6 +40,11 @@
     Sparkles,
     Plug,
     BarChart3,
+    Briefcase,
+    Search,
+    Compass,
+    Paintbrush,
+    Users,
     type LucideIcon,
   } from 'lucide-vue-next';
 
@@ -94,6 +99,11 @@
     sparkles: Sparkles,
     plug: Plug,
     'bar-chart': BarChart3,
+    briefcase: Briefcase,
+    search: Search,
+    compass: Compass,
+    paintbrush: Paintbrush,
+    users: Users,
   };
 
   const icon = computed(() => iconMap[props.name] ?? Star);

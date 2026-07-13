@@ -28,6 +28,7 @@
   { "id": "355", "name": "BoomCatcher", "url": "https://boomcatcher.com/", "categoryId": "read", "subCategoryId": "read-misc", "description": "发现新鲜网络资源的索引导航站" },
   { "id": "358", "name": "一起玩 NAS", "url": "https://wiki.slarker.me/", "categoryId": "read", "subCategoryId": "read-tutorial", "description": "适合新手的 NAS 入门指南与常见问题解决" },
   { "id": "359", "name": "AI Tool CN", "url": "https://aitoolcn.com/", "categoryId": "ai", "subCategoryId": "ai-benchmark", "description": "全球 AI 工具精选导航与评测平台" },
+  { "id": "360", "name": "Easy-Vibe", "url": "https://datawhalechina.github.io/easy-vibe/zh-cn/", "categoryId": "read", "subCategoryId": "read-tutorial", "description": "从零开始的 AI 编程指南，适合所有人的编程新范式" },
   { "id": "15", "name": "Midjourney", "url": "https://www.midjourney.com", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "AI图像生成工具" },
   { "id": "16", "name": "Gemini", "url": "https://gemini.google.com", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "Google AI助手" },
   { "id": "356", "name": "Claw101", "url": "https://claw101.com/", "categoryId": "ai", "subCategoryId": "ai-tutorial", "description": "OpenClaw 中文第一学习站" },
