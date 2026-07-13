@@ -4,7 +4,7 @@
  * - accentColor -> 主色 HSL CSS 变量（让配置闭环生效）
  */
 import { defineStore } from 'pinia';
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { loadSiteConfig } from '../config/loadConfig';
 import type { SiteSettings } from '../types';
 
@@ -64,3 +64,16 @@ export const useSettingsStore = defineStore('settings', () => {
 
   return { ready, init, settings, apply };
 });
+
+/** 初始化后监听 accentColor 变化自动 re-apply（admin 改色等场景即时生效） */
+let _applied = false;
+export const ensureSettingsReactive = (store: ReturnType<typeof useSettingsStore>): void => {
+  if (_applied) return;
+  _applied = true;
+  watch(
+    () => store.settings.accentColor,
+    () => {
+      store.apply();
+    }
+  );
+};

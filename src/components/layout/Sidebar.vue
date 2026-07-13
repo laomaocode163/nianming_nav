@@ -179,6 +179,7 @@
             :class="{
               active: isNavActive(category.id),
             }"
+            :aria-current="isNavActive(category.id) ? 'page' : undefined"
             @click="handleSelect(category.id)"
           >
             <span class="nav-icon"><CategoryIcon :name="category.icon" /></span>

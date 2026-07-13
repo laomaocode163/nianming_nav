@@ -43,20 +43,46 @@ export const useDataStore = defineStore('data', () => {
     await init();
   };
 
-  // 按分类和可选的二级分类过滤链接
+  // 预排序、过滤隐藏的链接（一次计算，多处复用）
+  const visibleLinks = computed(() =>
+    links.value.filter((l) => !l.hidden).sort((a, b) => (a.order || 0) - (b.order || 0))
+  );
+
+  // Map<categoryId, Link[]> — 按一级分类预分组（已排序）
+  const linksByCategoryId = computed(() => {
+    const map = new Map<string, Link[]>();
+    for (const link of visibleLinks.value) {
+      const arr = map.get(link.categoryId);
+      if (arr) arr.push(link);
+      else map.set(link.categoryId, [link]);
+    }
+    return map;
+  });
+
+  // Map<`${categoryId}:${subCategoryId}`, Link[]> — 按二级分类预分组（已排序）
+  const linksBySubCategory = computed(() => {
+    const map = new Map<string, Link[]>();
+    for (const link of visibleLinks.value) {
+      if (!link.subCategoryId) continue;
+      const key = `${link.categoryId}:${link.subCategoryId}`;
+      const arr = map.get(key);
+      if (arr) arr.push(link);
+      else map.set(key, [link]);
+    }
+    return map;
+  });
+
+  // 按分类和可选的二级分类过滤链接（查表 O(1)，不再每调用遍历）
   const getLinksByCategory = (categoryId: string, subCategoryId?: string | null): Link[] => {
     const ui = useUiStore();
 
     let filteredLinks: Link[];
-    if (categoryId === 'all') {
-      filteredLinks = links.value.filter((link) => !link.hidden);
-    } else {
-      filteredLinks = links.value.filter((link) => link.categoryId === categoryId && !link.hidden);
-    }
-
-    // 二级分类过滤
     if (subCategoryId) {
-      filteredLinks = filteredLinks.filter((link) => link.subCategoryId === subCategoryId);
+      filteredLinks = linksBySubCategory.value.get(`${categoryId}:${subCategoryId}`) || [];
+    } else if (categoryId === 'all') {
+      filteredLinks = visibleLinks.value;
+    } else {
+      filteredLinks = linksByCategoryId.value.get(categoryId) || [];
     }
 
     // 站内搜索（实时过滤）
@@ -70,7 +96,7 @@ export const useDataStore = defineStore('data', () => {
       );
     }
 
-    return filteredLinks.sort((a, b) => (a.order || 0) - (b.order || 0));
+    return filteredLinks;
   };
 
   // 获取指定分类下的二级分类列表

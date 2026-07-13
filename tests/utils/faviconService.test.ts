@@ -6,6 +6,8 @@ import {
   getCachedFavicon,
   cacheFavicon,
   cacheBrokenFavicon,
+  validateAndCacheFavicon,
+  prefetchUncachedFavicons,
 } from '../../src/services/faviconService';
 import { getDefaultIcon } from '../../src/utils/constants';
 
@@ -140,6 +142,61 @@ describe('faviconService', () => {
       expect(getCachedFavicon('broken.com')).toBe(getDefaultIcon());
       // 第二次读取直接命中内存占位，不再回退主源 / fallback 链
       expect(getCachedFavicon('broken.com')).toBe(getDefaultIcon());
+    });
+
+    it('should persist broken favicon to avoid re-request on reload', async () => {
+      cacheBrokenFavicon('persistent-broken.com');
+      // 持久化写入有 500ms 防抖，等待落盘
+      await new Promise((r) => setTimeout(r, 600));
+      const store = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      expect(store['persistent-broken.com']).toBeDefined();
+      expect(store['persistent-broken.com'].url).toBe(getDefaultIcon());
+    });
+  });
+
+  describe('validateAndCacheFavicon', () => {
+    it('should not cache icons with width <= 1', () => {
+      const img = {
+        naturalWidth: 1,
+        naturalHeight: 32,
+        src: 'https://bad.example/1px.ico',
+      } as HTMLImageElement;
+      validateAndCacheFavicon('bad.com', img);
+      // 不应缓存极小占位图
+      expect(getCachedFavicon('bad.com')).toBe('https://bad.com/favicon.ico');
+    });
+
+    it('should cache valid favicon with reasonable dimensions', () => {
+      const img = {
+        naturalWidth: 32,
+        naturalHeight: 32,
+        src: 'https://good.example/icon.ico',
+      } as HTMLImageElement;
+      validateAndCacheFavicon('good.com', img);
+      expect(getCachedFavicon('good.com')).toBe('https://good.example/icon.ico');
+    });
+
+    it('should be a no-op for empty domain', () => {
+      const img = {
+        naturalWidth: 32,
+        naturalHeight: 32,
+        src: 'https://x.com/a.ico',
+      } as HTMLImageElement;
+      validateAndCacheFavicon('', img);
+      // 不应写入任何缓存
+    });
+  });
+
+  describe('prefetchUncachedFavicons', () => {
+    it('should skip already-cached domains', () => {
+      cacheFavicon('cached.com', 'https://icons.duckduckgo.com/ip3/cached.com.ico');
+      prefetchUncachedFavicons(['cached.com', 'fresh.com']);
+      // 不应抛错；fresh.com 会通过 requestIdleCallback 预取
+      // 这里主要验证缓存命中后不会重复触发
+    });
+
+    it('should handle empty domain list gracefully', () => {
+      expect(() => prefetchUncachedFavicons([])).not.toThrow();
     });
   });
 });

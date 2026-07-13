@@ -67,10 +67,12 @@
       </svg>
     </button>
 
-    <div ref="scrollRef" class="sub-category-tabs" @scroll="updateScrollState">
+    <div ref="scrollRef" class="sub-category-tabs" role="tablist" @scroll="updateScrollState">
       <button
         class="tab-item tab-item--all"
         :class="{ active: selectedId === null }"
+        role="tab"
+        :aria-selected="selectedId === null"
         @click="$emit('select', null)"
       >
         全部
@@ -82,6 +84,8 @@
         class="tab-item"
         :class="{ active: selectedId === sub.id }"
         :title="sub.name"
+        role="tab"
+        :aria-selected="selectedId === sub.id"
         @click="$emit('select', sub.id)"
       >
         {{ sub.name }}

@@ -5,7 +5,7 @@
   import {
     extractDomain,
     getFaviconFallbacks,
-    cacheFavicon,
+    validateAndCacheFavicon,
     cacheBrokenFavicon,
   } from '../../services/faviconService';
   import { safeUrl } from '../../utils/url';
@@ -36,7 +36,7 @@
     const img = event.target as HTMLImageElement;
     const domain = extractDomain(props.site.url);
     if (domain) {
-      cacheFavicon(domain, img.src);
+      validateAndCacheFavicon(domain, img);
     }
   };
 
@@ -86,6 +86,7 @@
         :alt="site.name"
         class="site-icon"
         loading="lazy"
+        decoding="async"
         @load="onIconLoad"
         @error="onIconError"
       />

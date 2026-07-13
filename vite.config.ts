@@ -30,7 +30,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    target: 'es2020',
+    target: 'es2022',
     rollupOptions: {
       output: {
         manualChunks(id: string) {
@@ -40,6 +40,7 @@ export default defineConfig({
             id.includes('node_modules/pinia')
           )
             return 'vendor';
+          if (id.includes('node_modules/lucide-vue-next')) return 'icons';
         },
       },
     },

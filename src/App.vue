@@ -1,8 +1,9 @@
 <script setup lang="ts">
   import { onMounted, ref } from 'vue';
   import { useThemeStore } from './stores/theme';
-  import { useSettingsStore } from './stores/settings';
+  import { useSettingsStore, ensureSettingsReactive } from './stores/settings';
   import { useDataStore } from './stores/data';
+  import { extractDomain, prefetchUncachedFavicons } from './services/faviconService';
   import ToastHost from './components/ui/ToastHost.vue';
 
   const themeStore = useThemeStore();
@@ -16,8 +17,15 @@
     themeStore.initTheme();
     try {
       await dataStore.init();
+      // 空闲时预取未缓存的站点图标，缓解首屏 favicon 请求瀑布
+      const domains = [
+        ...new Set(dataStore.links.map((l) => extractDomain(l.url)).filter(Boolean)),
+      ];
+      prefetchUncachedFavicons(domains);
       await settingsStore.init();
       settingsStore.apply();
+      // admin 改色或后续热更新 accentColor 时自动 re-apply
+      ensureSettingsReactive(settingsStore);
       ready.value = true;
     } catch (e) {
       error.value = e instanceof Error ? e.message : '加载配置失败，请检查数据文件';

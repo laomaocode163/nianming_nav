@@ -239,6 +239,7 @@
         class="theme-btn"
         type="button"
         :title="themeStore.isDark ? '切换到亮色模式' : '切换到暗色模式'"
+        :aria-pressed="themeStore.isDark"
         @click="themeStore.toggleTheme"
       >
         <Sun v-if="themeStore.isDark" class="theme-icon" :size="20" :stroke-width="2" />

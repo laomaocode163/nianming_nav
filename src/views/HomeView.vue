@@ -18,7 +18,13 @@
 
   const gridKey = ref(0);
   const sitesSectionRef = ref<HTMLElement | null>(null);
-  const gridRef = ref<HTMLElement | null>(null);
+
+  // 固定估算值，避免 DOM 测量反馈环
+  const HEADER_H = 69;
+  const CATEGORY_H = 68;
+  const PAGINATION_H = 60;
+  const CARD_H = 100; // 含 gap 的卡片最小高度
+  const GRID_GAP = 24;
 
   const categories = computed(() => dataStore.visibleCategories);
 
@@ -44,7 +50,28 @@
     return dataStore.getLinksByCategory(uiStore.selectedCategoryId, uiStore.selectedSubCategoryId);
   });
 
-  /** 当前页展示的链接，基于 links 做切片，避免单页渲染过多卡片 */
+  // 列数：根据窗口宽度推断（不依赖 DOM 查询，避免 ResizeObserver 反馈环）
+  const columns = computed(() =>
+    windowWidth.value <= 768 ? 2 : windowWidth.value <= 1024 ? 2 : 4
+  );
+
+  // 动态每页数量：基于窗口高度和固定常量推算，不测量 DOM
+  const fitPageSize = computed(() => {
+    const availableH = window.innerHeight - HEADER_H - CATEGORY_H - PAGINATION_H;
+    const rows = Math.max(1, Math.floor((availableH + GRID_GAP) / (CARD_H + GRID_GAP)));
+    return Math.max(columns.value, rows * columns.value);
+  });
+
+  // 翻页或 size 变化后同步 store 并防止越界
+  watch([fitPageSize, () => links.value.length], () => {
+    uiStore.pageSize = fitPageSize.value;
+    const maxPage = Math.max(1, Math.ceil(links.value.length / uiStore.pageSize));
+    if (uiStore.currentPage > maxPage) {
+      uiStore.currentPage = 1;
+    }
+  });
+
+  /** 当前页展示的链接 */
   const paginatedLinks = computed(() => {
     const start = (uiStore.currentPage - 1) * uiStore.pageSize;
     return links.value.slice(start, start + uiStore.pageSize);
@@ -74,86 +101,19 @@
     }
   };
 
-  /**
-   * 动态计算每页数量，使一页卡片刚好铺满可视区域、不出现内部滚动。
-   * 仅在视图层覆盖 uiStore.pageSize，不改变 store 默认值。
-   */
-  const gridHeight = ref(0);
-  const cardHeight = ref(0);
-  const GRID_GAP = 24; // 与 --space-lg (1.5rem) 接近的近似像素值
-
-  // 实际网格列数：直接读取网格元素的已计算样式，兼容侧边栏折叠态下的 auto-fill 布局，
-  // 避免硬编码 2/4 列导致分页铺不满或溢出。
-  const columns = ref(windowWidth.value <= 1024 ? 2 : 4);
-
-  const measureColumns = (): void => {
-    if (!gridRef.value) return;
-    const template = getComputedStyle(gridRef.value).gridTemplateColumns;
-    const count = template.split(' ').filter((t) => t.trim().length > 0).length;
-    if (count > 0) columns.value = Math.max(1, count);
-  };
-
-  const fitPageSize = computed(() => {
-    if (!gridHeight.value || !cardHeight.value) return uiStore.pageSize;
-    const rows = Math.max(
-      1,
-      Math.floor((gridHeight.value + GRID_GAP) / (cardHeight.value + GRID_GAP))
-    );
-    return Math.max(columns.value, rows * columns.value);
-  });
-
-  const measureCardHeight = () => {
-    const firstCard = gridRef.value?.querySelector('.site-card');
-    if (firstCard) {
-      cardHeight.value = firstCard.getBoundingClientRect().height;
-    }
-  };
-
-  const syncPageSize = () => {
-    uiStore.pageSize = fitPageSize.value;
-    const maxPage = Math.max(1, Math.ceil(links.value.length / uiStore.pageSize));
-    if (uiStore.currentPage > maxPage) {
-      uiStore.currentPage = 1;
-    }
-  };
-
-  let gridResizeObserver: ResizeObserver | null = null;
-
   onMounted(() => {
     if (isMobile.value) {
       uiStore.sidebarOpen = false;
     }
     document.addEventListener('keydown', handleKeydown);
-    if (gridRef.value) {
-      gridResizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          gridHeight.value = entry.contentRect.height;
-        }
-      });
-      gridResizeObserver.observe(gridRef.value);
-    }
     nextTick(() => {
-      measureCardHeight();
-      measureColumns();
-      syncPageSize();
+      uiStore.pageSize = fitPageSize.value;
     });
   });
 
   onUnmounted(() => {
     document.removeEventListener('keydown', handleKeydown);
-    gridResizeObserver?.disconnect();
   });
-
-  watch(
-    [fitPageSize, () => links.value.length, () => gridKey.value, () => uiStore.sidebarCollapsed],
-    () => {
-      nextTick(() => {
-        measureCardHeight();
-        measureColumns();
-        syncPageSize();
-      });
-    }
-  );
 </script>
 
 <template>
@@ -207,7 +167,7 @@
         </div>
 
         <!-- 网站列表 -->
-        <div v-if="links.length > 0" ref="gridRef" class="sites-grid">
+        <div v-if="links.length > 0" class="sites-grid">
           <SiteCard
             v-for="(site, index) in paginatedLinks"
             :key="`${gridKey}-${site.id}`"

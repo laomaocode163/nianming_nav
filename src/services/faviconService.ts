@@ -128,12 +128,16 @@ export const getCachedFavicon = (domain: string): string => {
 };
 
 /**
- * 标记某域名主源与全部 fallback 均失败：仅将占位图写入内存缓存（不持久化），
- * 使后续重渲染直接命中占位图、不再重复发起请求，避免图标反复闪烁。
+ * 标记某域名主源与全部 fallback 均失败：写入内存 + 持久化缓存，使刷新后仍跳过已知坏链。
  */
 export const cacheBrokenFavicon = (domain: string): void => {
   if (!domain) return;
-  memoryCache.set(domain, getDefaultIcon());
+  const placeholder = getDefaultIcon();
+  memoryCache.set(domain, placeholder);
+  const store = loadPersistentCache();
+  store[domain] = { url: placeholder, ts: Date.now() };
+  evictIfNeeded(store);
+  scheduleSave();
 };
 
 /** 判断是否为占位图（不应作为有效图标缓存） */
@@ -151,4 +155,51 @@ export const cacheFavicon = (domain: string, url: string): void => {
   store[domain] = { url, ts: Date.now() };
   evictIfNeeded(store);
   scheduleSave();
+};
+
+/**
+ * 图标加载成功回调：校验图片尺寸，避免缓存 404 HTML 或 1x1 占位图。
+ * 需要在 <img> onload 中调用，传入已加载的 img 元素。
+ */
+export const validateAndCacheFavicon = (domain: string, img: HTMLImageElement): void => {
+  if (!domain) return;
+  // 排除尺寸异常的占位图（404 页面返回的 HTML 或极小占位像素）
+  if (img.naturalWidth <= 1 || img.naturalHeight <= 1) return;
+  cacheFavicon(domain, img.src);
+};
+
+/**
+ * 空闲预取未缓存的域名图标：利用 requestIdleCallback 在浏览器空闲时触发加载，
+ * 将图标预热到浏览器 HTTP 缓存，避免首屏请求瀑布。
+ * 传入需预取的域名列表，自动跳过已缓存的域名。
+ */
+export const prefetchUncachedFavicons = (domains: string[]): void => {
+  if (typeof requestIdleCallback === 'undefined') return;
+  const store = loadPersistentCache();
+  const now = Date.now();
+  const uncached = domains.filter((d) => {
+    if (!d) return false;
+    const entry = store[d];
+    return !entry || now - entry.ts >= CACHE_TTL;
+  });
+  if (uncached.length === 0) return;
+
+  let idx = 0;
+  const prefetchNext = (deadline: IdleDeadline) => {
+    // 每个空闲周期预取最多 5 个图标，避免阻塞交互
+    let count = 0;
+    while (idx < uncached.length && count < 5 && deadline.timeRemaining() > 1) {
+      const domain = uncached[idx];
+      const url = getFaviconUrl(domain);
+      // 使用 detached <img> 触发浏览器预加载，不写入 DOM
+      const img = new Image();
+      img.src = url;
+      idx++;
+      count++;
+    }
+    if (idx < uncached.length) {
+      requestIdleCallback(prefetchNext);
+    }
+  };
+  requestIdleCallback(prefetchNext, { timeout: 2000 });
 };
