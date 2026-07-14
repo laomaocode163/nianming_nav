@@ -11,7 +11,7 @@ import {
 } from '../../src/services/faviconService';
 import { getDefaultIcon } from '../../src/utils/constants';
 
-const STORAGE_KEY = 'favicon-cache-v2';
+const STORAGE_KEY = 'favicon-cache-v3';
 
 const makeLocalStorage = () => {
   const map = new Map<string, string>();

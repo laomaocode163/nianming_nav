@@ -19,7 +19,7 @@ interface CacheEntry {
 }
 
 const PRIMARY_PROVIDER = 'https://favicon.im';
-const STORAGE_KEY = 'favicon-cache-v2';
+const STORAGE_KEY = 'favicon-cache-v3';
 const CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 天
 const CACHE_MAX_SIZE = 200;
 const SAVE_DEBOUNCE_MS = 500;
