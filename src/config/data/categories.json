@@ -6,18 +6,14 @@
       { "id": "ai-model-platform", "name": "模型平台", "icon": "boxes", "order": 3 },
       { "id": "ai-agent", "name": "AI智能体", "icon": "bot", "order": 4 },
       { "id": "ai-coding", "name": "代码编程", "icon": "braces", "order": 5 },
-      { "id": "ai-skills", "name": "Agent Skills", "icon": "sparkles", "order": 6 },
-      { "id": "ai-mcp", "name": "MCP Tools", "icon": "plug", "order": 7 },
-      { "id": "ai-writing", "name": "文案写作", "icon": "pencil", "order": 8 },
-      { "id": "ai-image", "name": "图像绘画", "icon": "image", "order": 9 },
-      { "id": "ai-video", "name": "视频生成", "icon": "video", "order": 10 },
-      { "id": "ai-audio", "name": "音频音乐", "icon": "music", "order": 11 }
+      { "id": "ai-mcp", "name": "MCP Tools", "icon": "plug", "order": 6 },
+      { "id": "ai-skills", "name": "Agent Skills", "icon": "sparkles", "order": 7 },
+      { "id": "ai-image", "name": "智能体多模态", "icon": "blocks", "order": 8 }
     ] },
   { "id": "dev", "name": "开发工具", "icon": "terminal", "subCategories": [
       { "id": "dev-editors", "name": "文本编辑器", "icon": "file-text", "order": 1 },
       { "id": "dev-ides", "name": "集成开发环境", "icon": "monitor", "order": 2 },
-      { "id": "dev-terminal", "name": "终端管理工具", "icon": "terminal", "order": 3 },
-      { "id": "dev-devops", "name": "测试运维工具", "icon": "shield-check", "order": 4 },
+      { "id": "dev-devops", "name": "测试运维工具", "icon": "shield-check", "order": 3 },
       { "id": "dev-online", "name": "在线开发工具", "icon": "globe", "order": 5 },
       { "id": "dev-other", "name": "其他辅助工具", "icon": "wrench", "order": 6 },
       { "id": "dev-extensions", "name": "浏览器插件工具", "icon": "puzzle", "order": 7 },
@@ -41,7 +37,7 @@
       { "id": "interview-ai", "name": "人工智能", "icon": "bot", "order": 2 },
       { "id": "interview-backend", "name": "后端开发", "icon": "file-code", "order": 3 },
       { "id": "interview-frontend", "name": "前端开发", "icon": "monitor", "order": 4 },
-      { "id": "interview-guide", "name": "工作指南", "icon": "compass", "order": 5 }
+      { "id": "interview-guide", "name": "技塑人生", "icon": "compass", "order": 5 }
     ] },
   { "id": "design", "name": "设计资源", "icon": "palette", "subCategories": [
       { "id": "design-ui", "name": "UI设计", "icon": "paintbrush", "order": 1 },
