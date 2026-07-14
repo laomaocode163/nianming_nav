@@ -3,6 +3,7 @@
   import {
     Star,
     Bot,
+    Boxes,
     Terminal,
     BookOpen,
     Zap,
@@ -65,6 +66,7 @@
   const iconMap: Record<string, LucideIcon> = {
     star: Star,
     bot: Bot,
+    boxes: Boxes,
     terminal: Terminal,
     'book-open': BookOpen,
     zap: Zap,

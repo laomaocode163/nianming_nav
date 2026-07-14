@@ -9,7 +9,7 @@ key in the `iconMap` of `src/components/ui/CategoryIcon.vue`. Unknown names fall
 Use these directly in `categories.json` without editing `CategoryIcon.vue`:
 
 ```
-star, bot, terminal, book-open, zap, blocks, rocket, file-code, file-text, coffee,
+star, bot, boxes, terminal, book-open, zap, blocks, rocket, file-code, file-text, coffee,
 braces, leaf, link, hammer, palette, newspaper, gamepad-2, film, clapperboard, music,
 library, monitor, shield-check, globe, wrench, pencil, image, video, rss, puzzle, radio,
 cpu, lightbulb, pen-line, smile-plus, ellipsis, sparkles, plug, bar-chart, briefcase,
