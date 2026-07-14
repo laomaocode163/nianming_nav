@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { onMounted, ref } from 'vue';
   import { useThemeStore } from './stores/theme';
-  import { useSettingsStore, ensureSettingsReactive } from './stores/settings';
+  import { useSettingsStore } from './stores/settings';
   import { useDataStore } from './stores/data';
   import { extractDomain, prefetchUncachedFavicons } from './services/faviconService';
   import ToastHost from './components/ui/ToastHost.vue';
@@ -24,8 +24,6 @@
       prefetchUncachedFavicons(domains);
       await settingsStore.init();
       settingsStore.apply();
-      // admin 改色或后续热更新 accentColor 时自动 re-apply
-      ensureSettingsReactive(settingsStore);
       ready.value = true;
     } catch (e) {
       error.value = e instanceof Error ? e.message : '加载配置失败，请检查数据文件';

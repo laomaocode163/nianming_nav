@@ -11,9 +11,9 @@ Use these directly in `categories.json` without editing `CategoryIcon.vue`:
 ```
 star, bot, boxes, terminal, book-open, zap, blocks, rocket, file-code, file-text, coffee,
 braces, leaf, link, hammer, palette, newspaper, gamepad-2, film, clapperboard, music,
-library, monitor, shield-check, globe, wrench, pencil, image, video, rss, puzzle, radio,
+library, monitor, shield-check, globe, wrench, image, rss, puzzle, radio,
 cpu, lightbulb, pen-line, smile-plus, ellipsis, sparkles, plug, bar-chart, briefcase,
-search, compass, paintbrush, users
+search, compass, paintbrush, users, download, apple, github
 ```
 
 Example mapping (name → Lucide component):

@@ -31,12 +31,18 @@
 
   // 已展开（显示二级分类）的一级分类集合；默认展开当前选中的有子分类项
   const expandedCats = ref<Set<string>>(new Set());
+
+  // 计算某一级分类的展开集合：含二级分类时展开自身，否则全部收起
+  const expandSetFor = (catId: string): Set<string> => {
+    const cat = dataStore.categories.find((c) => c.id === catId);
+    return cat?.subCategories?.length ? new Set([catId]) : new Set();
+  };
+
   // 手风琴式展开：同一时刻仅展开当前选中的、含二级分类的一级分类，其余收起
   watch(
     () => uiStore.selectedCategoryId,
     (catId) => {
-      const cat = dataStore.categories.find((c) => c.id === catId);
-      expandedCats.value = cat?.subCategories?.length ? new Set([catId]) : new Set();
+      expandedCats.value = expandSetFor(catId);
     },
     { immediate: true }
   );
@@ -45,12 +51,7 @@
   watch(
     () => props.collapsed,
     (isCollapsed) => {
-      if (isCollapsed) {
-        expandedCats.value = new Set();
-        return;
-      }
-      const cat = dataStore.categories.find((c) => c.id === uiStore.selectedCategoryId);
-      expandedCats.value = cat?.subCategories?.length ? new Set([cat.id]) : new Set();
+      expandedCats.value = isCollapsed ? new Set() : expandSetFor(uiStore.selectedCategoryId);
     }
   );
 

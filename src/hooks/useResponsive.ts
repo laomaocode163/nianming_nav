@@ -2,12 +2,14 @@ import { ref, computed, type Ref, type ComputedRef } from 'vue';
 
 // Module-level shared state (singleton)
 const windowWidth: Ref<number> = ref(typeof window !== 'undefined' ? window.innerWidth : 1024);
+const windowHeight: Ref<number> = ref(typeof window !== 'undefined' ? window.innerHeight : 768);
 
 let frame = 0;
 let listenerAttached = false;
 
 const updateWindowSize = (): void => {
   windowWidth.value = window.innerWidth;
+  windowHeight.value = window.innerHeight;
 };
 
 const onResize = (): void => {
@@ -44,6 +46,7 @@ export function useResponsive() {
 
   return {
     windowWidth,
+    windowHeight,
     isMobile,
   };
 }

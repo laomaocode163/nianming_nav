@@ -62,18 +62,13 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   };
 
-  return { ready, init, settings, apply };
-});
-
-/** 初始化后监听 accentColor 变化自动 re-apply（admin 改色等场景即时生效） */
-let _applied = false;
-export const ensureSettingsReactive = (store: ReturnType<typeof useSettingsStore>): void => {
-  if (_applied) return;
-  _applied = true;
+  // accentColor 变化时自动 re-apply（admin 改色等场景即时生效）
   watch(
-    () => store.settings.accentColor,
+    () => settings.accentColor,
     () => {
-      store.apply();
+      apply();
     }
   );
-};
+
+  return { ready, init, settings, apply };
+});

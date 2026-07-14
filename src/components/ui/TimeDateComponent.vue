@@ -117,8 +117,8 @@
         <div class="date">{{ currentDate }} {{ weekday }}</div>
       </div>
     </div>
-    <div class="lunar-section">
-      <div class="lunar-date">{{ solarDate }}</div>
+    <div class="solar-section">
+      <div class="solar-date">{{ solarDate }}</div>
     </div>
   </div>
 </template>
@@ -177,7 +177,7 @@
     line-height: 1;
   }
 
-  .lunar-section {
+  .solar-section {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -186,7 +186,7 @@
     border-left: 1px solid var(--color-border);
   }
 
-  .lunar-date {
+  .solar-date {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-text);
@@ -209,12 +209,8 @@
       font-size: 0.7rem;
     }
 
-    .lunar-date {
+    .solar-date {
       font-size: 0.8rem;
-    }
-
-    .lunar-label {
-      font-size: 0.7rem;
     }
   }
 </style>

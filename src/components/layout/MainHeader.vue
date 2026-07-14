@@ -24,6 +24,8 @@
   const iconErrorMap = ref<Record<string, { url: string; ts: number }>>({});
   const showEngineMenu = ref(false);
   const engineSelectorRef = ref<HTMLElement | null>(null);
+  // 引擎名默认值：图标 fallback 首字母、名称展示、输入框占位统一使用
+  const DEFAULT_ENGINE_NAME = '必应';
 
   const searchEngines = computed(() => {
     return dataStore.searchConfig?.externalSources.filter((s) => s.enabled) ?? [];
@@ -45,22 +47,20 @@
     iconErrorMap.value[key] = { url: iconUrl, ts: Date.now() };
   };
 
-  const getEngineDisplayIcon = (engine: SearchSource | null) => {
-    if (!engine?.icon) {
-      return null; // 返回 null 显示首字母
-    }
-    const key = `${engine.id}|${engine.icon}`;
-    const record = iconErrorMap.value[key];
-    if (record) {
-      // 记录已过期则清除，允许后续重试
-      if (Date.now() - record.ts > ICON_ERROR_TTL) {
-        delete iconErrorMap.value[key];
-      } else {
-        return null; // 近期加载失败过，显示首字母 fallback
-      }
-    }
-    return engine.icon;
+  // 纯函数：近期是否加载失败（未过期）。不产生副作用，可安全用于 computed。
+  const isIconBroken = (engine: SearchSource | null): boolean => {
+    if (!engine?.icon) return false;
+    const record = iconErrorMap.value[`${engine.id}|${engine.icon}`];
+    return record ? Date.now() - record.ts <= ICON_ERROR_TTL : false;
   };
+
+  const getEngineDisplayIcon = (engine: SearchSource | null): string | null => {
+    if (!engine?.icon) return null; // 无图标 → 显示首字母
+    return isIconBroken(engine) ? null : engine.icon;
+  };
+
+  // 选中引擎图标只算一次，避免模板中多次调用重算
+  const selectedEngineIcon = computed(() => getEngineDisplayIcon(selectedEngine.value));
 
   const toggleEngineMenu = (): void => {
     showEngineMenu.value = !showEngineMenu.value;
@@ -146,24 +146,19 @@
         >
           <div class="engine-selector-content" @click="toggleEngineMenu">
             <!-- Favicon image with error fallback -->
-            <div v-if="getEngineDisplayIcon(selectedEngine)" class="engine-icon-wrapper">
+            <div v-if="selectedEngineIcon" class="engine-icon-wrapper">
               <img
-                :src="getEngineDisplayIcon(selectedEngine) || undefined"
+                :src="selectedEngineIcon"
                 :alt="selectedEngine?.name"
                 class="engine-icon-img"
-                @error="
-                  handleIconError(
-                    selectedEngine?.id || '',
-                    getEngineDisplayIcon(selectedEngine) || ''
-                  )
-                "
+                @error="handleIconError(selectedEngine?.id || '', selectedEngine?.icon || '')"
               />
             </div>
             <!-- Fallback: show first letter when icon fails -->
             <div v-else class="engine-icon-fallback">
-              {{ selectedEngine?.name?.charAt(0) || 'G' }}
+              {{ selectedEngine?.name?.charAt(0) || DEFAULT_ENGINE_NAME.charAt(0) }}
             </div>
-            <span class="engine-name">{{ selectedEngine?.name || 'Bing' }}</span>
+            <span class="engine-name">{{ selectedEngine?.name || DEFAULT_ENGINE_NAME }}</span>
             <ChevronDown
               class="dropdown-arrow"
               :class="{ open: showEngineMenu }"
@@ -203,7 +198,7 @@
           :value="uiStore.searchQuery"
           :placeholder="
             uiStore.searchMode === 'external'
-              ? `在 ${selectedEngine?.name || '必应'} 搜索...`
+              ? `在 ${selectedEngine?.name || DEFAULT_ENGINE_NAME} 搜索...`
               : '搜索站内网站...'
           "
           @input="uiStore.updateSearchQuery(($event.target as HTMLInputElement).value)"

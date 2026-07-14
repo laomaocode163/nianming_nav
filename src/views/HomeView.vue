@@ -5,7 +5,6 @@
   import { useResponsive } from '../hooks/useResponsive';
   import Sidebar from '../components/layout/Sidebar.vue';
   import MainHeader from '../components/layout/MainHeader.vue';
-  import ScrollToTop from '../components/ui/ScrollToTop.vue';
   import EmptyState from '../components/ui/EmptyState.vue';
   import SubCategoryTabs from '../components/ui/SubCategoryTabs.vue';
   import Pagination from '../components/ui/Pagination.vue';
@@ -14,7 +13,7 @@
 
   const dataStore = useDataStore();
   const uiStore = useUiStore();
-  const { isMobile, windowWidth } = useResponsive();
+  const { isMobile, windowWidth, windowHeight } = useResponsive();
 
   const gridKey = ref(0);
   const sitesSectionRef = ref<HTMLElement | null>(null);
@@ -51,13 +50,11 @@
   });
 
   // 列数：根据窗口宽度推断（不依赖 DOM 查询，避免 ResizeObserver 反馈环）
-  const columns = computed(() =>
-    windowWidth.value <= 768 ? 2 : windowWidth.value <= 1024 ? 2 : 4
-  );
+  const columns = computed(() => (windowWidth.value <= 1024 ? 2 : 4));
 
-  // 动态每页数量：基于窗口高度和固定常量推算，不测量 DOM
+  // 动态每页数量：基于响应式窗口高度和固定常量推算，不测量 DOM
   const fitPageSize = computed(() => {
-    const availableH = window.innerHeight - HEADER_H - CATEGORY_H - PAGINATION_H;
+    const availableH = windowHeight.value - HEADER_H - CATEGORY_H - PAGINATION_H;
     const rows = Math.max(1, Math.floor((availableH + GRID_GAP) / (CARD_H + GRID_GAP)));
     return Math.max(columns.value, rows * columns.value);
   });
@@ -196,9 +193,6 @@
         />
       </div>
     </div>
-
-    <!-- Scroll to Top Button -->
-    <ScrollToTop :target="() => sitesSectionRef" />
 
     <!-- Mobile Overlay -->
     <div
