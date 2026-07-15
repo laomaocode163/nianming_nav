@@ -1,5 +1,6 @@
 [
   { "id": "1", "name": "GitHub", "url": "https://github.com", "categoryId": "common", "description": "代码托管平台", "pinned": true },
+  { "id": "420", "name": "Gitee", "url": "https://gitee.com", "categoryId": "common", "description": "码云，国内代码托管与开源协作平台", "pinned": true },
   { "id": "334", "name": "LINUX DO", "url": "https://linux.do/", "categoryId": "common", "description": "技术交流社区" },
   { "id": "335", "name": "LINUX DO Credits", "url": "https://credit.linux.do/", "categoryId": "common", "description": "LINUX DO 积分系统" },
   { "id": "409", "name": "LINUX DO 导航", "url": "https://nav.linux.do/", "categoryId": "common", "description": "LINUX DO 社区出品的中文导航站：聚合实用工具、开发资源与优质站点，按分类精选收录" },
