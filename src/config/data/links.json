@@ -7,7 +7,7 @@
   { "id": "337", "name": "Hsya", "url": "https://hsya.top/", "categoryId": "common", "description": "个人资源导航" },
   { "id": "338", "name": "小众软件", "url": "https://www.appinn.com/", "categoryId": "common", "description": "分享免费、小巧的实用软件" },
   { "id": "340", "name": "Oracle", "url": "https://www.oracle.com/cn/", "categoryId": "common", "description": "Oracle 官方网站" },
-  { "id": "418", "name": "OpenCode", "url": "https://opencode.ai/docs/zh-cn", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "终端优先的开源 AI 编码代理：在命令行中提供多模型编程助手能力，中文文档完善" },
+  { "id": "418", "name": "OpenCode", "url": "https://opencode.ai/zh", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "终端优先的开源 AI 编码代理：在命令行中提供多模型编程助手能力，中文文档完善" },
   { "id": "2", "name": "ChatGPT", "url": "https://chat.openai.com", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "OpenAI聊天机器人", "pinned": true },
   { "id": "3", "name": "Claude", "url": "https://claude.ai", "categoryId": "ai", "subCategoryId": "ai-coding", "description": "Anthropic AI助手", "pinned": true },
   { "id": "6", "name": "VS Code", "url": "https://code.visualstudio.com", "categoryId": "dev", "subCategoryId": "dev-editors", "description": "微软开源代码编辑器" },
