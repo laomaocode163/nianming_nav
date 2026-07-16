@@ -5,6 +5,7 @@ import { createRouter, createMemoryHistory } from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
 import { useDataStore } from '@/stores/data';
 import { useUiStore } from '@/stores/ui';
+import { useUserPrefsStore } from '@/stores/userPrefs';
 
 const tick = () => new Promise((r) => setTimeout(r, 150));
 
@@ -68,5 +69,35 @@ describe('HomeView', () => {
     expect(firstHref).toBeDefined();
     expect(secondHref).toBeDefined();
     expect(firstHref).not.toBe(secondHref);
+  });
+
+  it('sorts the recent category by visit timestamp descending', async () => {
+    const { wrapper, dataStore, uiStore } = await setup();
+    const recents = dataStore.links.filter((l) => !l.hidden).slice(0, 3);
+    expect(recents.length).toBeGreaterThanOrEqual(3);
+
+    const userPrefs = useUserPrefsStore();
+    // 故意乱序写入：recents[2] 最新、recents[0] 最旧
+    userPrefs.state.recentVisits = [
+      { url: recents[2].url, ts: 300 },
+      { url: recents[0].url, ts: 100 },
+      { url: recents[1].url, ts: 200 },
+    ];
+
+    uiStore.selectCategory('__recent');
+    await flushPromises();
+    await tick();
+
+    const hrefs = wrapper.findAll('.site-card').map((el) => el.attributes('href'));
+    const idxNewest = hrefs.indexOf(recents[2].url);
+    const idxMid = hrefs.indexOf(recents[1].url);
+    const idxOldest = hrefs.indexOf(recents[0].url);
+
+    // 全部出现（分页足以容纳 3 条）且严格按 ts 倒序
+    expect(idxNewest).toBeGreaterThanOrEqual(0);
+    expect(idxMid).toBeGreaterThanOrEqual(0);
+    expect(idxOldest).toBeGreaterThanOrEqual(0);
+    expect(idxNewest).toBeLessThan(idxMid);
+    expect(idxMid).toBeLessThan(idxOldest);
   });
 });

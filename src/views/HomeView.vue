@@ -79,7 +79,7 @@
     if (catId === '__recent') {
       const tsMap = new Map(userPrefs.state.recentVisits.map((v) => [v.url, v.ts]));
       const result = dataStore.links.filter((l) => !l.hidden && tsMap.has(l.url));
-      result.sort((a, b) => (tsMap.get(b.id) || 0) - (tsMap.get(a.id) || 0));
+      result.sort((a, b) => (tsMap.get(b.url) || 0) - (tsMap.get(a.url) || 0));
       return applyInternalSearch(result, query);
     }
 

@@ -26,17 +26,21 @@ const SAVE_DEBOUNCE_MS = 500;
 
 const memoryCache = new Map<string, string>();
 
-// 持久化缓存仅在首次访问时解析一次，避免每次 getCachedFavicon 都 JSON.parse 整库
-let persistentStore: Record<string, CacheEntry> | null = null;
+// 持久化缓存仅在首次访问时解析一次，避免每次 getCachedFavicon 都 JSON.parse 整库。
+// 使用 Map 而非 Record：Map 的迭代顺序即「最近写入顺序」，淘汰时直接移除最旧的若干项，
+// 无需每次写入都对全量缓存排序（原 Object.entries().sort() 在接近上限时开销明显）。
+let persistentStore: Map<string, CacheEntry> | null = null;
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
-const loadPersistentCache = (): Record<string, CacheEntry> => {
+const loadPersistentCache = (): Map<string, CacheEntry> => {
   if (persistentStore) return persistentStore;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    persistentStore = raw ? (JSON.parse(raw) as Record<string, CacheEntry>) : {};
+    persistentStore = raw
+      ? new Map(Object.entries(JSON.parse(raw) as Record<string, CacheEntry>))
+      : new Map();
   } catch {
-    persistentStore = {};
+    persistentStore = new Map();
   }
   return persistentStore;
 };
@@ -45,7 +49,7 @@ const flushPersistentCache = (): void => {
   saveTimer = null;
   if (!persistentStore) return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(persistentStore));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.fromEntries(persistentStore)));
   } catch {
     /* 隐私模式或配额超限时忽略 */
   }
@@ -57,15 +61,24 @@ const scheduleSave = (): void => {
   saveTimer = setTimeout(flushPersistentCache, SAVE_DEBOUNCE_MS);
 };
 
-const evictIfNeeded = (map: Record<string, CacheEntry>): void => {
-  const entries = Object.entries(map);
-  if (entries.length <= CACHE_MAX_SIZE) return;
-  const sorted = entries.sort((a, b) => a[1].ts - b[1].ts);
-  const removed = sorted.slice(0, entries.length - CACHE_MAX_SIZE);
-  for (const [domain] of removed) {
-    delete map[domain];
+// 超出上限时按写入顺序淘汰最旧的若干项（Map 迭代顺序 = 最近写入顺序，无需排序）
+const evictIfNeeded = (map: Map<string, CacheEntry>): void => {
+  if (map.size <= CACHE_MAX_SIZE) return;
+  const excess = map.size - CACHE_MAX_SIZE;
+  let removed = 0;
+  for (const domain of map.keys()) {
+    if (removed >= excess) break;
+    map.delete(domain);
     memoryCache.delete(domain);
+    removed++;
   }
+};
+
+// 写入缓存：先 delete 再 set，使该域名移动到 Map 末尾（标记为最近使用），配合 evictIfNeeded 实现近似 LRU
+const touch = (map: Map<string, CacheEntry>, domain: string, entry: CacheEntry): void => {
+  map.delete(domain);
+  map.set(domain, entry);
+  evictIfNeeded(map);
 };
 
 export const extractDomain = (url: string): string => {
@@ -119,7 +132,7 @@ export const getCachedFavicon = (domain: string): string => {
     return memoryCache.get(domain) as string;
   }
   const store = loadPersistentCache();
-  const entry = store[domain];
+  const entry = store.get(domain);
   if (entry && Date.now() - entry.ts < CACHE_TTL) {
     memoryCache.set(domain, entry.url);
     return entry.url;
@@ -135,8 +148,7 @@ export const cacheBrokenFavicon = (domain: string): void => {
   const placeholder = getDefaultIcon();
   memoryCache.set(domain, placeholder);
   const store = loadPersistentCache();
-  store[domain] = { url: placeholder, ts: Date.now() };
-  evictIfNeeded(store);
+  touch(store, domain, { url: placeholder, ts: Date.now() });
   scheduleSave();
 };
 
@@ -152,8 +164,7 @@ export const cacheFavicon = (domain: string, url: string): void => {
   if (!domain || isPlaceholder(url)) return;
   memoryCache.set(domain, url);
   const store = loadPersistentCache();
-  store[domain] = { url, ts: Date.now() };
-  evictIfNeeded(store);
+  touch(store, domain, { url, ts: Date.now() });
   scheduleSave();
 };
 
@@ -179,7 +190,7 @@ export const prefetchUncachedFavicons = (domains: string[]): void => {
   const now = Date.now();
   const uncached = domains.filter((d) => {
     if (!d) return false;
-    const entry = store[d];
+    const entry = store.get(d);
     return !entry || now - entry.ts >= CACHE_TTL;
   });
   if (uncached.length === 0) return;

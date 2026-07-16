@@ -61,6 +61,19 @@
     return `${solarMonths[month]}${solarDays[day - 1]}`;
   };
 
+  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+  // 日期 / 星期 / 农历仅在「分钟」变化时重算，避免每秒重建这些不变字符串
+  let lastMinuteKey = '';
+  const updateDateParts = (now: Date): void => {
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    currentDate.value = `${year}年${month}月${day}日`;
+    weekday.value = weekdays[now.getDay()];
+    solarDate.value = getSolarDate(now);
+  };
+
   const updateDateTime = () => {
     const now = new Date();
 
@@ -69,15 +82,12 @@
     const seconds = String(now.getSeconds()).padStart(2, '0');
     currentTime.value = `${hours}:${minutes}:${seconds}`;
 
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    currentDate.value = `${year}年${month}月${day}日`;
-
-    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-    weekday.value = weekdays[now.getDay()];
-
-    solarDate.value = getSolarDate(now);
+    // 跨分钟（含跨天）才重算日期相关字段
+    const minuteKey = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getMinutes()}`;
+    if (minuteKey !== lastMinuteKey) {
+      lastMinuteKey = minuteKey;
+      updateDateParts(now);
+    }
   };
 
   let timer: ReturnType<typeof setInterval> | null = null;
