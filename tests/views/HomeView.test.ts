@@ -9,6 +9,21 @@ import { useUserPrefsStore } from '@/stores/userPrefs';
 
 const tick = () => new Promise((r) => setTimeout(r, 150));
 
+// SiteCard 是 defineAsyncComponent 动态加载，需等待其异步 import 完成并渲染出 .site-card
+const waitForSiteCards = async (
+  wrapper: ReturnType<typeof mount>,
+  min = 1,
+  timeout = 3000
+): Promise<ReturnType<typeof wrapper.findAll>> => {
+  const start = Date.now();
+  while (wrapper.findAll('.site-card').length < min) {
+    await flushPromises();
+    await new Promise((r) => setTimeout(r, 50));
+    if (Date.now() - start > timeout) break;
+  }
+  return wrapper.findAll('.site-card');
+};
+
 describe('HomeView', () => {
   let pinia: Pinia;
   let router: ReturnType<typeof createRouter>;
@@ -40,7 +55,8 @@ describe('HomeView', () => {
 
     const total = dataStore.getLinksByCategory('all').length;
     const expected = Math.min(uiStore.pageSize, total);
-    expect(wrapper.findAll('.site-card').length).toBe(expected);
+    const cards = await waitForSiteCards(wrapper, expected);
+    expect(cards.length).toBe(expected);
   });
 
   it('switches the visible links when a different category is selected', async () => {
@@ -60,11 +76,13 @@ describe('HomeView', () => {
     const total = dataStore.getLinksByCategory('all').length;
     if (total <= uiStore.pageSize) return; // 数据不足则跳过
 
-    const firstHref = wrapper.findAll('.site-card')[0]?.attributes('href');
+    const firstCards = await waitForSiteCards(wrapper, 1);
+    const firstHref = firstCards[0]?.attributes('href');
     uiStore.currentPage = 2;
     await flushPromises();
     await tick();
-    const secondHref = wrapper.findAll('.site-card')[0]?.attributes('href');
+    const secondCards = await waitForSiteCards(wrapper, 1);
+    const secondHref = secondCards[0]?.attributes('href');
 
     expect(firstHref).toBeDefined();
     expect(secondHref).toBeDefined();
@@ -88,7 +106,8 @@ describe('HomeView', () => {
     await flushPromises();
     await tick();
 
-    const hrefs = wrapper.findAll('.site-card').map((el) => el.attributes('href'));
+    const cards = await waitForSiteCards(wrapper, 1);
+    const hrefs = cards.map((el) => el.attributes('href'));
     const idxNewest = hrefs.indexOf(recents[2].url);
     const idxMid = hrefs.indexOf(recents[1].url);
     const idxOldest = hrefs.indexOf(recents[0].url);

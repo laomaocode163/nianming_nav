@@ -1,17 +1,30 @@
 <script setup lang="ts">
-  import { onMounted, ref } from 'vue';
+  import { computed, onMounted, ref, watch } from 'vue';
   import { useAdminStore } from '../stores/admin';
   import AdminLinks from '../components/admin/AdminLinks.vue';
   import CategoryTree from '../components/admin/CategoryTree.vue';
+  import { Link, Folder } from 'lucide-vue-next';
   import '../components/admin/admin.css';
 
   const adminStore = useAdminStore();
   const tab = ref<'links' | 'categories'>('links');
+  const selectedCategoryId = ref('');
 
-  const tabs: Array<{ key: typeof tab.value; label: string; icon: 'link' | 'folder' }> = [
-    { key: 'links', label: '网址', icon: 'link' },
-    { key: 'categories', label: '分类', icon: 'folder' },
-  ];
+  const filterCats = computed(() =>
+    [...adminStore.categories]
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        icon: c.icon,
+        count: adminStore.links.filter((l) => l.categoryId === c.id).length,
+      }))
+  );
+
+  // 切到「分类」页时清空网址筛选，回到「网址」从「全部」开始
+  watch(tab, (t) => {
+    if (t !== 'links') selectedCategoryId.value = '';
+  });
 
   onMounted(() => {
     adminStore.loadAll();
@@ -20,8 +33,8 @@
 
 <template>
   <div class="admin-shell">
-    <header class="admin-header">
-      <div class="admin-title-wrap">
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
         <div class="admin-title-badge">
           <svg
             viewBox="0 0 24 24"
@@ -29,7 +42,7 @@
             height="22"
             fill="none"
             stroke="currentColor"
-            stroke-width="2"
+            stroke-width="1.5"
             stroke-linecap="round"
             stroke-linejoin="round"
           >
@@ -41,9 +54,48 @@
         </div>
         <div>
           <h1 class="admin-title">管理后台</h1>
-          <p class="admin-sub">本地开发工具 · 改动直接写入 src/config/data/*.json</p>
+          <p class="admin-sub">本地开发工具 · 改动写入 data/*.json</p>
         </div>
       </div>
+
+      <nav class="admin-nav">
+        <button class="admin-nav-item" :class="{ active: tab === 'links' }" @click="tab = 'links'">
+          <Link :size="18" :stroke-width="1.5" />
+          网址
+        </button>
+        <button
+          class="admin-nav-item"
+          :class="{ active: tab === 'categories' }"
+          @click="tab = 'categories'"
+        >
+          <Folder :size="18" :stroke-width="1.5" />
+          分类
+        </button>
+      </nav>
+
+      <div v-if="tab === 'links'" class="admin-filter">
+        <p class="admin-section-title">分类筛选</p>
+        <button
+          class="admin-filter-item"
+          :class="{ active: !selectedCategoryId }"
+          @click="selectedCategoryId = ''"
+        >
+          <span class="admin-filter-name">全部网址</span>
+          <span class="admin-chip">{{ adminStore.links.length }}</span>
+        </button>
+        <button
+          v-for="c in filterCats"
+          :key="c.id"
+          class="admin-filter-item"
+          :class="{ active: selectedCategoryId === c.id }"
+          @click="selectedCategoryId = c.id"
+        >
+          <CategoryIcon :name="c.icon" :stroke-width="1.5" class="admin-filter-icon" />
+          <span class="admin-filter-name">{{ c.name }}</span>
+          <span class="admin-chip">{{ c.count }}</span>
+        </button>
+      </div>
+
       <RouterLink to="/" class="admin-back">
         <svg
           viewBox="0 0 24 24"
@@ -51,7 +103,7 @@
           height="16"
           fill="none"
           stroke="currentColor"
-          stroke-width="2.5"
+          stroke-width="1.5"
           stroke-linecap="round"
           stroke-linejoin="round"
           class="admin-back-icon"
@@ -60,62 +112,16 @@
         </svg>
         返回首页
       </RouterLink>
-    </header>
+    </aside>
 
-    <nav class="admin-tabs">
-      <button
-        v-for="t in tabs"
-        :key="t.key"
-        class="admin-tab"
-        :class="{ active: tab === t.key }"
-        @click="tab = t.key"
-      >
-        <svg
-          v-if="t.icon === 'link'"
-          viewBox="0 0 24 24"
-          width="16"
-          height="16"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="admin-tab-svg"
-        >
-          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-        </svg>
-        <svg
-          v-else
-          viewBox="0 0 24 24"
-          width="16"
-          height="16"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="admin-tab-svg"
-        >
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-        </svg>
-        {{ t.label }}
-      </button>
-    </nav>
-
-    <main class="admin-card">
-      <AdminLinks v-if="tab === 'links'" />
+    <main class="admin-main">
+      <AdminLinks v-if="tab === 'links'" :category-filter="selectedCategoryId" />
       <CategoryTree v-else-if="tab === 'categories'" />
     </main>
   </div>
 </template>
 
 <style scoped>
-  .admin-tab-svg {
-    margin-right: 0.35rem;
-    flex-shrink: 0;
-  }
-
   .admin-back-icon {
     margin-right: 0.35rem;
     flex-shrink: 0;

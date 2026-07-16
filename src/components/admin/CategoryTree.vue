@@ -205,7 +205,7 @@
               height="14"
               fill="none"
               stroke="currentColor"
-              stroke-width="2.5"
+              stroke-width="1.5"
             >
               <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
@@ -242,32 +242,43 @@
           <span v-if="catForm.icon" class="admin-modal-icon">{{ catForm.icon }}</span>
           {{ editingCatId ? '编辑分类' : '新增分类' }}
         </h3>
-        <div class="admin-field">
-          <label class="admin-label">分类 ID *（英文 slug）</label>
-          <input
-            v-model="catForm.id"
-            class="admin-input"
-            type="text"
-            :disabled="!!editingCatId"
-            placeholder="如 ai"
-          />
-        </div>
-        <div class="admin-field">
-          <label class="admin-label">名称 *</label>
-          <input v-model="catForm.name" class="admin-input" type="text" placeholder="如 人工智能" />
-        </div>
-        <div class="admin-field">
-          <label class="admin-label">图标</label>
-          <EmojiPicker v-model="catForm.icon" placeholder="点击选择图标" />
-        </div>
-        <div class="admin-field-row">
+        <div class="admin-section">
+          <p class="admin-section-title">基本信息</p>
           <div class="admin-field">
-            <label class="admin-label">排序</label>
-            <input v-model.number="catForm.order" class="admin-input" type="number" />
+            <label class="admin-label">分类 ID *（英文 slug）</label>
+            <input
+              v-model="catForm.id"
+              class="admin-input"
+              type="text"
+              :disabled="!!editingCatId"
+              placeholder="如 ai"
+            />
           </div>
-          <label class="admin-check admin-field">
-            <input v-model="catForm.hidden" type="checkbox" /> 隐藏该分类
-          </label>
+          <div class="admin-field">
+            <label class="admin-label">名称 *</label>
+            <input
+              v-model="catForm.name"
+              class="admin-input"
+              type="text"
+              placeholder="如 人工智能"
+            />
+          </div>
+          <div class="admin-field">
+            <label class="admin-label">图标</label>
+            <EmojiPicker v-model="catForm.icon" placeholder="点击选择图标" />
+          </div>
+        </div>
+        <div class="admin-section">
+          <p class="admin-section-title">其他选项</p>
+          <div class="admin-field-row">
+            <div class="admin-field">
+              <label class="admin-label">排序</label>
+              <input v-model.number="catForm.order" class="admin-input" type="number" />
+            </div>
+            <label class="admin-check admin-field">
+              <input v-model="catForm.hidden" type="checkbox" /> 隐藏该分类
+            </label>
+          </div>
         </div>
         <div class="admin-modal-actions">
           <button class="admin-btn admin-btn-ghost" @click="catModal = false">取消</button>
@@ -283,35 +294,46 @@
           <span v-if="subForm.icon" class="admin-modal-icon">{{ subForm.icon }}</span>
           {{ editingSubId ? '编辑子分类' : '新增子分类' }}
         </h3>
-        <div class="admin-field">
-          <label class="admin-label">父分类 *</label>
-          <select v-model="subForm.categoryId" class="admin-select">
-            <option v-for="c in adminStore.categories" :key="c.id" :value="c.id">
-              {{ c.name }}
-            </option>
-          </select>
+        <div class="admin-section">
+          <p class="admin-section-title">基本信息</p>
+          <div class="admin-field">
+            <label class="admin-label">父分类 *</label>
+            <select v-model="subForm.categoryId" class="admin-select">
+              <option v-for="c in adminStore.categories" :key="c.id" :value="c.id">
+                {{ c.name }}
+              </option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label class="admin-label">子分类 ID *（英文 slug）</label>
+            <input
+              v-model="subForm.id"
+              class="admin-input"
+              type="text"
+              :disabled="!!editingSubId"
+              placeholder="如 frontend-frameworks"
+            />
+          </div>
+          <div class="admin-field">
+            <label class="admin-label">名称 *</label>
+            <input
+              v-model="subForm.name"
+              class="admin-input"
+              type="text"
+              placeholder="如 前端框架"
+            />
+          </div>
+          <div class="admin-field">
+            <label class="admin-label">图标</label>
+            <EmojiPicker v-model="subForm.icon" placeholder="点击选择图标" />
+          </div>
         </div>
-        <div class="admin-field">
-          <label class="admin-label">子分类 ID *（英文 slug）</label>
-          <input
-            v-model="subForm.id"
-            class="admin-input"
-            type="text"
-            :disabled="!!editingSubId"
-            placeholder="如 frontend-frameworks"
-          />
-        </div>
-        <div class="admin-field">
-          <label class="admin-label">名称 *</label>
-          <input v-model="subForm.name" class="admin-input" type="text" placeholder="如 前端框架" />
-        </div>
-        <div class="admin-field">
-          <label class="admin-label">图标</label>
-          <EmojiPicker v-model="subForm.icon" placeholder="点击选择图标" />
-        </div>
-        <div class="admin-field">
-          <label class="admin-label">排序</label>
-          <input v-model.number="subForm.order" class="admin-input" type="number" />
+        <div class="admin-section">
+          <p class="admin-section-title">其他选项</p>
+          <div class="admin-field">
+            <label class="admin-label">排序</label>
+            <input v-model.number="subForm.order" class="admin-input" type="number" />
+          </div>
         </div>
         <div class="admin-modal-actions">
           <button class="admin-btn admin-btn-ghost" @click="subModal = false">取消</button>

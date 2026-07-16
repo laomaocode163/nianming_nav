@@ -9,6 +9,7 @@
   import '../../components/admin/admin.css';
 
   const adminStore = useAdminStore();
+  const props = defineProps<{ categoryFilter?: string }>();
 
   const showForm = ref(false);
   const editingId = ref<string | null>(null);
@@ -40,7 +41,10 @@
 
   const treeGroups = computed<LinkCatGroup[]>(() => {
     const q = search.value.trim().toLowerCase();
-    return sortedCategories.value
+    const cats = props.categoryFilter
+      ? sortedCategories.value.filter((c) => c.id === props.categoryFilter)
+      : sortedCategories.value;
+    return cats
       .map((cat) => {
         const catLinks = adminStore.links.filter((l) => l.categoryId === cat.id);
         const directLinks = catLinks.filter((l) => !l.subCategoryId).filter((l) => matchLink(l, q));
@@ -254,7 +258,7 @@
             :aria-label="isExpanded('c:' + g.cat.id) ? '收起' : '展开'"
             @click="toggleExpand('c:' + g.cat.id)"
           >
-            <ChevronRight :size="14" :stroke-width="2.5" />
+            <ChevronRight :size="14" :stroke-width="1.5" />
           </button>
           <span class="admin-tree-name">{{ g.cat.name }}</span>
           <span class="admin-chip">{{ subCount(g) }} 链接</span>
@@ -266,7 +270,7 @@
           <li v-for="l in g.directLinks" :key="l.id" class="admin-tree-node">
             <div class="admin-tree-row admin-tree-row--link">
               <span class="admin-tree-icon admin-tree-icon--link">
-                <LinkIcon :size="14" :stroke-width="2" />
+                <LinkIcon :size="14" :stroke-width="1.5" />
               </span>
               <span class="admin-tree-name">{{ l.name }}</span>
               <span class="admin-tree-url">
@@ -288,7 +292,7 @@
                 :aria-label="isExpanded('s:' + g.cat.id + ':' + sg.sub.id) ? '收起' : '展开'"
                 @click="toggleExpand('s:' + g.cat.id + ':' + sg.sub.id)"
               >
-                <ChevronRight :size="14" :stroke-width="2.5" />
+                <ChevronRight :size="14" :stroke-width="1.5" />
               </button>
               <span class="admin-tree-name">{{ sg.sub.name }}</span>
               <span class="admin-chip">{{ sg.links.length }} 链接</span>
@@ -302,7 +306,7 @@
               <li v-for="l in sg.links" :key="l.id" class="admin-tree-node">
                 <div class="admin-tree-row admin-tree-row--link">
                   <span class="admin-tree-icon admin-tree-icon--link">
-                    <LinkIcon :size="14" :stroke-width="2" />
+                    <LinkIcon :size="14" :stroke-width="1.5" />
                   </span>
                   <span class="admin-tree-name">{{ l.name }}</span>
                   <span class="admin-tree-url">
@@ -325,42 +329,48 @@
       <div class="admin-modal">
         <h3 class="admin-modal-title">
           <span class="admin-modal-icon">
-            <LinkIcon :size="18" :stroke-width="2" />
+            <LinkIcon :size="18" :stroke-width="1.5" />
           </span>
           {{ editingId ? '编辑链接' : '新增链接' }}
         </h3>
-        <div class="admin-field">
-          <label class="admin-label">名称 *</label>
-          <input v-model="form.name" class="admin-input" type="text" placeholder="如 GitHub" />
-        </div>
-        <div class="admin-field">
-          <label class="admin-label">URL *</label>
-          <input v-model="form.url" class="admin-input" type="text" placeholder="https://..." />
-        </div>
-        <div class="admin-field-row">
+        <div class="admin-section">
+          <p class="admin-section-title">基本信息</p>
           <div class="admin-field">
-            <label class="admin-label">分类 *</label>
-            <select v-model="form.categoryId" class="admin-select" @change="onCategoryChange">
-              <option v-for="c in adminStore.categories" :key="c.id" :value="c.id">
-                {{ c.name }}
-              </option>
-            </select>
+            <label class="admin-label">名称 *</label>
+            <input v-model="form.name" class="admin-input" type="text" placeholder="如 GitHub" />
           </div>
           <div class="admin-field">
-            <label class="admin-label">二级分类</label>
-            <select v-model="form.subCategoryId" class="admin-select">
-              <option value="">（无）</option>
-              <option v-for="s in subOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
-            </select>
+            <label class="admin-label">URL *</label>
+            <input v-model="form.url" class="admin-input" type="text" placeholder="https://..." />
+          </div>
+          <div class="admin-field-row">
+            <div class="admin-field">
+              <label class="admin-label">分类 *</label>
+              <select v-model="form.categoryId" class="admin-select" @change="onCategoryChange">
+                <option v-for="c in adminStore.categories" :key="c.id" :value="c.id">
+                  {{ c.name }}
+                </option>
+              </select>
+            </div>
+            <div class="admin-field">
+              <label class="admin-label">二级分类</label>
+              <select v-model="form.subCategoryId" class="admin-select">
+                <option value="">（无）</option>
+                <option v-for="s in subOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-field">
+            <label class="admin-label">描述</label>
+            <input v-model="form.description" class="admin-input" type="text" placeholder="可选" />
           </div>
         </div>
-        <div class="admin-field">
-          <label class="admin-label">描述</label>
-          <input v-model="form.description" class="admin-input" type="text" placeholder="可选" />
-        </div>
-        <div class="admin-field-row">
-          <label class="admin-check"><input v-model="form.pinned" type="checkbox" /> 置顶</label>
-          <label class="admin-check"><input v-model="form.hidden" type="checkbox" /> 隐藏</label>
+        <div class="admin-section">
+          <p class="admin-section-title">高级选项</p>
+          <div class="admin-field-row">
+            <label class="admin-check"><input v-model="form.pinned" type="checkbox" /> 置顶</label>
+            <label class="admin-check"><input v-model="form.hidden" type="checkbox" /> 隐藏</label>
+          </div>
         </div>
         <div class="admin-modal-actions">
           <button class="admin-btn admin-btn-ghost" @click="closeForm">取消</button>
