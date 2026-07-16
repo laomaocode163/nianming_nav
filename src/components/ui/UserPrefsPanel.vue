@@ -1,10 +1,17 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, onMounted, onBeforeUnmount } from 'vue';
   import { useUserPrefsStore } from '../../stores/userPrefs';
   import { showToast } from '../../composables/useToast';
-  import { X, Download, Upload, Star, Clock } from 'lucide-vue-next';
+  import { X, Download, Upload, Star, Clock, Info } from 'lucide-vue-next';
 
   const emit = defineEmits<{ (e: 'close'): void }>();
+
+  const onKeydown = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape') emit('close');
+  };
+
+  onMounted(() => window.addEventListener('keydown', onKeydown));
+  onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
   const userPrefs = useUserPrefsStore();
   const fileInput = ref<HTMLInputElement | null>(null);
@@ -67,14 +74,18 @@
 
       <div class="prefs-stats">
         <div class="stat-card">
-          <Star class="stat-icon" :size="18" :stroke-width="2" />
-          <span class="stat-value">{{ userPrefs.state.favorites.length }}</span>
-          <span class="stat-label">收藏</span>
+          <Star class="stat-icon" :size="20" :stroke-width="1.5" />
+          <div class="stat-body">
+            <span class="stat-value">{{ userPrefs.state.favorites.length }}</span>
+            <span class="stat-label">收藏</span>
+          </div>
         </div>
         <div class="stat-card">
-          <Clock class="stat-icon" :size="18" :stroke-width="2" />
-          <span class="stat-value">{{ userPrefs.state.recentVisits.length }}</span>
-          <span class="stat-label">最近访问</span>
+          <Clock class="stat-icon" :size="20" :stroke-width="1.5" />
+          <div class="stat-body">
+            <span class="stat-value">{{ userPrefs.state.recentVisits.length }}</span>
+            <span class="stat-label">最近访问</span>
+          </div>
         </div>
       </div>
 
@@ -113,7 +124,10 @@
         </div>
       </div>
 
-      <p class="prefs-hint">偏好仅保存在本机浏览器，不会上传服务器。</p>
+      <p class="prefs-hint">
+        <Info :size="14" :stroke-width="2" />
+        <span>偏好仅保存在本机浏览器，不会上传服务器。</span>
+      </p>
     </div>
   </div>
 </template>
@@ -126,28 +140,30 @@
     backdrop-filter: blur(4px);
     z-index: 200;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
+    justify-content: flex-end;
     animation: fadeIn 0.15s ease-out;
   }
 
   .prefs-modal {
     width: 100%;
-    max-width: 420px;
+    max-width: 400px;
+    height: 100dvh;
+    overflow-y: auto;
     background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border-left: 1px solid var(--color-border);
+    border-radius: 0;
     box-shadow: var(--shadow-lg);
-    padding: 1.25rem;
-    animation: popIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    padding: 1.5rem;
+    animation: slideIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .prefs-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    margin: 0 0 1.25rem;
+    padding: 0 0 1rem;
+    border-bottom: 1px solid var(--color-border);
   }
 
   .prefs-title {
@@ -158,14 +174,15 @@
   }
 
   .prefs-close {
-    width: 32px;
-    height: 32px;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: none;
-    background: transparent;
-    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    border-radius: 9px;
     cursor: pointer;
     color: var(--color-text-secondary);
     transition: all 150ms ease;
@@ -181,65 +198,93 @@
   }
 
   .prefs-stats {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
   }
 
   .stat-card {
-    flex: 1;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     padding: 0.75rem 1rem;
     background: var(--color-bg);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
+    transition: all 150ms ease;
+  }
+
+  .stat-card:hover {
+    border-color: var(--color-primary);
+    background: hsl(var(--hue-primary), 12%, 96%);
+  }
+
+  .dark .stat-card:hover {
+    background: hsl(var(--hue-primary), 20%, 18%);
   }
 
   .stat-icon {
-    color: var(--color-primary);
     flex-shrink: 0;
+    color: var(--color-text-secondary);
+    transition: color 150ms ease;
+  }
+
+  .stat-card:hover .stat-icon {
+    color: var(--color-primary);
+  }
+
+  .stat-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
   }
 
   .stat-value {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     font-weight: 700;
+    line-height: 1;
     color: var(--color-text);
   }
 
   .stat-label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     color: var(--color-text-secondary);
   }
 
   .prefs-section {
     margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
   }
 
   .prefs-section-title {
-    margin: 0 0 0.5rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--color-text-secondary);
+    margin: 0 0 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--color-primary);
+    text-transform: uppercase;
   }
 
   .prefs-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.625rem;
   }
 
   .prefs-action {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: 0.5rem;
     padding: 0.5rem 0.875rem;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     background: var(--color-card);
     color: var(--color-text);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
@@ -257,9 +302,9 @@
   }
 
   .prefs-action.danger:hover {
-    border-color: #ef4444;
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.08);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+    background: rgba(239, 68, 68, 0.06);
   }
 
   .prefs-file-input {
@@ -267,10 +312,14 @@
   }
 
   .prefs-hint {
-    margin: 0.5rem 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    margin: 1.25rem 0 0;
     font-size: 0.75rem;
     color: var(--color-text-secondary);
-    opacity: 0.7;
+    opacity: 0.8;
   }
 
   @keyframes fadeIn {
@@ -282,14 +331,14 @@
     }
   }
 
-  @keyframes popIn {
+  @keyframes slideIn {
     from {
       opacity: 0;
-      transform: scale(0.95) translateY(8px);
+      transform: translateX(100%);
     }
     to {
       opacity: 1;
-      transform: scale(1) translateY(0);
+      transform: translateX(0);
     }
   }
 </style>
