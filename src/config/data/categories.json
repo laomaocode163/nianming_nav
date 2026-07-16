@@ -1,5 +1,4 @@
 [
-  { "id": "common", "name": "常用推荐", "icon": "star" },
   { "id": "ai", "name": "人工智能", "icon": "bot", "subCategories": [
       { "id": "ai-tutorial", "name": "工具教程", "icon": "book-open", "order": 1 },
       { "id": "ai-benchmark", "name": "模型评测", "icon": "bar-chart", "order": 2 },

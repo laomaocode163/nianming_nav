@@ -17,7 +17,7 @@ const sampleLink: Link = {
   id: '999',
   name: 'Test',
   url: 'https://test.dev',
-  categoryId: 'common',
+  categoryId: 'dev',
 };
 
 const sampleCategory: Category = { id: 'newcat', name: 'New', icon: '🔥' };
@@ -37,9 +37,9 @@ describe('adminApi', () => {
   });
 
   it('getSubCategories returns flattened subs', async () => {
-    mockFetch([{ categoryId: 'common', categoryName: '常用', ...sampleSub }]);
+    mockFetch([{ categoryId: 'dev', categoryName: '常用', ...sampleSub }]);
     const subs = await adminApi.getSubCategories();
-    expect(subs[0].categoryId).toBe('common');
+    expect(subs[0].categoryId).toBe('dev');
     expect(subs[0].name).toBe('New Sub');
   });
 
@@ -62,9 +62,9 @@ describe('adminApi', () => {
   });
 
   it('createSubCategory POSTs with categoryId', async () => {
-    mockFetch({ categoryId: 'common', ...sampleSub });
-    const created = await adminApi.createSubCategory('common', sampleSub);
-    expect(created.categoryId).toBe('common');
+    mockFetch({ categoryId: 'dev', ...sampleSub });
+    const created = await adminApi.createSubCategory('dev', sampleSub);
+    expect(created.categoryId).toBe('dev');
   });
 
   it('fetchFavicons POSTs and returns result', async () => {
