@@ -172,6 +172,28 @@
     <!-- Navigation Section -->
     <div class="sidebar-nav-section">
       <nav class="sidebar-nav">
+        <!-- 用户个性化虚拟分类：收藏与最近访问 -->
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ active: isNavActive('__favorites') }"
+          :aria-current="isNavActive('__favorites') ? 'page' : undefined"
+          @click="handleSelect('__favorites')"
+        >
+          <span class="nav-icon"><CategoryIcon name="star" /></span>
+          <span class="nav-name">我的常用</span>
+        </button>
+        <button
+          type="button"
+          class="nav-item"
+          :class="{ active: isNavActive('__recent') }"
+          :aria-current="isNavActive('__recent') ? 'page' : undefined"
+          @click="handleSelect('__recent')"
+        >
+          <span class="nav-icon"><CategoryIcon name="clock" /></span>
+          <span class="nav-name">最近访问</span>
+        </button>
+
         <template v-for="(category, index) in categories" :key="category.id">
           <button
             type="button"

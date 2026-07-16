@@ -1,55 +1,46 @@
-import { ref } from 'vue'
-import { defineStore } from 'pinia'
+import { ref } from 'vue';
+import { defineStore } from 'pinia';
+import { useUserPrefsStore } from './userPrefs';
 
 export const useThemeStore = defineStore('theme', () => {
-  const isDark = ref<boolean>(false)
-  let systemListenerAttached = false
-
-  const safeGetItem = (key: string): string | null => {
-    try { return localStorage.getItem(key) } catch { return null }
-  }
-
-  const safeSetItem = (key: string, value: string): void => {
-    try { localStorage.setItem(key, value) } catch { /* ignore */ }
-  }
+  const isDark = ref<boolean>(false);
+  let systemListenerAttached = false;
 
   const applyTheme = (): void => {
-    if (isDark.value) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }
+    document.documentElement.classList.toggle('dark', isDark.value);
+  };
 
   const initTheme = (): void => {
-    const savedTheme = safeGetItem('theme')
+    const prefs = useUserPrefsStore();
+    const savedTheme = prefs.state.theme;
     if (savedTheme) {
-      isDark.value = savedTheme === 'dark'
+      isDark.value = savedTheme === 'dark';
     } else {
-      isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+      isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
-    applyTheme()
+    applyTheme();
 
     if (!systemListenerAttached) {
-      systemListenerAttached = true
+      systemListenerAttached = true;
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (!safeGetItem('theme')) {
-          isDark.value = e.matches
-          applyTheme()
+        if (!prefs.state.theme) {
+          isDark.value = e.matches;
+          applyTheme();
         }
-      })
+      });
     }
-  }
+  };
 
   const toggleTheme = (): void => {
-    isDark.value = !isDark.value
-    applyTheme()
-    safeSetItem('theme', isDark.value ? 'dark' : 'light')
-  }
+    isDark.value = !isDark.value;
+    applyTheme();
+    const prefs = useUserPrefsStore();
+    prefs.setTheme(isDark.value ? 'dark' : 'light');
+  };
 
   return {
     isDark,
     initTheme,
     toggleTheme,
-  }
-})
+  };
+});

@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { computed, ref, onMounted } from 'vue';
   import { useDataStore } from '../../stores/data';
+  import { useUserPrefsStore } from '../../stores/userPrefs';
   import { getDefaultIcon } from '../../utils/constants';
   import {
     extractDomain,
@@ -10,13 +11,21 @@
   } from '../../services/faviconService';
   import { safeUrl } from '../../utils/url';
   import { showToast } from '../../composables/useToast';
+  import { highlightParts } from '../../utils/highlight';
   import type { Link } from '../../types';
 
-  const props = defineProps<{
-    site: Link;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      site: Link;
+      highlight?: string;
+    }>(),
+    {
+      highlight: '',
+    }
+  );
 
   const dataStore = useDataStore();
+  const userPrefs = useUserPrefsStore();
   const isCopied = ref(false);
   const failedIndex = ref(-1);
   const nameRef = ref<HTMLElement | null>(null);
@@ -31,6 +40,23 @@
   const siteIcon = computed(() => {
     return dataStore.getLinkIcon(props.site);
   });
+
+  const isFav = computed(() => userPrefs.isFavorite(props.site.id));
+
+  const nameParts = computed(() => highlightParts(props.site.name, props.highlight));
+  const descParts = computed(() =>
+    props.site.description ? highlightParts(props.site.description, props.highlight) : []
+  );
+
+  // 点击卡片：先记录访问（用于「最近访问」），随后由原生 <a> 正常跳转
+  const onCardClick = (): void => {
+    userPrefs.recordVisit(props.site.id);
+  };
+
+  const toggleFav = (): void => {
+    const added = userPrefs.toggleFavorite(props.site.id);
+    showToast(added ? `已收藏「${props.site.name}」` : `已取消收藏「${props.site.name}」`, 1500);
+  };
 
   const onIconLoad = (event: Event) => {
     const img = event.target as HTMLImageElement;
@@ -79,7 +105,13 @@
 </script>
 
 <template>
-  <a :href="safeUrl(site.url)" target="_blank" rel="noopener noreferrer" class="site-card">
+  <a
+    :href="safeUrl(site.url)"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="site-card"
+    @click="onCardClick"
+  >
     <div class="site-icon-wrapper">
       <img
         :src="siteIcon"
@@ -94,9 +126,34 @@
 
     <div class="site-info">
       <div class="site-name-row">
-        <span ref="nameRef" class="site-name" :title="isNameTruncated ? site.name : undefined">{{
-          site.name
-        }}</span>
+        <span ref="nameRef" class="site-name" :title="isNameTruncated ? site.name : undefined"
+          ><template v-for="(part, i) in nameParts" :key="i"
+            ><mark v-if="part.match">{{ part.text }}</mark
+            ><template v-else>{{ part.text }}</template></template
+          ></span
+        >
+        <button
+          class="fav-btn"
+          :class="{ active: isFav }"
+          :title="isFav ? '取消收藏' : '收藏'"
+          :aria-pressed="isFav"
+          @click.prevent.stop="toggleFav"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            :fill="isFav ? 'currentColor' : 'none'"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polygon
+              points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+            />
+          </svg>
+        </button>
         <button
           class="copy-btn"
           :class="{ copied: isCopied }"
@@ -132,7 +189,12 @@
           </svg>
         </button>
       </div>
-      <div v-if="site.description" class="site-desc">{{ site.description }}</div>
+      <div v-if="site.description" class="site-desc">
+        <template v-for="(part, i) in descParts" :key="i"
+          ><mark v-if="part.match">{{ part.text }}</mark
+          ><template v-else>{{ part.text }}</template></template
+        >
+      </div>
       <div v-if="!site.description" class="site-url">{{ site.url }}</div>
     </div>
   </a>
@@ -284,6 +346,55 @@
   .copy-btn.copied {
     opacity: 1 !important;
     color: #10b981;
+  }
+
+  .fav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    color: var(--color-text-secondary);
+    transition:
+      opacity 0.15s ease,
+      color 0.15s ease,
+      background 0.15s ease,
+      transform 0.15s ease;
+    padding: 0;
+  }
+
+  .site-card:hover .fav-btn {
+    opacity: 0.6;
+  }
+
+  .fav-btn:hover {
+    opacity: 1 !important;
+    background: rgba(0, 0, 0, 0.06);
+    color: #f59e0b;
+    transform: scale(1.1);
+  }
+
+  .dark .fav-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .fav-btn.active {
+    opacity: 1 !important;
+    color: #f59e0b;
+  }
+
+  .site-name mark,
+  .site-desc mark {
+    background: transparent;
+    color: var(--color-primary);
+    font-weight: 700;
+    padding: 0;
   }
 
   .site-desc {

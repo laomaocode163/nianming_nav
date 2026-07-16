@@ -54,6 +54,34 @@ describe('dataStore', () => {
         expect(categoryLinks.length).toBeGreaterThanOrEqual(0);
       }
     });
+
+    it('should filter by search query only in internal mode (no reverse ui dependency)', async () => {
+      const store = useDataStore();
+      await store.init();
+
+      const all = store.getLinksByCategory('all');
+      expect(all.length).toBeGreaterThan(0);
+
+      // 取第一个链接的名称片段作为搜索词
+      const term = all[0].name.slice(0, Math.max(1, Math.ceil(all[0].name.length / 2)));
+      const internal = store.getLinksByCategory('all', null, term, 'internal');
+      expect(internal.length).toBeGreaterThan(0);
+      // 站内搜索命中 name / description / url 任一字段
+      expect(
+        internal.every((l) => {
+          const t = term.toLowerCase();
+          return (
+            l.name.toLowerCase().includes(t) ||
+            (l.description?.toLowerCase().includes(t) ?? false) ||
+            l.url.toLowerCase().includes(t)
+          );
+        })
+      ).toBe(true);
+
+      // 外部模式下不应按站内词过滤
+      const external = store.getLinksByCategory('all', null, term, 'external');
+      expect(external.length).toBe(all.length);
+    });
   });
 
   describe('categories management', () => {

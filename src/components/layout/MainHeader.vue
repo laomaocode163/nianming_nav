@@ -2,13 +2,24 @@
   import { useThemeStore } from '../../stores/theme';
   import { useResponsive } from '../../hooks/useResponsive';
   import TimeDateComponent from '../ui/TimeDateComponent.vue';
-  import { ref, computed, onMounted, onUnmounted } from 'vue';
+  import UserPrefsPanel from '../ui/UserPrefsPanel.vue';
+  import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
   import { useDataStore } from '../../stores/data';
   import { useUiStore } from '../../stores/ui';
+  import { useUserPrefsStore } from '../../stores/userPrefs';
   import type { SearchSource } from '../../types';
   import { safeUrl } from '../../utils/url';
   import { useRouter } from 'vue-router';
-  import { Sun, Moon, Globe, Search, X, ChevronDown, Settings } from 'lucide-vue-next';
+  import {
+    Sun,
+    Moon,
+    Globe,
+    Search,
+    X,
+    ChevronDown,
+    Settings,
+    SlidersHorizontal,
+  } from 'lucide-vue-next';
 
   const emit = defineEmits(['toggle-sidebar']);
 
@@ -17,7 +28,11 @@
   const themeStore = useThemeStore();
   const dataStore = useDataStore();
   const uiStore = useUiStore();
+  const userPrefs = useUserPrefsStore();
   const { isMobile } = useResponsive();
+
+  // 偏好面板开关
+  const showPrefsPanel = ref(false);
 
   // 搜索引擎图标加载失败记录：按「引擎 id + 图标 url」维度记录，带 TTL，过期后允许重试
   const ICON_ERROR_TTL = 5 * 60 * 1000;
@@ -68,11 +83,7 @@
 
   const selectEngine = (engineId: string) => {
     dataStore.updateSearchConfig({ selectedSourceId: engineId });
-    try {
-      localStorage.setItem('selected-search-source', engineId);
-    } catch {
-      /* 隐私模式等写入失败时忽略 */
-    }
+    userPrefs.setSearchSource(engineId);
     showEngineMenu.value = false;
   };
 
@@ -85,18 +96,46 @@
   onMounted(() => document.addEventListener('click', closeEngineMenu));
   onUnmounted(() => document.removeEventListener('click', closeEngineMenu));
 
+  // 本地输入模型 + 防抖：避免每次按键都驱动全量过滤，提升输入流畅度
+  const searchText = ref(uiStore.searchQuery);
+  const SEARCH_DEBOUNCE_MS = 200;
+  let searchTimer: ReturnType<typeof setTimeout> | null = null;
+  const flushSearch = (): void => {
+    searchTimer = null;
+    uiStore.updateSearchQuery(searchText.value);
+  };
+  const onSearchInput = (value: string): void => {
+    searchText.value = value;
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(flushSearch, SEARCH_DEBOUNCE_MS);
+  };
+  // 外部清空（如清除按钮、切换分类）时同步本地模型
+  watch(
+    () => uiStore.searchQuery,
+    (val) => {
+      if (val !== searchText.value) searchText.value = val;
+    }
+  );
+
   const handleSearch = () => {
-    if (!uiStore.searchQuery.trim()) return;
+    // 立即同步最新输入，避免防抖未触发时外部搜索取到旧值
+    if (searchTimer) {
+      clearTimeout(searchTimer);
+      searchTimer = null;
+    }
+    uiStore.updateSearchQuery(searchText.value);
+    if (!searchText.value.trim()) return;
 
     if (uiStore.searchMode === 'external') {
       // 外部搜索（搜索引擎）
       if (selectedEngine.value) {
         window.open(
-          safeUrl(selectedEngine.value.url + encodeURIComponent(uiStore.searchQuery)),
+          safeUrl(selectedEngine.value.url + encodeURIComponent(searchText.value)),
           '_blank',
           'noopener,noreferrer'
         );
         // 清空搜索框内容
+        searchText.value = '';
         uiStore.updateSearchQuery('');
       }
     } else {
@@ -195,21 +234,21 @@
         <input
           class="search-input"
           type="text"
-          :value="uiStore.searchQuery"
+          :value="searchText"
           :placeholder="
             uiStore.searchMode === 'external'
               ? `在 ${selectedEngine?.name || DEFAULT_ENGINE_NAME} 搜索...`
               : '搜索站内网站...'
           "
-          @input="uiStore.updateSearchQuery(($event.target as HTMLInputElement).value)"
+          @input="onSearchInput(($event.target as HTMLInputElement).value)"
           @keyup.enter="handleSearch"
         />
         <button
-          v-if="uiStore.searchQuery"
+          v-if="searchText"
           class="search-clear"
           type="button"
           aria-label="清空搜索"
-          @click="uiStore.updateSearchQuery('')"
+          @click="onSearchInput('')"
         >
           <X :size="16" :stroke-width="2.25" />
         </button>
@@ -220,6 +259,15 @@
     </div>
 
     <div class="header-right">
+      <button
+        class="prefs-btn"
+        type="button"
+        title="我的偏好（收藏 / 最近 / 导入导出）"
+        aria-label="打开偏好设置"
+        @click="showPrefsPanel = true"
+      >
+        <SlidersHorizontal class="prefs-icon" :size="20" :stroke-width="2" />
+      </button>
       <button
         v-if="isDev"
         class="admin-btn"
@@ -241,6 +289,8 @@
         <Moon v-else class="theme-icon" :size="20" :stroke-width="2" />
       </button>
     </div>
+
+    <UserPrefsPanel v-if="showPrefsPanel" @close="showPrefsPanel = false" />
   </header>
 </template>
 
@@ -385,6 +435,36 @@
   }
 
   .admin-btn:active {
+    transform: scale(0.95);
+  }
+
+  .prefs-btn {
+    width: var(--header-module-h);
+    height: var(--header-module-h);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-card);
+    cursor: pointer;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .prefs-btn:hover {
+    border-color: var(--color-primary);
+    background: hsl(var(--hue-primary), 10%, 96%);
+    color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+  }
+
+  .dark .prefs-btn:hover {
+    background: hsl(var(--hue-primary), 20%, 18%);
+  }
+
+  .prefs-btn:active {
     transform: scale(0.95);
   }
 

@@ -7,8 +7,8 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { loadSiteConfig, invalidateSiteConfigCache } from '../config/loadConfig';
 import { extractDomain, getCachedFavicon } from '../services/faviconService';
-import { useUiStore } from './ui';
-import type { Link, Category, SubCategory, SearchConfig } from '../types';
+import { useUserPrefsStore } from './userPrefs';
+import type { Link, Category, SubCategory, SearchConfig, SearchMode } from '../types';
 
 export const useDataStore = defineStore('data', () => {
   const ready = ref(false);
@@ -25,14 +25,11 @@ export const useDataStore = defineStore('data', () => {
     searchConfig.value = config.searchConfig;
     ready.value = true;
 
-    // 记忆上次选中的搜索引擎（刷新后保持）
-    try {
-      const saved = localStorage.getItem('selected-search-source');
-      if (saved && config.searchConfig.externalSources.some((s) => s.id === saved)) {
-        updateSearchConfig({ selectedSourceId: saved });
-      }
-    } catch {
-      /* 隐私模式等读取失败时忽略 */
+    // 记忆上次选中的搜索引擎（刷新后保持，由 userPrefs 统一持久化）
+    const prefs = useUserPrefsStore();
+    const savedSource = prefs.state.selectedSearchSourceId;
+    if (savedSource && config.searchConfig.externalSources.some((s) => s.id === savedSource)) {
+      updateSearchConfig({ selectedSourceId: savedSource });
     }
   };
 
@@ -73,9 +70,13 @@ export const useDataStore = defineStore('data', () => {
   });
 
   // 按分类和可选的二级分类过滤链接（查表 O(1)，不再每调用遍历）
-  const getLinksByCategory = (categoryId: string, subCategoryId?: string | null): Link[] => {
-    const ui = useUiStore();
-
+  // 搜索词与模式由调用方显式传入，去除对 useUiStore 的反向依赖，便于测试。
+  const getLinksByCategory = (
+    categoryId: string,
+    subCategoryId?: string | null,
+    searchQuery?: string,
+    searchMode: SearchMode = 'internal'
+  ): Link[] => {
     let filteredLinks: Link[];
     if (subCategoryId) {
       filteredLinks = linksBySubCategory.value.get(`${categoryId}:${subCategoryId}`) || [];
@@ -86,8 +87,8 @@ export const useDataStore = defineStore('data', () => {
     }
 
     // 站内搜索（实时过滤）
-    if (ui.searchMode === 'internal' && ui.searchQuery.trim()) {
-      const searchTerm = ui.searchQuery.toLowerCase().trim();
+    if (searchMode === 'internal' && searchQuery && searchQuery.trim()) {
+      const searchTerm = searchQuery.toLowerCase().trim();
       filteredLinks = filteredLinks.filter(
         (link) =>
           link.name.toLowerCase().includes(searchTerm) ||

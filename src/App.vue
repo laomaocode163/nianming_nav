@@ -3,17 +3,21 @@
   import { useThemeStore } from './stores/theme';
   import { useSettingsStore } from './stores/settings';
   import { useDataStore } from './stores/data';
+  import { useUserPrefsStore } from './stores/userPrefs';
   import { extractDomain, prefetchUncachedFavicons } from './services/faviconService';
   import ToastHost from './components/ui/ToastHost.vue';
 
   const themeStore = useThemeStore();
   const settingsStore = useSettingsStore();
   const dataStore = useDataStore();
+  const userPrefsStore = useUserPrefsStore();
 
   const ready = ref(false);
   const error = ref<string | null>(null);
 
   onMounted(async () => {
+    // 触发 userPrefs 初始化（含旧版裸 localStorage 键的一次性迁移）
+    void userPrefsStore;
     themeStore.initTheme();
     try {
       await dataStore.init();

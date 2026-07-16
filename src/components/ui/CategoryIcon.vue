@@ -47,6 +47,7 @@
     Download,
     Apple,
     Github,
+    Clock,
     type LucideIcon,
   } from 'lucide-vue-next';
 
@@ -108,6 +109,7 @@
     download: Download,
     apple: Apple,
     github: Github,
+    clock: Clock,
   };
 
   const icon = computed(() => iconMap[props.name] ?? Star);

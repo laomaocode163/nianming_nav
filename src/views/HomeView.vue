@@ -2,6 +2,7 @@
   import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
   import { useDataStore } from '../stores/data';
   import { useUiStore } from '../stores/ui';
+  import { useUserPrefsStore } from '../stores/userPrefs';
   import { useResponsive } from '../hooks/useResponsive';
   import Sidebar from '../components/layout/Sidebar.vue';
   import MainHeader from '../components/layout/MainHeader.vue';
@@ -9,10 +10,12 @@
   import SubCategoryTabs from '../components/ui/SubCategoryTabs.vue';
   import Pagination from '../components/ui/Pagination.vue';
   import { defineAsyncComponent } from 'vue';
+  import type { Link } from '../types';
   const SiteCard = defineAsyncComponent(() => import('../components/ui/SiteCard.vue'));
 
   const dataStore = useDataStore();
   const uiStore = useUiStore();
+  const userPrefs = useUserPrefsStore();
   const { isMobile, windowWidth, windowHeight } = useResponsive();
 
   const gridKey = ref(0);
@@ -40,13 +43,52 @@
     const map: Record<string, number> = {};
     const catId = uiStore.selectedCategoryId;
     for (const sub of subCategories.value) {
-      map[sub.id] = dataStore.getLinksByCategory(catId, sub.id).length;
+      map[sub.id] = dataStore.getLinksByCategory(
+        catId,
+        sub.id,
+        uiStore.searchQuery,
+        uiStore.searchMode
+      ).length;
     }
     return map;
   });
 
-  const links = computed(() => {
-    return dataStore.getLinksByCategory(uiStore.selectedCategoryId, uiStore.selectedSubCategoryId);
+  // 站内搜索过滤（虚拟分类复用，与 getLinksByCategory 内部逻辑保持一致）
+  const applyInternalSearch = (list: Link[], term: string): Link[] => {
+    const q = term.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(
+      (l) =>
+        l.name.toLowerCase().includes(q) ||
+        (l.description && l.description.toLowerCase().includes(q)) ||
+        l.url.toLowerCase().includes(q)
+    );
+  };
+
+  const links = computed<Link[]>(() => {
+    const catId = uiStore.selectedCategoryId;
+    const query = uiStore.searchMode === 'internal' ? uiStore.searchQuery : '';
+
+    if (catId === '__favorites') {
+      const favSet = new Set(userPrefs.state.favorites);
+      return applyInternalSearch(
+        dataStore.links.filter((l) => !l.hidden && favSet.has(l.id)),
+        query
+      );
+    }
+    if (catId === '__recent') {
+      const tsMap = new Map(userPrefs.state.recentVisits.map((v) => [v.id, v.ts]));
+      const result = dataStore.links.filter((l) => !l.hidden && tsMap.has(l.id));
+      result.sort((a, b) => (tsMap.get(b.id) || 0) - (tsMap.get(a.id) || 0));
+      return applyInternalSearch(result, query);
+    }
+
+    return dataStore.getLinksByCategory(
+      catId,
+      uiStore.selectedSubCategoryId,
+      uiStore.searchQuery,
+      uiStore.searchMode
+    );
   });
 
   // 列数：根据窗口宽度推断（不依赖 DOM 查询，避免 ResizeObserver 反馈环）
@@ -76,6 +118,14 @@
 
   const currentCategory = computed(() => {
     return categories.value.find((c) => c.id === uiStore.selectedCategoryId);
+  });
+
+  const categoryTitle = computed(() => {
+    const id = uiStore.selectedCategoryId;
+    if (id === 'all') return '全部网站';
+    if (id === '__favorites') return '我的常用';
+    if (id === '__recent') return '最近访问';
+    return currentCategory.value?.name || '未知分类';
   });
 
   const handleKeydown = (event: KeyboardEvent) => {
@@ -140,9 +190,7 @@
       <!-- Category Header -->
       <div class="category-header">
         <h2 class="category-title">
-          {{
-            uiStore.selectedCategoryId === 'all' ? '全部网站' : currentCategory?.name || '未知分类'
-          }}
+          {{ categoryTitle }}
         </h2>
         <span class="site-count">{{ links.length }} 个网站</span>
       </div>
@@ -169,6 +217,7 @@
             v-for="(site, index) in paginatedLinks"
             :key="`${gridKey}-${site.id}`"
             :site="site"
+            :highlight="uiStore.searchMode === 'internal' ? uiStore.searchQuery.trim() : ''"
             :style="{ animationDelay: `${index * 0.05}s` }"
           />
         </div>
