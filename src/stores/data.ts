@@ -25,8 +25,12 @@ export const useDataStore = defineStore('data', () => {
     searchConfig.value = config.searchConfig;
     ready.value = true;
 
-    // 记忆上次选中的搜索引擎（刷新后保持，由 userPrefs 统一持久化）
+    // 数据就绪后将旧版以 link.id 存储的收藏 / 最近访问迁移为稳定的 URL 主键，
+    // 使重编号等改 id 操作不再令用户收藏失效。
     const prefs = useUserPrefsStore();
+    prefs.migrateFromIds(config.links);
+
+    // 记忆上次选中的搜索引擎（刷新后保持，由 userPrefs 统一持久化）
     const savedSource = prefs.state.selectedSearchSourceId;
     if (savedSource && config.searchConfig.externalSources.some((s) => s.id === savedSource)) {
       updateSearchConfig({ selectedSourceId: savedSource });

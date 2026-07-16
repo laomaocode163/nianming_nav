@@ -8,13 +8,16 @@
  * - 单一版本化 key（user-prefs-v1）整块持久化，避免多 key 散落、便于迁移；
  * - 旧版裸 key（theme / selected-search-source）在首次加载时自动迁移；
  * - 防抖落盘，避免高频写入；
+ * - 收藏 / 最近访问以**链接 URL** 为主键（稳定，重编号 link id 不会令收藏失效）；
+ *   旧版以 id 存储的收藏会在数据加载后由 migrateFromIds 自动映射为 URL。
  * - 不引入任何外部依赖，沿用 faviconService 的持久化范式但更简单（无 TTL / 淘汰）。
  */
 import { defineStore } from 'pinia';
 import { reactive, watch } from 'vue';
+import type { Link } from '../types';
 
 export interface RecentVisit {
-  id: string;
+  url: string;
   ts: number;
 }
 
@@ -42,7 +45,7 @@ const isStringArray = (v: unknown): v is string[] =>
 
 const isRecentArray = (v: unknown): v is RecentVisit[] =>
   Array.isArray(v) &&
-  v.every((x) => !!x && typeof x === 'object' && typeof (x as RecentVisit).id === 'string');
+  v.every((x) => !!x && typeof x === 'object' && typeof (x as RecentVisit).url === 'string');
 
 const loadState = (): UserPrefsState => {
   const state: UserPrefsState = { ...DEFAULT_STATE };
@@ -90,31 +93,77 @@ export const useUserPrefsStore = defineStore('userPrefs', () => {
     { deep: true }
   );
 
-  const isFavorite = (id: string): boolean => state.favorites.includes(id);
+  const isFavorite = (url: string): boolean => state.favorites.includes(url);
 
-  const toggleFavorite = (id: string): boolean => {
-    const idx = state.favorites.indexOf(id);
+  const toggleFavorite = (url: string): boolean => {
+    const idx = state.favorites.indexOf(url);
     if (idx >= 0) {
       state.favorites.splice(idx, 1);
       return false;
     }
-    state.favorites.unshift(id);
+    state.favorites.unshift(url);
     if (state.favorites.length > FAVORITES_MAX) state.favorites.length = FAVORITES_MAX;
     return true;
   };
 
-  const recordVisit = (id: string): void => {
-    const idx = state.recentVisits.findIndex((v) => v.id === id);
+  const recordVisit = (url: string): void => {
+    const idx = state.recentVisits.findIndex((v) => v.url === url);
     const now = Date.now();
     // 重复访问：移除旧记录并前置，保证「最近访问」按时间倒序
     if (idx >= 0) state.recentVisits.splice(idx, 1);
-    state.recentVisits.unshift({ id, ts: now });
+    state.recentVisits.unshift({ url, ts: now });
     if (state.recentVisits.length > RECENT_MAX) state.recentVisits.length = RECENT_MAX;
   };
 
-  const visitTs = (id: string): number => {
-    const found = state.recentVisits.find((v) => v.id === id);
+  const visitTs = (url: string): number => {
+    const found = state.recentVisits.find((v) => v.url === url);
     return found ? found.ts : 0;
+  };
+
+  /**
+   * 将旧版以 link.id 存储的收藏 / 最近访问迁移为稳定的 URL 主键。
+   * 在数据加载后调用一次：若某项已为 URL 则原样保留；若为旧 id 且能在
+   * 当前 links 中找到对应链接，则替换为该链接 URL；找不到（如重编号后失效）
+   * 则丢弃。幂等，可重复调用。
+   */
+  const migrateFromIds = (links: Link[]): void => {
+    if (!links || links.length === 0) return;
+    const idToUrl = new Map(links.map((l) => [l.id, l.url]));
+    const isUrl = (s: string): boolean => /^https?:\/\//i.test(s);
+
+    let favChanged = false;
+    const newFavs: string[] = [];
+    for (const f of state.favorites) {
+      if (isUrl(f)) {
+        newFavs.push(f);
+        continue;
+      }
+      const mapped = idToUrl.get(f);
+      if (mapped) {
+        newFavs.push(mapped);
+        favChanged = true;
+      } else {
+        favChanged = true; // 丢弃失效引用
+      }
+    }
+    if (favChanged) state.favorites = newFavs;
+
+    let recChanged = false;
+    const newRec: RecentVisit[] = [];
+    for (const v of state.recentVisits) {
+      if (isUrl(v.url)) {
+        newRec.push(v);
+        continue;
+      }
+      const mapped = idToUrl.get(v.url);
+      if (mapped) {
+        newRec.push({ url: mapped, ts: v.ts });
+        recChanged = true;
+      } else {
+        recChanged = true;
+      }
+    }
+    if (recChanged) state.recentVisits = newRec;
   };
 
   const setTheme = (theme: 'light' | 'dark' | null): void => {
@@ -156,6 +205,7 @@ export const useUserPrefsStore = defineStore('userPrefs', () => {
     toggleFavorite,
     recordVisit,
     visitTs,
+    migrateFromIds,
     setTheme,
     setSearchSource,
     exportData,

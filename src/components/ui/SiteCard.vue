@@ -41,7 +41,7 @@
     return dataStore.getLinkIcon(props.site);
   });
 
-  const isFav = computed(() => userPrefs.isFavorite(props.site.id));
+  const isFav = computed(() => userPrefs.isFavorite(props.site.url));
 
   const nameParts = computed(() => highlightParts(props.site.name, props.highlight));
   const descParts = computed(() =>
@@ -50,11 +50,11 @@
 
   // 点击卡片：先记录访问（用于「最近访问」），随后由原生 <a> 正常跳转
   const onCardClick = (): void => {
-    userPrefs.recordVisit(props.site.id);
+    userPrefs.recordVisit(props.site.url);
   };
 
   const toggleFav = (): void => {
-    const added = userPrefs.toggleFavorite(props.site.id);
+    const added = userPrefs.toggleFavorite(props.site.url);
     showToast(added ? `已收藏「${props.site.name}」` : `已取消收藏「${props.site.name}」`, 1500);
   };
 

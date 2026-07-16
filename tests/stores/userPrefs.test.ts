@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { useUserPrefsStore } from '../../src/stores/userPrefs';
+import type { Link } from '../../src/types';
 
 describe('userPrefsStore', () => {
   beforeEach(() => {
@@ -33,7 +34,7 @@ describe('userPrefsStore', () => {
     store.recordVisit('a');
     store.recordVisit('b');
     store.recordVisit('a'); // 重复访问应更新时间戳并前置
-    expect(store.state.recentVisits.map((v) => v.id)).toEqual(['a', 'b']);
+    expect(store.state.recentVisits.map((v) => v.url)).toEqual(['a', 'b']);
     expect(store.visitTs('a')).toBeGreaterThanOrEqual(store.visitTs('b'));
   });
 
@@ -75,12 +76,28 @@ describe('userPrefsStore', () => {
     expect(store.state.favorites).toEqual([]);
     expect(store.importData(exported)).toBe(true);
     expect(store.state.favorites).toContain('fav1');
-    expect(store.state.recentVisits.map((v) => v.id)).toContain('recent1');
+    expect(store.state.recentVisits.map((v) => v.url)).toContain('recent1');
   });
 
   it('rejects malformed import data', () => {
     const store = useUserPrefsStore();
     expect(store.importData('not-json')).toBe(false);
     expect(store.importData('123')).toBe(false);
+  });
+
+  it('migrates legacy id-based favorites/recent to stable url keys', () => {
+    const store = useUserPrefsStore();
+    // 模拟旧版以 link.id 存储的收藏与最近访问
+    store.state.favorites = ['7013', '9999']; // 9999 在 links 中不存在 → 丢弃
+    store.state.recentVisits = [{ url: '7014', ts: 100 }];
+    store.migrateFromIds([
+      { id: '7013', url: 'https://linux.do/' } as Link,
+      { id: '7014', url: 'https://credit.linux.do/' } as Link,
+    ]);
+    expect(store.state.favorites).toEqual(['https://linux.do/']);
+    expect(store.state.recentVisits).toEqual([{ url: 'https://credit.linux.do/', ts: 100 }]);
+    // 已是 URL 的不动；重复调用幂等
+    store.migrateFromIds([]);
+    expect(store.state.favorites).toEqual(['https://linux.do/']);
   });
 });

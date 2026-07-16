@@ -4,10 +4,6 @@
  * 且 Zod 与 JSON 通过动态 import 进入独立 chunk，不进入首屏 entry bundle。
  */
 import type { Link, Category, SiteSettings, SearchConfig } from '../types';
-import categoriesData from './data/categories.json';
-import linksData from './data/links.json';
-import searchData from './data/search.json';
-import settingsData from './data/settings.json';
 
 export interface SiteConfig {
   categories: Category[];
@@ -59,13 +55,25 @@ export const validateReferentialIntegrity = (categories: Category[], links: Link
 };
 
 const doLoad = async (): Promise<SiteConfig> => {
-  const { categoriesSchema, linksSchema, searchConfigSchema, siteSettingsSchema } =
-    await import('./schema');
+  // 动态 import：Zod schema 与四个 JSON 数据都进入独立 chunk，不进入首屏 entry bundle
+  const [
+    { categoriesSchema, linksSchema, searchConfigSchema, siteSettingsSchema },
+    categoriesMod,
+    linksMod,
+    searchMod,
+    settingsMod,
+  ] = await Promise.all([
+    import('./schema'),
+    import('./data/categories.json'),
+    import('./data/links.json'),
+    import('./data/search.json'),
+    import('./data/settings.json'),
+  ]);
 
-  const categories = categoriesSchema.parse(categoriesData);
-  const links = linksSchema.parse(linksData);
-  const searchConfig = searchConfigSchema.parse(searchData);
-  const settings = siteSettingsSchema.parse(settingsData);
+  const categories = categoriesSchema.parse(categoriesMod.default);
+  const links = linksSchema.parse(linksMod.default);
+  const searchConfig = searchConfigSchema.parse(searchMod.default);
+  const settings = siteSettingsSchema.parse(settingsMod.default);
 
   validateReferentialIntegrity(categories, links);
 

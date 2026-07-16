@@ -72,13 +72,13 @@
     if (catId === '__favorites') {
       const favSet = new Set(userPrefs.state.favorites);
       return applyInternalSearch(
-        dataStore.links.filter((l) => !l.hidden && favSet.has(l.id)),
+        dataStore.links.filter((l) => !l.hidden && favSet.has(l.url)),
         query
       );
     }
     if (catId === '__recent') {
-      const tsMap = new Map(userPrefs.state.recentVisits.map((v) => [v.id, v.ts]));
-      const result = dataStore.links.filter((l) => !l.hidden && tsMap.has(l.id));
+      const tsMap = new Map(userPrefs.state.recentVisits.map((v) => [v.url, v.ts]));
+      const result = dataStore.links.filter((l) => !l.hidden && tsMap.has(l.url));
       result.sort((a, b) => (tsMap.get(b.id) || 0) - (tsMap.get(a.id) || 0));
       return applyInternalSearch(result, query);
     }
