@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { useDataStore } from '../../src/stores/data';
 import { useSettingsStore } from '../../src/stores/settings';
 import { getFaviconUrl } from '../../src/services/faviconService';
+import type { SiteConfig } from '../../src/types';
 
 describe('dataStore', () => {
   beforeEach(() => {
@@ -104,6 +105,31 @@ describe('dataStore', () => {
         // 与 faviconService 的解析结果一致：命中本地清单则为 /favicons/*，否则站点自身 favicon
         expect(icon).toBe(getFaviconUrl(new URL(link.url).hostname));
       }
+    });
+  });
+
+  describe('applySiteConfig (import restore)', () => {
+    it('should replace in-memory site config with imported data', async () => {
+      const store = useDataStore();
+      await store.init();
+      const originalLinkCount = store.links.length;
+      expect(originalLinkCount).toBeGreaterThan(0);
+
+      const imported: SiteConfig = {
+        categories: [{ id: 'c1', name: 'Imported', icon: 'star' }],
+        links: [{ id: 'l1', name: 'Link', url: 'https://example.com', categoryId: 'c1' }],
+        searchConfig: { selectedSourceId: 'bing', externalSources: [] },
+        settings: { accentColor: '10 20 30' },
+      };
+
+      store.applySiteConfig(imported);
+
+      expect(store.links).toHaveLength(1);
+      expect(store.links[0].id).toBe('l1');
+      expect(store.categories).toHaveLength(1);
+      expect(store.categories[0].name).toBe('Imported');
+      expect(store.searchConfig?.selectedSourceId).toBe('bing');
+      expect(store.links).not.toHaveLength(originalLinkCount);
     });
   });
 });

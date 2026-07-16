@@ -1,7 +1,12 @@
 <script setup lang="ts">
   import { ref, onMounted, onBeforeUnmount } from 'vue';
   import { useUserPrefsStore } from '../../stores/userPrefs';
+  import { useDataStore } from '../../stores/data';
+  import { useSettingsStore } from '../../stores/settings';
+  import { adminApi } from '../../services/adminApi';
   import { showToast } from '../../composables/useToast';
+  import { buildExportPayload, parseImportPayload } from '../../utils/configIo';
+  import type { SearchConfig, SiteConfig } from '../../types';
   import { X, Download, Upload, Star, Clock, Info } from 'lucide-vue-next';
 
   const emit = defineEmits<{ (e: 'close'): void }>();
@@ -14,23 +19,54 @@
   onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
   const userPrefs = useUserPrefsStore();
+  const dataStore = useDataStore();
+  const settingsStore = useSettingsStore();
   const fileInput = ref<HTMLInputElement | null>(null);
 
   const exportPrefs = (): void => {
-    const blob = new Blob([userPrefs.exportData()], { type: 'application/json' });
+    const payload = buildExportPayload(userPrefs.state, {
+      categories: dataStore.categories,
+      links: dataStore.links,
+      searchConfig: dataStore.searchConfig as SearchConfig,
+      settings: settingsStore.settings,
+    });
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `nianming-nav-prefs-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `nianming-nav-config-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('已导出偏好配置', 1500);
+    showToast('已导出完整配置', 1500);
   };
 
   const triggerImport = (): void => {
     fileInput.value?.click();
+  };
+
+  /** 将导入的站点配置应用到运行时内存；DEV 模式额外写盘持久化 */
+  const applyImportedSiteConfig = async (cfg: SiteConfig): Promise<void> => {
+    dataStore.applySiteConfig({
+      categories: cfg.categories,
+      links: cfg.links,
+      searchConfig: cfg.searchConfig,
+    });
+    if (cfg.settings) {
+      Object.assign(settingsStore.settings, cfg.settings);
+      settingsStore.apply();
+    }
+    if (import.meta.env.DEV) {
+      try {
+        await adminApi.restoreAll(cfg);
+        showToast('已导入并保存到磁盘', 2000);
+      } catch {
+        showToast('已应用到当前会话（写盘失败）', 2000);
+      }
+    } else {
+      showToast('站点配置已应用到当前会话', 2000);
+    }
   };
 
   const onFileChange = async (e: Event): Promise<void> => {
@@ -39,13 +75,18 @@
     if (!file) return;
     try {
       const text = await file.text();
-      if (userPrefs.importData(text)) {
-        showToast('已导入偏好配置', 1500);
+      const { prefs, siteConfig } = parseImportPayload(text);
+      if (userPrefs.importData(JSON.stringify(prefs))) {
+        if (siteConfig) {
+          await applyImportedSiteConfig(siteConfig);
+        } else {
+          showToast('已导入偏好配置', 1500);
+        }
       } else {
         showToast('导入失败：文件格式不正确', 2000);
       }
     } catch {
-      showToast('导入失败：无法读取文件', 2000);
+      showToast('导入失败：文件无法解析', 2000);
     } finally {
       input.value = '';
     }

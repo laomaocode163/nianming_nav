@@ -14,6 +14,10 @@ import {
   categorySchema,
   linkSchema,
   subCategorySchema,
+  categoriesSchema,
+  linksSchema,
+  searchConfigSchema,
+  siteSettingsSchema,
   type Category,
   type Link,
   type SubCategory,
@@ -25,6 +29,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '..');
 const CATEGORIES_PATH = resolve(ROOT, 'src/config/data/categories.json');
 const LINKS_PATH = resolve(ROOT, 'src/config/data/links.json');
+const SEARCH_PATH = resolve(ROOT, 'src/config/data/search.json');
+const SETTINGS_PATH = resolve(ROOT, 'src/config/data/settings.json');
 const FAVICONS_SCRIPT = resolve(ROOT, 'scripts/fetch-favicons.mjs');
 
 const readJson = async <T>(p: string): Promise<T> => JSON.parse(await readFile(p, 'utf8')) as T;
@@ -303,6 +309,26 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
         return sendJson(res, 200, { ok: true });
       }
     }
+  }
+
+  // restore 整体写盘（导入恢复，仅本地开发可用）
+  if (path === '/api/admin/restore' && method === 'POST') {
+    const body = (await readBody(req)) as {
+      categories: Category[];
+      links: Link[];
+      searchConfig: unknown;
+      settings: unknown;
+    };
+    const categories = categoriesSchema.parse(body.categories);
+    const links = linksSchema.parse(body.links);
+    const searchConfig = searchConfigSchema.parse(body.searchConfig);
+    const settings = siteSettingsSchema.parse(body.settings);
+    validateReferentialIntegrity(categories, links);
+    await writeJson(CATEGORIES_PATH, categories);
+    await writeJson(LINKS_PATH, links);
+    await writeJson(SEARCH_PATH, searchConfig);
+    await writeJson(SETTINGS_PATH, settings);
+    return sendJson(res, 200, { ok: true });
   }
 
   // fetch-favicons

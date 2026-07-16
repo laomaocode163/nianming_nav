@@ -2,7 +2,7 @@
  * 管理后台 API 客户端（仅本地开发可用，对应 plugins/devAdminApi.ts 的 dev 中间件）。
  * 所有方法在失败时抛出带中文信息的 Error。
  */
-import type { Category, Link, SubCategory } from '@/types';
+import type { Category, Link, SiteConfig, SubCategory } from '@/types';
 
 export interface SubCategoryView extends SubCategory {
   categoryId: string;
@@ -88,4 +88,7 @@ export const adminApi = {
 
   fetchFavicons: (force = false): Promise<FetchResult> =>
     request<FetchResult>('/fetch-favicons', 'POST', { force }),
+
+  restoreAll: (config: SiteConfig): Promise<{ ok: true }> =>
+    request<{ ok: true }>('/restore', 'POST', config),
 };

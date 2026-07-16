@@ -125,6 +125,18 @@ export const useDataStore = defineStore('data', () => {
     searchConfig.value = { ...searchConfig.value, ...newConfig };
   };
 
+  /** 导入恢复：用外部传入的完整站点配置替换运行时内存数据并失效缓存 */
+  const applySiteConfig = (config: {
+    categories: Category[];
+    links: Link[];
+    searchConfig: SearchConfig;
+  }): void => {
+    categories.value = config.categories;
+    links.value = config.links;
+    searchConfig.value = config.searchConfig;
+    invalidateSiteConfigCache();
+  };
+
   return {
     ready,
     init,
@@ -137,5 +149,6 @@ export const useDataStore = defineStore('data', () => {
     visibleCategories,
     getLinkIcon,
     updateSearchConfig,
+    applySiteConfig,
   };
 });
