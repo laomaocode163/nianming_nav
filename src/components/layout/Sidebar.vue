@@ -257,10 +257,10 @@
   .sidebar {
     width: var(--sidebar-width, 240px);
     height: 100vh;
-    background: var(--glass-bg-strong);
+    background: var(--glass-bg);
     -webkit-backdrop-filter: blur(var(--glass-blur));
     backdrop-filter: blur(var(--glass-blur));
-    border-right: 1px solid var(--glass-border);
+    border-right: none;
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -271,8 +271,25 @@
       width 300ms var(--ease-out-expo),
       transform 300ms var(--ease-out-expo);
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     will-change: width, transform;
+  }
+
+  /* 柔化右侧分隔：用渐变淡入淡出替代生硬边框，使侧栏与主内容区融为一体 */
+  .sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      var(--color-border) 14%,
+      var(--color-border) 86%,
+      transparent
+    );
+    pointer-events: none;
   }
 
   .sidebar:not(.sidebar-open) {
@@ -326,7 +343,7 @@
   /* Logo Section */
   .sidebar-logo-section {
     padding: 1rem 0.75rem 1rem 1rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--glass-border);
     background: transparent;
     display: flex;
     align-items: center;

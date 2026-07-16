@@ -265,7 +265,7 @@
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
-    background: transparent;
+    background: var(--glass-bg);
     transition: margin-left 300ms var(--ease-out-expo);
   }
 
@@ -440,8 +440,8 @@
     display: flex;
     justify-content: center;
     padding: 1rem 0;
-    border-top: 1px solid var(--color-border);
-    background: var(--color-bg);
+    border-top: 1px solid var(--glass-border);
+    background: transparent;
     flex-shrink: 0;
   }
 </style>

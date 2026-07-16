@@ -255,14 +255,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f3f4f6;
+    background: var(--glass-bg-strong);
+    border: 1px solid var(--glass-border);
     border-radius: 50%;
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
   }
 
   .dark .site-icon-wrapper {
-    background: #374151;
+    background: var(--glass-bg-strong);
   }
 
   .site-card:hover .site-icon-wrapper {

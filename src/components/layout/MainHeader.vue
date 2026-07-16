@@ -303,15 +303,33 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--space-md) var(--space-lg);
-    background: var(--glass-bg-strong);
+    background: var(--glass-bg);
     -webkit-backdrop-filter: blur(var(--glass-blur));
     backdrop-filter: blur(var(--glass-blur));
-    border-bottom: 1px solid var(--glass-border);
+    border-bottom: none;
     position: sticky;
     top: 0;
     z-index: 50;
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     gap: var(--space-lg);
+  }
+
+  /* 柔化底部分隔：渐变淡入淡出替代生硬边框，与侧栏风格统一 */
+  .main-header::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--color-border) 14%,
+      var(--color-border) 86%,
+      transparent
+    );
+    pointer-events: none;
   }
 
   .header-left {
