@@ -32,21 +32,34 @@ scrape if needed) and ask which category it belongs to before writing.
 
 ### 2. Compute the next link id
 
-Run the bundled script to get a collision-free id (ids are non-sequential, so never use
-"last entry + 1"):
+Run the bundled script to get a collision-free id. Ids are allocated per **category
+segment** (each category owns a 1000-wide numeric range, e.g. `ai` → `1001..1999`,
+`dev` → `2001..2999`, …), so always pass the target `categoryId` and never use
+"last entry + 1":
 
 ```bash
-node .codebuddy/skills/add-nav-site/scripts/next_link_id.mjs
+node .codebuddy/skills/add-nav-site/scripts/next_link_id.mjs ai
 ```
 
-It prints the next id (e.g. `361`) to stdout. Use it as the new link's `id` (string).
+It prints the next id for that category segment (e.g. `1001`) to stdout. Use it as the
+new link's `id` (string). Omit the argument only for unknown/legacy categories (falls
+back to global max+1).
 
 ### 3. Edit `src/config/data/links.json`
 
-Append an object after the last entry (keep the trailing comma style already used):
+Insert the new object **right after the last existing link of the same `categoryId`
+(and same `subCategoryId` when applicable)** — links are grouped by category, not
+appended at the end. Keep the existing single-line object + trailing-comma style:
 
 ```json
 { "id": "<next_id>", "name": "站点名", "url": "https://example.com/", "categoryId": "ai", "subCategoryId": "ai-benchmark", "description": "一句话简介" }
+```
+
+If you have appended several links and the file drifted out of grouping, re-run the
+maintainer script to re-group and re-number everything by category:
+
+```bash
+node scripts/renumber-links.mjs
 ```
 
 - `subCategoryId` is optional (omit for top-level-only categories like 常用推荐).

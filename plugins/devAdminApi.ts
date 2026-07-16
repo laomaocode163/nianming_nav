@@ -19,6 +19,7 @@ import {
   type SubCategory,
 } from '../src/config/schema';
 import { validateReferentialIntegrity } from '../src/config/loadConfig';
+import { nextLinkId } from '../src/config/linkId';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(here, '..');
@@ -67,15 +68,6 @@ const flattenSubs = (
   categories.flatMap((c) =>
     (c.subCategories ?? []).map((s) => ({ categoryId: c.id, categoryName: c.name, ...s }))
   );
-
-const nextLinkId = (links: Link[]): string => {
-  let max = 0;
-  for (const l of links) {
-    const n = Number(l.id);
-    if (!Number.isNaN(n) && n > max) max = n;
-  }
-  return String(max + 1);
-};
 
 class HttpError extends Error {
   constructor(
@@ -203,14 +195,31 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
   // links
   if (path === '/api/admin/links' && method === 'POST') {
     const links = await readJson<Link[]>(LINKS_PATH);
+    const categories = await readJson<Category[]>(CATEGORIES_PATH);
     const body = (await readBody(req)) as Link;
-    const next: Link = body.id ? body : { ...body, id: nextLinkId(links) };
+    const next: Link = body.id
+      ? body
+      : { ...body, id: nextLinkId(links, body.categoryId, categories) };
     const link = linkSchema.parse(next);
     if (links.some((l) => l.id === link.id)) {
       throw new HttpError(409, `链接 ID「${link.id}」已存在`);
     }
-    links.push(link);
-    const categories = await readJson<Category[]>(CATEGORIES_PATH);
+    // 插入到「同分类且同二级分类」的末尾；若无可回退到同分类块末尾；
+    // 都没有则追加到末尾。保持 links.json 按分类聚合、段内 id 自增。
+    const sameSubLast = links.reduce(
+      (acc, l, i) =>
+        l.categoryId === link.categoryId && (l.subCategoryId ?? '') === (link.subCategoryId ?? '')
+          ? i
+          : acc,
+      -1
+    );
+    const sameCatLast = links.reduce(
+      (acc, l, i) => (l.categoryId === link.categoryId ? i : acc),
+      -1
+    );
+    const insertIdx =
+      sameSubLast >= 0 ? sameSubLast + 1 : sameCatLast >= 0 ? sameCatLast + 1 : links.length;
+    links.splice(insertIdx, 0, link);
     validateReferentialIntegrity(categories, links);
     await writeJson(LINKS_PATH, links);
     return sendJson(res, 201, link);

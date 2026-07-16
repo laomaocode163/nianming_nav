@@ -10,7 +10,7 @@ JSON array of link objects.
 
 | Field           | Type     | Required | Notes                                                        |
 | --------------- | -------- | -------- | ------------------------------------------------------------ |
-| `id`            | string   | yes      | Globally unique. Numeric string, e.g. `"361"`.               |
+| `id`            | string   | yes      | Globally unique. Numeric string allocated per **category segment** (each category owns a 1000-wide range: `ai`→`1001..1999`, `dev`→`2001..2999`, …). Compute it via `scripts/next_link_id.mjs <categoryId>` — never hand-increment. |
 | `name`          | string   | yes      | Display name.                                                |
 | `url`           | string   | yes      | Full URL including scheme.                                   |
 | `categoryId`    | string   | yes      | Must exist as a category `id` in `categories.json`.           |
@@ -21,7 +21,7 @@ JSON array of link objects.
 Example:
 
 ```json
-{ "id": "361", "name": "Example", "url": "https://example.com/", "categoryId": "ai", "subCategoryId": "ai-benchmark", "description": "示例站点" }
+{ "id": "1001", "name": "Example", "url": "https://example.com/", "categoryId": "ai", "subCategoryId": "ai-benchmark", "description": "示例站点" }
 ```
 
 ## categories.json

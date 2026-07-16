@@ -3,6 +3,7 @@
   import { useAdminStore } from '../../stores/admin';
   import { showToast } from '../../composables/useToast';
   import { linkSchema } from '../../config/schema';
+  import { nextLinkId } from '../../config/linkId';
   import type { Category, Link, SubCategory } from '../../types';
   import { Link as LinkIcon, ChevronRight } from 'lucide-vue-next';
   import '../../components/admin/admin.css';
@@ -91,6 +92,11 @@
 
   const form = reactive(emptyForm());
 
+  // 新增时按当前所选分类自动建议的段位 id（用户可手动覆盖）
+  let suggestedId = '';
+  const computeSuggestedId = (): string =>
+    nextLinkId(adminStore.links, form.categoryId, adminStore.categories);
+
   const subOptions = computed(() => {
     const cat = adminStore.categories.find((c) => c.id === form.categoryId);
     return cat?.subCategories ?? [];
@@ -107,6 +113,8 @@
 
   const openCreate = (): void => {
     Object.assign(form, emptyForm());
+    suggestedId = computeSuggestedId();
+    form.id = suggestedId;
     editingId.value = null;
     showForm.value = true;
   };
@@ -115,6 +123,8 @@
     Object.assign(form, emptyForm());
     form.categoryId = categoryId;
     form.subCategoryId = subId ?? '';
+    suggestedId = computeSuggestedId();
+    form.id = suggestedId;
     editingId.value = null;
     showForm.value = true;
   };
@@ -130,6 +140,7 @@
       pinned: link.pinned ?? false,
       hidden: link.hidden ?? false,
     });
+    suggestedId = '';
     editingId.value = link.id;
     showForm.value = true;
   };
@@ -140,14 +151,18 @@
 
   const onCategoryChange = (): void => {
     form.subCategoryId = '';
+    // 若 id 仍是用之前分类自动建议的（用户未手改），则刷新为新分类的建议值
+    if (!form.id.trim() || form.id === suggestedId) {
+      suggestedId = computeSuggestedId();
+      form.id = suggestedId;
+    }
   };
 
   const isValidUrl = (url: string): boolean => /^https?:\/\/.+/i.test(url.trim());
 
   const save = async (): Promise<void> => {
     if (!editingId.value && !form.id.trim()) {
-      showToast('请填写链接 ID（英文 slug）');
-      return;
+      form.id = computeSuggestedId();
     }
     const link: Link = {
       id: (editingId.value ?? form.id.trim()) as string,
