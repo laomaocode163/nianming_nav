@@ -108,8 +108,10 @@
     height: 34px;
     padding: 0 0.5rem;
     border-radius: 8px;
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
     color: var(--color-text-secondary);
     font-size: 0.875rem;
     cursor: pointer;
@@ -149,8 +151,10 @@
     height: 34px;
     padding: 0 0.5rem;
     border-radius: 8px;
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
     color: var(--color-text);
     font-size: 0.875rem;
     text-align: center;

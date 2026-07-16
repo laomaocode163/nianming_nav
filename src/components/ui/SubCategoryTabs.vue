@@ -132,8 +132,10 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    border: 1px solid var(--color-border);
-    background: var(--color-card);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
     color: var(--color-text-secondary);
     cursor: pointer;
     box-shadow: var(--shadow-sm);
@@ -189,8 +191,10 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     border-radius: 20px;
-    border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
     color: var(--color-text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -224,13 +228,9 @@
 
   /* “全部”汇总项：与二级标签作视觉区分 */
   .tab-item--all {
-    background: hsl(var(--hue-primary), 12%, 97%);
+    background: var(--glass-bg-strong);
     border-style: dashed;
     font-weight: 600;
-  }
-
-  .dark .tab-item--all {
-    background: hsl(var(--hue-primary), 20%, 16%);
   }
 
   .tab-item--all.active {

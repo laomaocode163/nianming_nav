@@ -257,8 +257,10 @@
   .sidebar {
     width: var(--sidebar-width, 240px);
     height: 100vh;
-    background: var(--color-card);
-    border-right: 1px solid var(--color-border);
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border-right: 1px solid var(--glass-border);
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -624,15 +626,13 @@
   }
 
   .sidebar-collapsed .nav-item.active {
-    background: var(--gradient-primary) !important;
-    color: #fff !important;
-    box-shadow:
-      inset 3px 0 0 var(--color-primary),
-      var(--shadow-glow) !important;
+    background: transparent !important;
+    color: var(--color-primary) !important;
+    box-shadow: var(--shadow-glow) !important;
   }
 
   .sidebar-collapsed .nav-item.active .nav-icon {
-    color: #fff !important;
+    color: var(--color-primary) !important;
   }
 
   .sidebar-collapsed .nav-item:active {
@@ -653,13 +653,8 @@
   }
 
   .nav-item.active {
-    background: hsl(var(--hue-primary), 15%, 96%) !important;
     color: var(--color-primary) !important;
     font-weight: 600;
-  }
-
-  .dark .nav-item.active {
-    background: hsl(var(--hue-primary), 25%, 20%) !important;
   }
 
   .nav-item:active {
@@ -903,39 +898,36 @@
   }
 
   .sub-item:hover {
-    background: hsl(var(--hue-primary), 10%, 96%);
+    background: var(--glass-bg);
     color: var(--color-primary);
   }
 
-  .dark .sub-item:hover {
-    background: hsl(var(--hue-primary), 20%, 18%);
-  }
-
   .sub-item.active {
-    background: hsl(var(--hue-primary), 15%, 96%);
     color: var(--color-primary);
     font-weight: 600;
   }
 
-  .dark .sub-item.active {
-    background: hsl(var(--hue-primary), 25%, 20%);
+  .sub-item.active::before {
+    background: var(--glass-border);
   }
 
+  /* 命中态保留分类树边框线上的蓝色小圆点作为指示，外圈描边与玻璃侧边栏底色协调 */
   .sub-item.active::after {
     content: '';
     position: absolute;
     left: -1.25rem;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: var(--color-primary);
-    box-shadow: 0 0 0 3px hsl(var(--hue-primary), 15%, 96%);
+    box-shadow: 0 0 0 3px var(--color-bg);
+    z-index: 1;
   }
 
   .dark .sub-item.active::after {
-    box-shadow: 0 0 0 3px hsl(var(--hue-primary), 25%, 20%);
+    box-shadow: 0 0 0 3px #1e293b;
   }
 
   .sub-icon {

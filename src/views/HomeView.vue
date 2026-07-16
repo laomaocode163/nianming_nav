@@ -265,7 +265,7 @@
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
-    background: var(--color-bg);
+    background: transparent;
     transition: margin-left 300ms var(--ease-out-expo);
   }
 
@@ -296,29 +296,40 @@
     gap: 0.75rem;
     padding: 1.25rem 1.5rem 1rem;
     margin-bottom: 1rem;
-    border-bottom: 2px solid var(--color-border);
+    background: transparent;
+    border: none;
   }
 
   .category-title {
-    font-size: 1.125rem;
-    font-weight: 700;
+    font-size: 1.25rem;
+    font-weight: 800;
     color: var(--color-text);
     margin: 0;
     line-height: 1.2;
+    letter-spacing: -0.02em;
+    position: relative;
+    padding-left: 0.875rem;
+  }
+
+  /* 标题左侧渐变 accent 条，呼应玻璃主题 */
+  .category-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 1.1em;
+    border-radius: 2px;
+    background: var(--gradient-primary);
   }
 
   .site-count {
     font-size: 0.875rem;
     color: var(--color-text-secondary);
-    padding: 0.25rem 0.75rem;
-    background: #f3f4f6;
-    border-radius: 20px;
+    margin-left: auto;
     font-weight: 500;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  }
-
-  .dark .site-count {
-    background: #374151;
+    white-space: nowrap;
   }
 
   .sites-grid {
@@ -355,9 +366,10 @@
   .sidebar-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(15, 23, 42, 0.4);
     z-index: 90;
-    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
   }
 
   /* Staggered animation for site cards */

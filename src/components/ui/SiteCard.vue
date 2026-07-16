@@ -206,42 +206,41 @@
     align-items: center;
     gap: var(--space-md);
     padding: 1.25rem 1.5rem;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 12px;
     text-decoration: none;
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
     user-select: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    box-shadow: var(--glass-shadow);
     min-height: 80px;
   }
 
   .dark .site-card {
-    background: #1f2937;
-    border-color: #374151;
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
   }
 
   .site-card:hover {
-    border-color: rgba(59, 130, 246, 0.3);
-    transform: translateY(-2px);
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-3px);
+    background: var(--glass-bg-strong);
     box-shadow:
-      0 4px 12px rgba(0, 0, 0, 0.08),
-      0 0 0 1px rgba(59, 130, 246, 0.1);
-    background: linear-gradient(
-      180deg,
-      var(--color-card) 0%,
-      hsl(var(--hue-primary), 30%, 98%) 100%
-    );
+      0 12px 40px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 0 0 1px rgba(59, 130, 246, 0.15);
   }
 
   .dark .site-card:hover {
-    background: linear-gradient(
-      180deg,
-      var(--color-card) 0%,
-      hsl(var(--hue-primary), 25%, 18%) 100%
-    );
+    background: var(--glass-bg-strong);
+    border-color: rgba(96, 165, 250, 0.4);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
   .site-card:active {

@@ -303,8 +303,10 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--space-md) var(--space-lg);
-    background: var(--color-card);
-    border-bottom: 1px solid var(--color-border);
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border-bottom: 1px solid var(--glass-border);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -383,7 +385,7 @@
     height: var(--header-module-h);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    background: var(--color-card);
+    background: transparent;
     cursor: pointer;
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -413,7 +415,7 @@
     height: var(--header-module-h);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    background: var(--color-card);
+    background: transparent;
     cursor: pointer;
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -443,7 +445,7 @@
     height: var(--header-module-h);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    background: var(--color-card);
+    background: transparent;
     cursor: pointer;
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -494,8 +496,8 @@
     display: flex;
     align-items: center;
     gap: 0;
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     padding: 0 0.5rem;
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -562,8 +564,10 @@
     z-index: 60;
     min-width: 12rem;
     padding: 0.375rem;
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     display: flex;

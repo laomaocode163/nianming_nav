@@ -64,6 +64,21 @@
   --transition-fast: 150ms var(--ease-out-expo);
   --transition-normal: 300ms var(--ease-out-expo);
   --transition-slow: 500ms var(--ease-out-expo);
+
+  /* 玻璃拟态（Glassmorphism） */
+  --glass-blur: 16px;
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-shadow:
+    0 8px 32px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+
+  /* 背景弥散光斑（aurora blobs），由主题 hue 生成，随明暗模式切换 */
+  --blob-1: hsl(var(--hue-primary), 62%, 68%);
+  --blob-2: hsl(var(--hue-secondary), 58%, 62%);
+  --blob-3: #a78bfa;
+  --blob-opacity: 0.28;
 }
 
 .dark {
@@ -79,6 +94,20 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.2);
   --shadow-glow: 0 0 25px hsl(var(--hue-primary), var(--sat-primary), var(--lig-primary), 0.25);
+
+  /* 玻璃拟态（暗色） */
+  --glass-bg: rgba(30, 41, 59, 0.45);
+  --glass-bg-strong: rgba(30, 41, 59, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* 背景弥散光斑（暗色更饱和、更亮，营造极光感） */
+  --blob-1: hsl(var(--hue-primary), 68%, 60%);
+  --blob-2: hsl(var(--hue-secondary), 62%, 55%);
+  --blob-3: #b06bf5;
+  --blob-opacity: 0.24;
 }
 
 * {

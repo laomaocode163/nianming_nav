@@ -38,6 +38,11 @@
 
 <template>
   <div class="app-container">
+    <div class="app-bg" aria-hidden="true">
+      <span class="app-bg__blob app-bg__blob--1"></span>
+      <span class="app-bg__blob app-bg__blob--2"></span>
+      <span class="app-bg__blob app-bg__blob--3"></span>
+    </div>
     <router-view />
   </div>
   <ToastHost />
@@ -58,7 +63,7 @@
 <style scoped>
   .app-container {
     min-height: 100vh;
-    background-color: var(--color-bg);
+    background-color: transparent;
     background-image: var(--app-bg-image, none);
     background-size: cover;
     background-position: center;
@@ -68,6 +73,86 @@
     transition:
       background-color 0.3s ease,
       color 0.3s ease;
+  }
+
+  /* 弥散光斑背景层：固定全屏、置于内容之下，为玻璃拟态提供可透出的色彩 */
+  .app-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .app-bg__blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(95px);
+    opacity: var(--blob-opacity);
+    will-change: transform;
+  }
+
+  .app-bg__blob--1 {
+    width: 36vw;
+    height: 36vw;
+    background: var(--blob-1);
+    top: -14%;
+    left: -10%;
+    animation: blobFloat1 24s ease-in-out infinite;
+  }
+
+  .app-bg__blob--2 {
+    width: 32vw;
+    height: 32vw;
+    background: var(--blob-2);
+    bottom: -16%;
+    right: -12%;
+    animation: blobFloat2 28s ease-in-out infinite;
+  }
+
+  .app-bg__blob--3 {
+    width: 27vw;
+    height: 27vw;
+    background: var(--blob-3);
+    top: 28%;
+    left: 42%;
+    animation: blobFloat3 32s ease-in-out infinite;
+  }
+
+  @keyframes blobFloat1 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(10%, 12%) scale(1.12);
+    }
+  }
+
+  @keyframes blobFloat2 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-12%, -8%) scale(1.1);
+    }
+  }
+
+  @keyframes blobFloat3 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-8%, 10%) scale(1.15);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .app-bg__blob {
+      animation: none;
+    }
   }
 
   .app-splash {
