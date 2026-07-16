@@ -108,3 +108,7 @@ Strict `vue-tsc --noEmit`. Fix any referential-integrity or type errors before r
 - [ ] New icons registered in `CategoryIcon.vue` (or reused an existing name).
 - [ ] `npm run fetch-favicons` ran.
 - [ ] `npm run typecheck` passed.
+
+## Related
+
+- **`renumber-links`** skill — 当 `links.json` 经过多次手动编辑后分组错乱、id 跨分类异常，或你需要统一重排/重编号时，用它一键规整（按分类段位聚合、段内自增）。新增单条站点仍用本 skill 的 `next_link_id.mjs`。
