@@ -3,6 +3,7 @@ import {
   getFaviconUrl,
   getFaviconFallbacks,
   getCachedFavicon,
+  cacheFavicon,
   cacheBrokenFavicon,
   validateAndCacheFavicon,
   prefetchUncachedFavicons,
@@ -67,7 +68,7 @@ describe('faviconService (runtime fallback chain)', () => {
     expect(getCachedFavicon('ok.com')).toBe('https://icons.duckduckgo.com/ip3/ok.com.ico');
   });
 
-  it('prefetches only uncached domains during idle time', () => {
+  it('prefetches only uncached domains during idle time', async () => {
     const instances: { src: string }[] = [];
     const ImageStub = class {
       src = '';
@@ -82,9 +83,15 @@ describe('faviconService (runtime fallback chain)', () => {
     );
 
     try {
-      prefetchUncachedFavicons(['fresh-a.com', 'fresh-b.com']);
-      expect(instances.length).toBe(2);
-      expect(instances[0].src).toBe(getFaviconUrl('fresh-a.com'));
+      // 缓存命中域名不应触发任何图标请求
+      cacheFavicon('cached.com', getFaviconUrl('cached.com'));
+      prefetchUncachedFavicons(['cached.com', 'fresh-a.com', 'fresh-b.com']);
+      // requestFavicon 为异步调度，等待微任务刷新以创建 Image 实例
+      await new Promise((r) => setTimeout(r, 0));
+      // 缓存命中域名不应产生任何 Image 请求
+      expect(instances.some((i) => i.src === getFaviconUrl('cached.com'))).toBe(false);
+      // 未缓存域名应触发图标请求（每个域名至少尝试主源）
+      expect(instances.length).toBeGreaterThanOrEqual(2);
     } finally {
       vi.unstubAllGlobals();
     }

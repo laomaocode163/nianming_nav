@@ -67,7 +67,10 @@
 
   /* 玻璃拟态（Glassmorphism） */
   --glass-blur: 16px;
-  --glass-bg: rgba(255, 255, 255, 0.55);
+  /* 常态静态底色：去 backdrop-filter 时仍保持可读的较高不透明度纯色，
+     仅在 hover/聚焦时启用模糊（见各组件 scoped 样式），降低持续合成开销 */
+  --glass-bg: rgba(255, 255, 255, 0.82);
+  --glass-bg-static: rgba(255, 255, 255, 0.82);
   --glass-bg-strong: rgba(255, 255, 255, 0.72);
   --glass-border: rgba(255, 255, 255, 0.6);
   --glass-shadow:
@@ -79,6 +82,8 @@
   --blob-2: hsl(var(--hue-secondary), 58%, 62%);
   --blob-3: #a78bfa;
   --blob-opacity: 0.28;
+  /* 弥散光斑模糊半径：适度收敛以减少每帧重采样开销（配合 visibilitychange 暂停动画） */
+  --blob-blur: 80px;
 }
 
 .dark {
@@ -96,7 +101,8 @@
   --shadow-glow: 0 0 25px hsl(var(--hue-primary), var(--sat-primary), var(--lig-primary), 0.25);
 
   /* 玻璃拟态（暗色） */
-  --glass-bg: rgba(30, 41, 59, 0.45);
+  --glass-bg: rgba(30, 41, 59, 0.78);
+  --glass-bg-static: rgba(30, 41, 59, 0.78);
   --glass-bg-strong: rgba(30, 41, 59, 0.62);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-shadow:
@@ -162,4 +168,16 @@ body {
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(20px);
+}
+
+/* 触摸设备（无 hover / 粗指针）直接禁用 backdrop-filter：避免移动端 GPU 持续合成模糊层，
+   改用纯色玻璃底色（--glass-bg-static）保证可读性。覆盖各组件 scoped 样式中的模糊声明。 */
+@media (hover: none) and (pointer: coarse) {
+  .site-card,
+  .sidebar,
+  .main-header,
+  .sidebar-overlay {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
 }

@@ -5,9 +5,10 @@
   import { getDefaultIcon } from '../../utils/constants';
   import {
     extractDomain,
-    getFaviconFallbacks,
+    getFaviconUrl,
+    isFaviconCached,
+    requestFavicon,
     validateAndCacheFavicon,
-    cacheBrokenFavicon,
   } from '../../services/faviconService';
   import { safeUrl } from '../../utils/url';
   import { showToast } from '../../composables/useToast';
@@ -27,19 +28,32 @@
   const dataStore = useDataStore();
   const userPrefs = useUserPrefsStore();
   const isCopied = ref(false);
-  const failedIndex = ref(-1);
   const iconLoaded = ref(false);
-  const nameRef = ref<HTMLElement | null>(null);
-  const isNameTruncated = ref(false);
+  // 图标地址由统一调度器解析（缓存命中同步、未命中异步竞速）
+  const iconUrl = ref('');
 
-  onMounted(() => {
-    if (nameRef.value) {
-      isNameTruncated.value = nameRef.value.scrollWidth > nameRef.value.clientWidth;
+  onMounted(async () => {
+    const domain = extractDomain(props.site.url);
+    if (!domain) {
+      iconUrl.value = getDefaultIcon();
+      iconLoaded.value = true;
+      return;
+    }
+    // 同步首屏：命中缓存直接显示；未命中先给主源占位，再由调度器竞速验证最终可用图标
+    if (isFaviconCached(domain)) {
+      iconUrl.value = dataStore.getLinkIcon(props.site);
+    } else {
+      iconUrl.value = getFaviconUrl(domain);
+      try {
+        iconUrl.value = await requestFavicon(domain);
+      } catch {
+        iconUrl.value = getDefaultIcon();
+      }
     }
   });
 
   const siteIcon = computed(() => {
-    return dataStore.getLinkIcon(props.site);
+    return iconUrl.value || dataStore.getLinkIcon(props.site);
   });
 
   const isFav = computed(() => userPrefs.isFavorite(props.site.url));
@@ -64,25 +78,15 @@
     const img = event.target as HTMLImageElement;
     const domain = extractDomain(props.site.url);
     if (domain) {
+      // 兜底校验尺寸并写入缓存（调度器通常已验证，此处幂等）
       validateAndCacheFavicon(domain, img);
     }
   };
 
-  const onIconError = (event: Event) => {
-    const img = event.target as HTMLImageElement;
-    const domain = extractDomain(props.site.url);
-    const fallbacks = getFaviconFallbacks(domain);
-    const next = failedIndex.value + 1;
-    if (next < fallbacks.length) {
-      failedIndex.value = next;
-      img.src = fallbacks[next];
-    } else {
-      // 主源与所有 fallback 均失败：标记占位图，避免后续重渲染重复请求
-      cacheBrokenFavicon(domain);
-      img.src = getDefaultIcon();
-      img.onerror = null;
-      iconLoaded.value = true;
-    }
+  // 图标加载失败（通常为瞬时主源错误）：仅标记已加载，交由调度器解析的可用地址覆盖，
+  // 不再在此做顺序回退链（回退由 faviconService 统一调度处理）。
+  const onIconError = () => {
+    iconLoaded.value = true;
   };
 
   /** 复制网站链接到剪贴板，降级兼容不支持 Clipboard API 的环境 */
@@ -123,6 +127,7 @@
         :class="{ loaded: iconLoaded }"
         loading="lazy"
         decoding="async"
+        fetchpriority="low"
         @load="onIconLoad"
         @error="onIconError"
       />
@@ -130,7 +135,7 @@
 
     <div class="site-info">
       <div class="site-name-row">
-        <span ref="nameRef" class="site-name" :title="isNameTruncated ? site.name : undefined"
+        <span class="site-name" :title="site.name"
           ><template v-for="(part, i) in nameParts" :key="i"
             ><mark v-if="part.match">{{ part.text }}</mark
             ><template v-else>{{ part.text }}</template></template
@@ -211,7 +216,8 @@
     align-items: center;
     gap: var(--space-md);
     padding: 1.25rem 1.5rem;
-    background: var(--glass-bg);
+    /* 常态使用较高不透明度的纯色玻璃底色，避免对每张卡片持续做 backdrop-filter 模糊合成 */
+    background: var(--glass-bg-static);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
     text-decoration: none;
@@ -219,15 +225,24 @@
     position: relative;
     overflow: hidden;
     user-select: none;
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
     box-shadow: var(--glass-shadow);
+    /* 隔离单卡重绘/布局范围，避免 hover 触发整页合成 */
+    contain: layout style paint;
     min-height: 80px;
   }
 
   .dark .site-card {
-    background: var(--glass-bg);
+    background: var(--glass-bg-static);
     border-color: var(--glass-border);
+  }
+
+  /* 仅在 hover/聚焦态启用模糊玻璃质感，交互时才有景深，常态零模糊合成开销 */
+  @media (hover: hover) and (pointer: fine) {
+    .site-card:hover,
+    .site-card:focus-within {
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      backdrop-filter: blur(var(--glass-blur));
+    }
   }
 
   .site-card:hover {

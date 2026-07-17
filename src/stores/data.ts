@@ -144,6 +144,7 @@ export const useDataStore = defineStore('data', () => {
     links,
     categories,
     searchConfig,
+    visibleLinks,
     getLinksByCategory,
     getSubCategories,
     visibleCategories,

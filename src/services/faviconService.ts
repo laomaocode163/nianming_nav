@@ -24,6 +24,11 @@ const CACHE_TTL = 30 * 24 * 60 * 60 * 1000; // 30 天
 const CACHE_MAX_SIZE = 200;
 const SAVE_DEBOUNCE_MS = 500;
 
+// 图标请求调度参数
+const REQUEST_TIMEOUT_MS = 3500; // 单源超时（AbortController / 计时器）
+const MAX_CONCURRENCY = 8; // 全局并发信号量上限，避免首屏图标请求洪峰
+const MEMORY_CACHE_MAX = 300; // 内存缓存 LRU 上限，防止长会话无限增长
+
 const memoryCache = new Map<string, string>();
 
 // 持久化缓存仅在首次访问时解析一次，避免每次 getCachedFavicon 都 JSON.parse 整库。
@@ -31,6 +36,9 @@ const memoryCache = new Map<string, string>();
 // 无需每次写入都对全量缓存排序（原 Object.entries().sort() 在接近上限时开销明显）。
 let persistentStore: Map<string, CacheEntry> | null = null;
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
+// 增量落盘：记录脏域名，落盘时仅序列化变更条目，避免每次全量序列化整库
+let dirtyDomains: Set<string> | null = null;
+let fullFlushNeeded = false;
 
 const loadPersistentCache = (): Map<string, CacheEntry> => {
   if (persistentStore) return persistentStore;
@@ -49,14 +57,43 @@ const flushPersistentCache = (): void => {
   saveTimer = null;
   if (!persistentStore) return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(Object.fromEntries(persistentStore)));
+    let toWrite: Record<string, CacheEntry>;
+    if (fullFlushNeeded || dirtyDomains === null) {
+      // 淘汰等结构性变更：全量写回
+      toWrite = Object.fromEntries(persistentStore);
+      fullFlushNeeded = false;
+      dirtyDomains = new Set();
+    } else if (dirtyDomains.size > 0) {
+      // 增量写回：仅合并脏条目到磁盘当前值，避免序列化全部 200 条
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const base = raw ? (JSON.parse(raw) as Record<string, CacheEntry>) : {};
+      for (const domain of dirtyDomains) {
+        const entry = persistentStore.get(domain);
+        if (entry) base[domain] = entry;
+        else delete base[domain];
+      }
+      toWrite = base;
+      dirtyDomains.clear();
+    } else {
+      return; // 无变更，跳过写盘
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toWrite));
   } catch {
     /* 隐私模式或配额超限时忽略 */
   }
 };
 
 // 合并多次写入：仅标记脏并延迟落盘，避免首屏每张图标都全量序列化整库
-const scheduleSave = (): void => {
+const markDirty = (domain: string): void => {
+  if (!dirtyDomains) dirtyDomains = new Set();
+  dirtyDomains.add(domain);
+};
+
+const scheduleSave = (full = false): void => {
+  if (full) {
+    fullFlushNeeded = true;
+    dirtyDomains = null;
+  }
   if (saveTimer) return;
   saveTimer = setTimeout(flushPersistentCache, SAVE_DEBOUNCE_MS);
 };
@@ -72,6 +109,8 @@ const evictIfNeeded = (map: Map<string, CacheEntry>): void => {
     memoryCache.delete(domain);
     removed++;
   }
+  // 结构性淘汰改变了整库，需全量写回
+  fullFlushNeeded = true;
 };
 
 // 写入缓存：先 delete 再 set，使该域名移动到 Map 末尾（标记为最近使用），配合 evictIfNeeded 实现近似 LRU
@@ -79,6 +118,18 @@ const touch = (map: Map<string, CacheEntry>, domain: string, entry: CacheEntry):
   map.delete(domain);
   map.set(domain, entry);
   evictIfNeeded(map);
+};
+
+// 内存缓存 LRU 上限：超出时按插入顺序淘汰最旧条目，防止长会话无限增长
+const evictMemoryIfNeeded = (): void => {
+  if (memoryCache.size <= MEMORY_CACHE_MAX) return;
+  const excess = memoryCache.size - MEMORY_CACHE_MAX;
+  let removed = 0;
+  for (const domain of memoryCache.keys()) {
+    if (removed >= excess) break;
+    memoryCache.delete(domain);
+    removed++;
+  }
 };
 
 export const extractDomain = (url: string): string => {
@@ -135,9 +186,18 @@ export const getCachedFavicon = (domain: string): string => {
   const entry = store.get(domain);
   if (entry && Date.now() - entry.ts < CACHE_TTL) {
     memoryCache.set(domain, entry.url);
+    evictMemoryIfNeeded();
     return entry.url;
   }
   return getFaviconUrl(domain);
+};
+
+/** 判断某域名是否已命中有效缓存（内存或持久化，未过期） */
+export const isFaviconCached = (domain: string): boolean => {
+  if (!domain) return false;
+  if (memoryCache.has(domain)) return true;
+  const entry = loadPersistentCache().get(domain);
+  return !!(entry && Date.now() - entry.ts < CACHE_TTL);
 };
 
 /**
@@ -147,8 +207,10 @@ export const cacheBrokenFavicon = (domain: string): void => {
   if (!domain) return;
   const placeholder = getDefaultIcon();
   memoryCache.set(domain, placeholder);
+  evictMemoryIfNeeded();
   const store = loadPersistentCache();
   touch(store, domain, { url: placeholder, ts: Date.now() });
+  markDirty(domain);
   scheduleSave();
 };
 
@@ -163,8 +225,10 @@ const isPlaceholder = (url: string): boolean => {
 export const cacheFavicon = (domain: string, url: string): void => {
   if (!domain || isPlaceholder(url)) return;
   memoryCache.set(domain, url);
+  evictMemoryIfNeeded();
   const store = loadPersistentCache();
   touch(store, domain, { url, ts: Date.now() });
+  markDirty(domain);
   scheduleSave();
 };
 
@@ -179,9 +243,136 @@ export const validateAndCacheFavicon = (domain: string, img: HTMLImageElement): 
   cacheFavicon(domain, img.src);
 };
 
+/* ------------------------------------------------------------------ *
+ * 统一图标请求调度器
+ * - 并发信号量（MAX_CONCURRENCY）限制同时在飞的图标请求，避免首屏洪峰
+ * - 单源超时（REQUEST_TIMEOUT_MS），失败即放弃该源
+ * - 主源 + 首个聚合器并行竞速（Promise.any），命中即停，避免 5 个 provider 顺序串行
+ * - 同域名请求去重（inFlight）：卡片 <img> 与空闲预取共享，杜绝重复请求
+ * ------------------------------------------------------------------ */
+
+let activeRequests = 0;
+const requestQueue: Array<() => void> = [];
+
+const acquireSlot = (): Promise<void> => {
+  if (activeRequests < MAX_CONCURRENCY) {
+    activeRequests++;
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => requestQueue.push(resolve));
+};
+
+const releaseSlot = (): void => {
+  activeRequests--;
+  const next = requestQueue.shift();
+  if (next) {
+    activeRequests++;
+    next();
+  }
+};
+
+/** 加载单个图标地址，超时则拒绝；校验尺寸，排除 1x1 占位图 */
+const loadCandidate = (url: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const timer = setTimeout(() => {
+      img.src = '';
+      reject(new Error('timeout'));
+    }, REQUEST_TIMEOUT_MS);
+    img.onload = () => {
+      clearTimeout(timer);
+      if (img.naturalWidth <= 1 || img.naturalHeight <= 1) {
+        reject(new Error('invalid-size'));
+        return;
+      }
+      resolve(url);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      reject(new Error('error'));
+    };
+    img.src = url;
+  });
+};
+
+/** 对一组候选地址竞速，返回首个成功加载的 URL（全部失败则 reject）。
+ * 使用自定义竞速以兼容 ES2020 运行时（避免依赖 Promise.any）。 */
+const raceCandidates = (candidates: string[]): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    if (candidates.length === 0) {
+      reject(new Error('no-candidates'));
+      return;
+    }
+    let pending = candidates.length;
+    let settled = false;
+    for (const url of candidates) {
+      loadCandidate(url)
+        .then((u) => {
+          if (!settled) {
+            settled = true;
+            resolve(u);
+          }
+        })
+        .catch(() => {
+          pending--;
+          if (!settled && pending === 0) reject(new Error('all-failed'));
+        });
+    }
+  });
+};
+
+const inFlight = new Map<string, Promise<string>>();
+
+/**
+ * 解析某域名最终可用的图标地址：
+ * 1. 命中缓存立即返回；2. 否则并发竞速主源 + 聚合器（带超时与全局并发上限）；
+ * 3. 全部失败标记坏链并返回占位图。同一域名并发请求自动去重。
+ */
+export const requestFavicon = (domain: string): Promise<string> => {
+  if (!domain) return Promise.resolve(getDefaultIcon());
+  // 缓存命中（内存或持久化）同步返回，无需网络
+  if (isFaviconCached(domain)) {
+    return Promise.resolve(getCachedFavicon(domain));
+  }
+  // 去重：同一域名已在解析中则复用同一 Promise
+  const existing = inFlight.get(domain);
+  if (existing) return existing;
+
+  const promise = (async (): Promise<string> => {
+    await acquireSlot();
+    try {
+      const primary = getFaviconUrl(domain);
+      const fallbacks = getFaviconFallbacks(domain);
+      // 阶段一：主源 + 首个聚合器并行竞速
+      try {
+        const winner = await raceCandidates([primary, fallbacks[0]]);
+        cacheFavicon(domain, winner);
+        return winner;
+      } catch {
+        // 阶段二：剩余聚合器并行竞速
+        try {
+          const winner = await raceCandidates(fallbacks.slice(1));
+          cacheFavicon(domain, winner);
+          return winner;
+        } catch {
+          cacheBrokenFavicon(domain);
+          return getDefaultIcon();
+        }
+      }
+    } finally {
+      inFlight.delete(domain);
+      releaseSlot();
+    }
+  })();
+
+  inFlight.set(domain, promise);
+  return promise;
+};
+
 /**
  * 空闲预取未缓存的域名图标：利用 requestIdleCallback 在浏览器空闲时触发加载，
  * 将图标预热到浏览器 HTTP 缓存，避免首屏请求瀑布。
+ * 复用统一调度器（requestFavicon），与卡片加载共享去重与并发控制。
  * 传入需预取的域名列表，自动跳过已缓存的域名。
  */
 export const prefetchUncachedFavicons = (domains: string[]): void => {
@@ -197,14 +388,12 @@ export const prefetchUncachedFavicons = (domains: string[]): void => {
 
   let idx = 0;
   const prefetchNext = (deadline: IdleDeadline) => {
-    // 每个空闲周期预取最多 5 个图标，避免阻塞交互
+    // 每个空闲周期预取最多 5 个域名，避免阻塞交互
     let count = 0;
     while (idx < uncached.length && count < 5 && deadline.timeRemaining() > 1) {
       const domain = uncached[idx];
-      const url = getFaviconUrl(domain);
-      // 使用 detached <img> 触发浏览器预加载，不写入 DOM
-      const img = new Image();
-      img.src = url;
+      // 交给统一调度器：与卡片加载共享去重与并发控制
+      void requestFavicon(domain).catch(() => {});
       idx++;
       count++;
     }

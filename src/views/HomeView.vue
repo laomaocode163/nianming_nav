@@ -49,17 +49,28 @@
     return subCategories.value.length > 0;
   });
 
-  // 每个二级分类下的链接数量，用于标签栏计数徽标
+  // 每个二级分类下的链接数量，用于标签栏计数徽标。
+  // 单趟遍历 visibleLinks：仅统计当前分类、匹配搜索词的链接，按二级分类计数（O(n)），
+  // 替代原先对每个二级分类调用 getLinksByCategory（含过滤 + 新建数组）的 O(n×m) 做法。
   const subCounts = computed<Record<string, number>>(() => {
     const map: Record<string, number> = {};
     const catId = uiStore.selectedCategoryId;
-    for (const sub of subCategories.value) {
-      map[sub.id] = dataStore.getLinksByCategory(
-        catId,
-        sub.id,
-        uiStore.searchQuery,
-        uiStore.searchMode
-      ).length;
+    const query = uiStore.searchMode === 'internal' ? uiStore.searchQuery.trim().toLowerCase() : '';
+    for (const link of dataStore.visibleLinks) {
+      if (link.categoryId !== catId) continue;
+      if (
+        query &&
+        !(
+          link.name.toLowerCase().includes(query) ||
+          (link.description && link.description.toLowerCase().includes(query)) ||
+          link.url.toLowerCase().includes(query)
+        )
+      ) {
+        continue;
+      }
+      const subId = link.subCategoryId;
+      if (!subId) continue;
+      map[subId] = (map[subId] || 0) + 1;
     }
     return map;
   });
@@ -402,6 +413,8 @@
     margin: 0 auto;
     padding: var(--space-lg) 0;
     align-content: start;
+    /* 隔离网格重绘范围，避免单卡 hover 触发整页合成 */
+    contain: layout style paint;
     animation: fadeInUp 0.5s var(--ease-out-expo);
   }
 

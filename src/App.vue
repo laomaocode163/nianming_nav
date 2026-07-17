@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, ref } from 'vue';
+  import { onMounted, onUnmounted, ref } from 'vue';
   import { useThemeStore } from './stores/theme';
   import { useSettingsStore } from './stores/settings';
   import { useDataStore } from './stores/data';
@@ -14,10 +14,16 @@
 
   const ready = ref(false);
   const error = ref<string | null>(null);
+  // 标签页不可见时暂停弥散光斑动画，避免后台空耗 GPU
+  const bgPaused = ref(false);
+  const onVisibilityChange = () => {
+    bgPaused.value = document.hidden;
+  };
 
   onMounted(async () => {
     // 触发 userPrefs 初始化（含旧版裸 localStorage 键的一次性迁移）
     void userPrefsStore;
+    document.addEventListener('visibilitychange', onVisibilityChange);
     themeStore.initTheme();
     try {
       await dataStore.init();
@@ -34,11 +40,15 @@
       ready.value = true;
     }
   });
+
+  onUnmounted(() => {
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+  });
 </script>
 
 <template>
   <div class="app-container">
-    <div class="app-bg" aria-hidden="true">
+    <div class="app-bg" :class="{ 'is-paused': bgPaused }" aria-hidden="true">
       <span class="app-bg__blob app-bg__blob--1"></span>
       <span class="app-bg__blob app-bg__blob--2"></span>
       <span class="app-bg__blob app-bg__blob--3"></span>
@@ -87,9 +97,15 @@
   .app-bg__blob {
     position: absolute;
     border-radius: 50%;
-    filter: blur(95px);
+    filter: blur(var(--blob-blur));
     opacity: var(--blob-opacity);
     will-change: transform;
+  }
+
+  /* 标签页不可见或用户偏好减少动效时暂停弥散光斑动画，释放 GPU */
+  .app-bg.is-paused .app-bg__blob {
+    animation-play-state: paused;
+    will-change: auto;
   }
 
   .app-bg__blob--1 {
