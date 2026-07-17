@@ -22,10 +22,14 @@
   const sitesSectionRef = ref<HTMLElement | null>(null);
 
   // 固定估算值，避免 DOM 测量反馈环
-  const HEADER_H = 69;
-  const CATEGORY_H = 68;
-  const PAGINATION_H = 60;
+  // 高度值须与真实 CSS 对齐，否则分页会算多行导致卡片被底部裁切
+  const HEADER_H = 84; // 主头部 padding + 搜索条高度
+  const CATEGORY_H = 76; // 分类标题 padding + 底边距 + 标题行高
+  const PAGINATION_H = 72; // 分页器 padding + 内容高度
   const GRID_GAP = 24;
+  const SECTION_BOTTOM_PADDING = 32; // .sites-section padding-bottom: 2rem
+  const GRID_PADDING_V = 48; // .sites-grid padding-top + padding-bottom: 24px*2
+  const SUB_CATEGORY_H = 64; // 二级标签栏近似高度（折叠/移动端显示时）
   // 卡片最小宽度（用于列数估算）与含 gap 的卡片最小高度（随密度变化）
   const CARD_MIN_W = 240;
   const SECTION_PADDING = 48; // .sites-section 左右各 1.5rem
@@ -113,7 +117,13 @@
 
   // 动态每页数量：基于响应式窗口高度和固定常量推算，不测量 DOM
   const fitPageSize = computed(() => {
-    const availableH = windowHeight.value - HEADER_H - CATEGORY_H - PAGINATION_H;
+    let availableH = windowHeight.value - HEADER_H - CATEGORY_H - PAGINATION_H;
+    // 扣除 section 底边距与 grid 上下内边距，避免算出的行数放不下而被裁切
+    availableH -= SECTION_BOTTOM_PADDING + GRID_PADDING_V;
+    // 折叠/移动端在主内容区额外渲染二级分类标签，再扣除其近似高度
+    if (hasSubCategories.value && (uiStore.sidebarCollapsed || isMobile.value)) {
+      availableH -= SUB_CATEGORY_H;
+    }
     const rows = Math.max(1, Math.floor((availableH + GRID_GAP) / (cardHeight.value + GRID_GAP)));
     return Math.max(columns.value, rows * columns.value);
   });
