@@ -20,6 +20,8 @@ import {
   siteSettingsSchema,
   type Category,
   type Link,
+  type SearchConfig,
+  type SiteSettings,
   type SubCategory,
 } from '../src/config/schema';
 import { validateReferentialIntegrity } from '../src/config/loadConfig';
@@ -150,6 +152,67 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
     return sendJson(res, 200, flattenSubs(await readJson<Category[]>(CATEGORIES_PATH)));
   }
 
+  // settings（accentColor 等运行时设置）
+  if (method === 'GET' && path === '/api/admin/settings') {
+    return sendJson(res, 200, await readJson<SiteSettings>(SETTINGS_PATH));
+  }
+  if (method === 'PUT' && path === '/api/admin/settings') {
+    const settings = siteSettingsSchema.parse(asObject(await readBody(req)));
+    await writeJson(SETTINGS_PATH, settings);
+    return sendJson(res, 200, settings);
+  }
+
+  // search（搜索引擎配置）
+  if (method === 'GET' && path === '/api/admin/search') {
+    return sendJson(res, 200, await readJson<SearchConfig>(SEARCH_PATH));
+  }
+  if (method === 'PUT' && path === '/api/admin/search') {
+    const config = searchConfigSchema.parse(asObject(await readBody(req)));
+    await writeJson(SEARCH_PATH, config);
+    return sendJson(res, 200, config);
+  }
+
+  // categories 重排（仅重算 order，不触发引用完整性校验）
+  if (path === '/api/admin/categories/reorder' && method === 'POST') {
+    const raw = (await readBody(req)) as Body;
+    const ids = (Array.isArray(raw.ids) ? raw.ids : []).filter(
+      (x): x is string => typeof x === 'string'
+    );
+    const categories = await readJson<Category[]>(CATEGORIES_PATH);
+    const idSet = new Set(categories.map((c) => c.id));
+    if (ids.length !== categories.length || !ids.every((id) => idSet.has(id))) {
+      throw new HttpError(400, '重排数据不完整或含未知分类');
+    }
+    const orderMap = new Map(ids.map((id, i) => [id, i]));
+    for (const c of categories) c.order = orderMap.get(c.id);
+    await writeJson(CATEGORIES_PATH, categories);
+    return sendJson(res, 200, { ok: true });
+  }
+
+  // 二级分类重排（位于某分类下）
+  {
+    const m = path.match(/^\/api\/admin\/categories\/([^/]+)\/subs\/reorder$/);
+    if (m && method === 'POST') {
+      const categoryId = decodeURIComponent(m[1]);
+      const raw = (await readBody(req)) as Body;
+      const ids = (Array.isArray(raw.ids) ? raw.ids : []).filter(
+        (x): x is string => typeof x === 'string'
+      );
+      const categories = await readJson<Category[]>(CATEGORIES_PATH);
+      const cat = categories.find((c) => c.id === categoryId);
+      if (!cat) throw new HttpError(404, '父分类不存在');
+      const subs = cat.subCategories ?? [];
+      const idSet = new Set(subs.map((s) => s.id));
+      if (ids.length !== subs.length || !ids.every((id) => idSet.has(id))) {
+        throw new HttpError(400, '重排数据不完整或含未知二级分类');
+      }
+      const orderMap = new Map(ids.map((id, i) => [id, i]));
+      for (const s of subs) s.order = orderMap.get(s.id);
+      await writeJson(CATEGORIES_PATH, categories);
+      return sendJson(res, 200, { ok: true });
+    }
+  }
+
   // categories
   if (path === '/api/admin/categories' && method === 'POST') {
     const body = (await readBody(req)) as Category;
@@ -230,6 +293,33 @@ const route = async (req: IncomingMessage, res: ServerResponse): Promise<void> =
     await writeJson(LINKS_PATH, links);
     return sendJson(res, 201, link);
   }
+
+  // links 重排（按「分类 + 二级分类」分组，组内重排并保持跨组顺序不交错）
+  if (path === '/api/admin/links/reorder' && method === 'POST') {
+    const raw = (await readBody(req)) as Body;
+    const categoryId = String(raw.categoryId ?? '');
+    const subCategoryId = raw.subCategoryId ? String(raw.subCategoryId) : undefined;
+    const ids = (Array.isArray(raw.ids) ? raw.ids : []).filter(
+      (x): x is string => typeof x === 'string'
+    );
+    const links = await readJson<Link[]>(LINKS_PATH);
+    const group = links.filter(
+      (l) => l.categoryId === categoryId && (l.subCategoryId ?? '') === (subCategoryId ?? '')
+    );
+    const idSet = new Set(group.map((l) => l.id));
+    if (ids.length !== group.length || !ids.every((id) => idSet.has(id))) {
+      throw new HttpError(400, '重排数据不完整或含未知链接');
+    }
+    const base = group.reduce((min, l) => Math.min(min, l.order ?? 0), Number.POSITIVE_INFINITY);
+    const start = Number.isFinite(base) ? base : 0;
+    const orderMap = new Map(ids.map((id, i) => [id, start + i]));
+    for (const l of links) {
+      if (orderMap.has(l.id)) l.order = orderMap.get(l.id);
+    }
+    await writeJson(LINKS_PATH, links);
+    return sendJson(res, 200, { ok: true });
+  }
+
   {
     const m = path.match(/^\/api\/admin\/links\/([^/]+)$/);
     if (m) {
