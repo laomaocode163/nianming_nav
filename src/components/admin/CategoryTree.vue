@@ -5,6 +5,7 @@
   import { categorySchema, subCategorySchema } from '../../config/schema';
   import type { Category, SubCategory } from '../../types';
   import EmojiPicker from '../ui/EmojiPicker.vue';
+  import { GripVertical } from 'lucide-vue-next';
   import '../../components/admin/admin.css';
 
   const adminStore = useAdminStore();
@@ -174,6 +175,54 @@
       showToast(e instanceof Error ? e.message : '删除失败', 2500);
     }
   };
+
+  /* ---------- 拖拽重排（仅同层内有效） ---------- */
+  const dragCatId = ref<string | null>(null);
+  const dragSubKey = ref<string | null>(null);
+
+  const onCatDragStart = (id: string): void => {
+    dragCatId.value = id;
+  };
+  const onCatDrop = async (targetId: string): Promise<void> => {
+    const from = dragCatId.value;
+    dragCatId.value = null;
+    if (!from || from === targetId) return;
+    const ids = sortedCategories.value.map((c) => c.id).filter((id) => id !== from);
+    const idx = ids.indexOf(targetId);
+    if (idx < 0) return;
+    ids.splice(idx, 0, from);
+    try {
+      await adminStore.reorderCategories(ids);
+      showToast('已调整分类顺序');
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : '排序失败', 2500);
+    }
+  };
+
+  const onSubDragStart = (categoryId: string, subId: string): void => {
+    dragSubKey.value = `${categoryId}:${subId}`;
+  };
+  const onSubDrop = async (categoryId: string, targetSubId: string): Promise<void> => {
+    const from = dragSubKey.value;
+    dragSubKey.value = null;
+    if (!from) return;
+    const [dragCat, dragSubId] = from.split(':');
+    if (dragCat !== categoryId || dragSubId === targetSubId) return;
+    const cat = adminStore.categories.find((c) => c.id === categoryId);
+    if (!cat) return;
+    const ids = sortedSubs(cat)
+      .map((s) => s.id)
+      .filter((id) => id !== dragSubId);
+    const idx = ids.indexOf(targetSubId);
+    if (idx < 0) return;
+    ids.splice(idx, 0, dragSubId);
+    try {
+      await adminStore.reorderSubCategories(categoryId, ids);
+      showToast('已调整子分类顺序');
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : '排序失败', 2500);
+    }
+  };
 </script>
 
 <template>
@@ -191,8 +240,24 @@
     </div>
 
     <ul v-else class="admin-tree">
-      <li v-for="cat in sortedCategories" :key="cat.id" class="admin-tree-node">
+      <li
+        v-for="cat in sortedCategories"
+        :key="cat.id"
+        class="admin-tree-node"
+        :class="{ dragging: dragCatId === cat.id }"
+        @dragover.prevent
+        @drop="onCatDrop(cat.id)"
+      >
         <div class="admin-tree-row admin-tree-row--cat">
+          <span
+            class="admin-drag-handle"
+            draggable="true"
+            title="拖拽排序"
+            @dragstart="onCatDragStart(cat.id)"
+            @dragend="dragCatId = null"
+          >
+            <GripVertical :size="14" :stroke-width="1.5" />
+          </span>
           <button
             class="admin-tree-toggle"
             :class="{ open: isExpanded(cat.id) }"
@@ -221,8 +286,24 @@
         </div>
 
         <ul v-if="isExpanded(cat.id)" class="admin-tree-children">
-          <li v-for="sub in sortedSubs(cat)" :key="sub.id" class="admin-tree-node">
+          <li
+            v-for="sub in sortedSubs(cat)"
+            :key="sub.id"
+            class="admin-tree-node"
+            :class="{ dragging: dragSubKey === cat.id + ':' + sub.id }"
+            @dragover.prevent
+            @drop="onSubDrop(cat.id, sub.id)"
+          >
             <div class="admin-tree-row admin-tree-row--sub">
+              <span
+                class="admin-drag-handle"
+                draggable="true"
+                title="拖拽排序"
+                @dragstart="onSubDragStart(cat.id, sub.id)"
+                @dragend="dragSubKey = null"
+              >
+                <GripVertical :size="14" :stroke-width="1.5" />
+              </span>
               <span class="admin-tree-name">{{ sub.name }}</span>
               <span class="admin-spacer"></span>
               <span class="admin-tree-order">#{{ sub.order ?? 0 }}</span>

@@ -2,7 +2,7 @@
  * 管理后台 API 客户端（仅本地开发可用，对应 plugins/devAdminApi.ts 的 dev 中间件）。
  * 所有方法在失败时抛出带中文信息的 Error。
  */
-import type { Category, Link, SiteConfig, SubCategory } from '@/types';
+import type { Category, Link, SearchConfig, SiteConfig, SiteSettings, SubCategory } from '@/types';
 
 export interface SubCategoryView extends SubCategory {
   categoryId: string;
@@ -88,6 +88,34 @@ export const adminApi = {
 
   fetchFavicons: (force = false): Promise<FetchResult> =>
     request<FetchResult>('/fetch-favicons', 'POST', { force }),
+
+  /* ---------- 设置（accentColor 等） ---------- */
+  getSettings: (): Promise<SiteSettings> => request<SiteSettings>('/settings', 'GET'),
+
+  updateSettings: (settings: SiteSettings): Promise<SiteSettings> =>
+    request<SiteSettings>('/settings', 'PUT', settings),
+
+  /* ---------- 搜索源配置 ---------- */
+  getSearchConfig: (): Promise<SearchConfig> => request<SearchConfig>('/search', 'GET'),
+
+  updateSearchConfig: (config: SearchConfig): Promise<SearchConfig> =>
+    request<SearchConfig>('/search', 'PUT', config),
+
+  /* ---------- 重排（仅重算 order） ---------- */
+  reorderCategories: (ids: string[]): Promise<{ ok: true }> =>
+    request<{ ok: true }>('/categories/reorder', 'POST', { ids }),
+
+  reorderSubCategories: (categoryId: string, ids: string[]): Promise<{ ok: true }> =>
+    request<{ ok: true }>(`/categories/${encodeURIComponent(categoryId)}/subs/reorder`, 'POST', {
+      ids,
+    }),
+
+  reorderLinks: (
+    categoryId: string,
+    subCategoryId: string | undefined,
+    ids: string[]
+  ): Promise<{ ok: true }> =>
+    request<{ ok: true }>('/links/reorder', 'POST', { categoryId, subCategoryId, ids }),
 
   restoreAll: (config: SiteConfig): Promise<{ ok: true }> =>
     request<{ ok: true }>('/restore', 'POST', config),

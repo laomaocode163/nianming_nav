@@ -3,12 +3,22 @@
   import { useAdminStore } from '../stores/admin';
   import AdminLinks from '../components/admin/AdminLinks.vue';
   import CategoryTree from '../components/admin/CategoryTree.vue';
-  import { Link, Folder } from 'lucide-vue-next';
+  import AdminSearch from '../components/admin/AdminSearch.vue';
+  import AdminSettings from '../components/admin/AdminSettings.vue';
+  import IntegrityCheck from '../components/admin/IntegrityCheck.vue';
+  import { Link, Folder, Search, Palette, ShieldCheck } from 'lucide-vue-next';
   import '../components/admin/admin.css';
 
   const adminStore = useAdminStore();
-  const tab = ref<'links' | 'categories'>('links');
+  const tab = ref<'links' | 'categories' | 'search' | 'settings'>('links');
   const selectedCategoryId = ref('');
+  const showCheck = ref(false);
+
+  const gotoLinks = (): void => {
+    tab.value = 'links';
+    selectedCategoryId.value = '';
+    showCheck.value = false;
+  };
 
   const filterCats = computed(() =>
     [...adminStore.categories]
@@ -71,6 +81,26 @@
           <Folder :size="18" :stroke-width="1.5" />
           分类
         </button>
+        <button
+          class="admin-nav-item"
+          :class="{ active: tab === 'search' }"
+          @click="tab = 'search'"
+        >
+          <Search :size="18" :stroke-width="1.5" />
+          搜索
+        </button>
+        <button
+          class="admin-nav-item"
+          :class="{ active: tab === 'settings' }"
+          @click="tab = 'settings'"
+        >
+          <Palette :size="18" :stroke-width="1.5" />
+          设置
+        </button>
+        <button class="admin-nav-item" @click="showCheck = true">
+          <ShieldCheck :size="18" :stroke-width="1.5" />
+          数据检查
+        </button>
       </nav>
 
       <div v-if="tab === 'links'" class="admin-filter">
@@ -117,7 +147,11 @@
     <main class="admin-main">
       <AdminLinks v-if="tab === 'links'" :category-filter="selectedCategoryId" />
       <CategoryTree v-else-if="tab === 'categories'" />
+      <AdminSearch v-else-if="tab === 'search'" />
+      <AdminSettings v-else-if="tab === 'settings'" />
     </main>
+
+    <IntegrityCheck :show="showCheck" @close="showCheck = false" @goto-links="gotoLinks" />
   </div>
 </template>
 

@@ -717,3 +717,47 @@
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
+
+/* 拖拽排序手柄 */
+.admin-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  cursor: grab;
+  border-radius: var(--radius-sm);
+  opacity: 0.55;
+  transition:
+    opacity 150ms var(--ease-out-expo),
+    color 150ms var(--ease-out-expo),
+    background 150ms var(--ease-out-expo);
+}
+
+.admin-drag-handle:hover {
+  opacity: 1;
+  color: var(--color-primary);
+  background: hsl(var(--hue-primary), 80%, 55%, 0.1);
+}
+
+.admin-drag-handle:active {
+  cursor: grabbing;
+}
+
+/* 拖拽进行中：源项半透明，目标行高亮 */
+.admin-tree-node.dragging > .admin-tree-row {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.admin-tree-node[draggable],
+.admin-tree-node .admin-tree-row {
+  scroll-margin: 1rem;
+}
+
+.admin-tree-row.drop-target {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px hsl(var(--hue-primary), 80%, 55%, 0.25);
+}

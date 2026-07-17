@@ -7,12 +7,14 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { adminApi, type SubCategoryView } from '@/services/adminApi';
 import { useDataStore } from './data';
-import type { Category, Link, SubCategory } from '@/types';
+import type { Category, Link, SearchConfig, SiteSettings, SubCategory } from '@/types';
 
 export const useAdminStore = defineStore('admin', () => {
   const categories = ref<Category[]>([]);
   const links = ref<Link[]>([]);
   const subCategories = ref<SubCategoryView[]>([]);
+  const settings = ref<SiteSettings>({});
+  const searchConfig = ref<SearchConfig>({ selectedSourceId: '', externalSources: [] });
   const loading = ref(false);
   const autoFetchFavicons = ref(true);
 
@@ -25,11 +27,23 @@ export const useAdminStore = defineStore('admin', () => {
   const refreshSubs = async (): Promise<void> => {
     subCategories.value = await adminApi.getSubCategories();
   };
+  const refreshSettings = async (): Promise<void> => {
+    settings.value = await adminApi.getSettings();
+  };
+  const refreshSearch = async (): Promise<void> => {
+    searchConfig.value = await adminApi.getSearchConfig();
+  };
 
   const loadAll = async (): Promise<void> => {
     loading.value = true;
     try {
-      await Promise.all([refreshCategories(), refreshLinks(), refreshSubs()]);
+      await Promise.all([
+        refreshCategories(),
+        refreshLinks(),
+        refreshSubs(),
+        refreshSettings(),
+        refreshSearch(),
+      ]);
     } finally {
       loading.value = false;
     }
@@ -42,6 +56,38 @@ export const useAdminStore = defineStore('admin', () => {
 
   const runFetchFavicons = async (force = false): Promise<void> => {
     await adminApi.fetchFavicons(force);
+  };
+
+  const saveSettings = async (next: SiteSettings): Promise<void> => {
+    settings.value = await adminApi.updateSettings(next);
+    await reloadSite();
+  };
+
+  const saveSearchConfig = async (next: SearchConfig): Promise<void> => {
+    searchConfig.value = await adminApi.updateSearchConfig(next);
+    await reloadSite();
+  };
+
+  const reorderCategories = async (ids: string[]): Promise<void> => {
+    await adminApi.reorderCategories(ids);
+    await refreshCategories();
+    await reloadSite();
+  };
+
+  const reorderSubCategories = async (categoryId: string, ids: string[]): Promise<void> => {
+    await adminApi.reorderSubCategories(categoryId, ids);
+    await refreshSubs();
+    await reloadSite();
+  };
+
+  const reorderLinks = async (
+    categoryId: string,
+    subCategoryId: string | undefined,
+    ids: string[]
+  ): Promise<void> => {
+    await adminApi.reorderLinks(categoryId, subCategoryId, ids);
+    await refreshLinks();
+    await reloadSite();
   };
 
   const createLink = async (link: Link): Promise<Link> => {
@@ -109,14 +155,23 @@ export const useAdminStore = defineStore('admin', () => {
     categories,
     links,
     subCategories,
+    settings,
+    searchConfig,
     loading,
     autoFetchFavicons,
     loadAll,
     refreshCategories,
     refreshLinks,
     refreshSubs,
+    refreshSettings,
+    refreshSearch,
     reloadSite,
     runFetchFavicons,
+    saveSettings,
+    saveSearchConfig,
+    reorderCategories,
+    reorderSubCategories,
+    reorderLinks,
     createLink,
     updateLink,
     deleteLink,

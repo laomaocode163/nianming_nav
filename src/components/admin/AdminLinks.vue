@@ -5,7 +5,7 @@
   import { linkSchema } from '../../config/schema';
   import { nextLinkId } from '../../config/linkId';
   import type { Category, Link, SubCategory } from '../../types';
-  import { Link as LinkIcon, ChevronRight } from 'lucide-vue-next';
+  import { Link as LinkIcon, ChevronRight, GripVertical } from 'lucide-vue-next';
   import '../../components/admin/admin.css';
 
   const adminStore = useAdminStore();
@@ -223,6 +223,47 @@
       showToast(e instanceof Error ? e.message : '抓取失败', 2500);
     }
   };
+
+  /* ---------- 拖拽重排（仅同「分类 + 二级分类」组内有效） ---------- */
+  const dragLink = ref<{ categoryId: string; subCategoryId?: string; id: string } | null>(null);
+
+  const groupLinkIds = (categoryId: string, subCategoryId?: string): string[] =>
+    adminStore.links
+      .filter(
+        (l) => l.categoryId === categoryId && (l.subCategoryId ?? '') === (subCategoryId ?? '')
+      )
+      .map((l) => l.id);
+
+  const onLinkDragStart = (
+    categoryId: string,
+    subCategoryId: string | undefined,
+    id: string
+  ): void => {
+    dragLink.value = { categoryId, subCategoryId, id };
+  };
+
+  const onLinkDrop = async (
+    categoryId: string,
+    subCategoryId: string | undefined,
+    targetId: string
+  ): Promise<void> => {
+    const from = dragLink.value;
+    dragLink.value = null;
+    if (!from) return;
+    if (from.categoryId !== categoryId || (from.subCategoryId ?? '') !== (subCategoryId ?? ''))
+      return;
+    if (from.id === targetId) return;
+    const ids = groupLinkIds(categoryId, subCategoryId).filter((id) => id !== from.id);
+    const idx = ids.indexOf(targetId);
+    if (idx < 0) return;
+    ids.splice(idx, 0, from.id);
+    try {
+      await adminStore.reorderLinks(categoryId, subCategoryId, ids);
+      showToast('已调整链接顺序');
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : '排序失败', 2500);
+    }
+  };
 </script>
 
 <template>
@@ -267,8 +308,30 @@
         </div>
 
         <ul v-if="isExpanded('c:' + g.cat.id)" class="admin-tree-children">
-          <li v-for="l in g.directLinks" :key="l.id" class="admin-tree-node">
+          <li
+            v-for="l in g.directLinks"
+            :key="l.id"
+            class="admin-tree-node"
+            :class="{
+              dragging:
+                dragLink &&
+                dragLink.categoryId === g.cat.id &&
+                (dragLink.subCategoryId ?? '') === '' &&
+                dragLink.id === l.id,
+            }"
+            @dragover.prevent
+            @drop="onLinkDrop(g.cat.id, undefined, l.id)"
+          >
             <div class="admin-tree-row admin-tree-row--link">
+              <span
+                class="admin-drag-handle"
+                draggable="true"
+                title="拖拽排序"
+                @dragstart="onLinkDragStart(g.cat.id, undefined, l.id)"
+                @dragend="dragLink = null"
+              >
+                <GripVertical :size="14" :stroke-width="1.5" />
+              </span>
               <span class="admin-tree-icon admin-tree-icon--link">
                 <LinkIcon :size="14" :stroke-width="1.5" />
               </span>
@@ -303,8 +366,30 @@
             </div>
 
             <ul v-if="isExpanded('s:' + g.cat.id + ':' + sg.sub.id)" class="admin-tree-children">
-              <li v-for="l in sg.links" :key="l.id" class="admin-tree-node">
+              <li
+                v-for="l in sg.links"
+                :key="l.id"
+                class="admin-tree-node"
+                :class="{
+                  dragging:
+                    dragLink &&
+                    dragLink.categoryId === g.cat.id &&
+                    (dragLink.subCategoryId ?? '') === (sg.sub.id ?? '') &&
+                    dragLink.id === l.id,
+                }"
+                @dragover.prevent
+                @drop="onLinkDrop(g.cat.id, sg.sub.id, l.id)"
+              >
                 <div class="admin-tree-row admin-tree-row--link">
+                  <span
+                    class="admin-drag-handle"
+                    draggable="true"
+                    title="拖拽排序"
+                    @dragstart="onLinkDragStart(g.cat.id, sg.sub.id, l.id)"
+                    @dragend="dragLink = null"
+                  >
+                    <GripVertical :size="14" :stroke-width="1.5" />
+                  </span>
                   <span class="admin-tree-icon admin-tree-icon--link">
                     <LinkIcon :size="14" :stroke-width="1.5" />
                   </span>

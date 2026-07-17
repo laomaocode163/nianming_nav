@@ -82,4 +82,50 @@ describe('adminApi', () => {
     mockFetch({ error: '服务器错误' }, 500);
     await expect(adminApi.getLinks()).rejects.toThrow('服务器错误');
   });
+
+  it('getSettings returns parsed settings', async () => {
+    mockFetch({ accentColor: '14 165 233' });
+    const settings = await adminApi.getSettings();
+    expect(settings.accentColor).toBe('14 165 233');
+  });
+
+  it('updateSettings PUTs and returns settings', async () => {
+    mockFetch({ accentColor: '0 0 0' });
+    const res = await adminApi.updateSettings({ accentColor: '0 0 0' });
+    expect(res.accentColor).toBe('0 0 0');
+  });
+
+  it('getSearchConfig returns parsed config', async () => {
+    mockFetch({ selectedSourceId: 'baidu', externalSources: [] });
+    const cfg = await adminApi.getSearchConfig();
+    expect(cfg.selectedSourceId).toBe('baidu');
+  });
+
+  it('updateSearchConfig PUTs and returns config', async () => {
+    const cfg = {
+      selectedSourceId: 'g',
+      externalSources: [{ id: 'g', name: 'G', url: 'u', enabled: true }],
+    };
+    mockFetch(cfg);
+    const res = await adminApi.updateSearchConfig(cfg);
+    expect(res.externalSources).toHaveLength(1);
+  });
+
+  it('reorderCategories POSTs ids', async () => {
+    mockFetch({ ok: true });
+    const res = await adminApi.reorderCategories(['b', 'a']);
+    expect(res.ok).toBe(true);
+  });
+
+  it('reorderSubCategories POSTs to nested path', async () => {
+    mockFetch({ ok: true });
+    const res = await adminApi.reorderSubCategories('dev', ['s2', 's1']);
+    expect(res.ok).toBe(true);
+  });
+
+  it('reorderLinks POSTs category, sub and ids', async () => {
+    mockFetch({ ok: true });
+    const res = await adminApi.reorderLinks('dev', 'fe', ['2', '1']);
+    expect(res.ok).toBe(true);
+  });
 });
