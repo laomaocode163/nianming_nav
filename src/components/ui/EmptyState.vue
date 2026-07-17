@@ -1,14 +1,15 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { computed, type Component } from 'vue';
+  import { Inbox } from 'lucide-vue-next';
 
   const props = withDefaults(
     defineProps<{
-      icon?: string;
+      icon?: Component;
       title?: string;
       description?: string;
     }>(),
     {
-      icon: '📭',
+      icon: Inbox,
       title: '暂无数据',
       description: '',
     }
@@ -19,7 +20,7 @@
 
 <template>
   <div class="empty-state">
-    <div class="empty-icon">{{ icon }}</div>
+    <div class="empty-icon"><component :is="icon" :size="48" :stroke-width="1.5" /></div>
     <h3 class="empty-title">{{ title }}</h3>
     <p v-if="hasDescription" class="empty-description">{{ description }}</p>
   </div>
@@ -48,8 +49,10 @@
   }
 
   .empty-icon {
-    font-size: 4rem;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
     margin-bottom: var(--space-lg);
     opacity: 0.6;
     animation: float 3s ease-in-out infinite;

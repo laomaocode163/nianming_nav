@@ -172,8 +172,10 @@ export const getFaviconFallbacks = (domain: string): string[] => {
 };
 
 /**
- * 读取缓存的可用图标地址，未命中则返回主源。
- * 注意：未命中时【不】写入内存缓存——主源尚未经过加载验证，
+ * 读取图标地址：命中有效缓存则返回缓存值；否则返回主源（站点自身 /favicon.ico）。
+ * 注意：函数名中的 "Cached" 仅表示「优先取缓存」，未命中时仍会返回一个可用的主源地址，
+ * 而非返回空串——调用方不应假设「返回空即未缓存」。
+ * 未命中时【不】写入内存缓存——主源尚未经过加载验证，
  * 若缓存它，主源失败时无法走 fallback 链且会重复请求。
  * 验证通过的地址由 cacheFavicon 在 onIconLoad 时写入；
  * 主源与全部 fallback 均失败时由 cacheBrokenFavicon 标记占位图。

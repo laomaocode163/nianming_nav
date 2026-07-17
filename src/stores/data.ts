@@ -8,6 +8,7 @@ import { ref, computed } from 'vue';
 import { loadSiteConfig, invalidateSiteConfigCache } from '../config/loadConfig';
 import { extractDomain, getCachedFavicon } from '../services/faviconService';
 import { useUserPrefsStore } from './userPrefs';
+import { useUiStore } from './ui';
 import type { Link, Category, SubCategory, SearchConfig, SearchMode } from '../types';
 
 export const useDataStore = defineStore('data', () => {
@@ -135,6 +136,15 @@ export const useDataStore = defineStore('data', () => {
     links.value = config.links;
     searchConfig.value = config.searchConfig;
     invalidateSiteConfigCache();
+    // 重置交互态：若当前选中分类已被新配置删除，回到「全部」；
+    // 否则重置页码与二级分类，避免指向已不存在的实体导致空白列表。
+    const ui = useUiStore();
+    if (!config.categories.some((c) => c.id === ui.selectedCategoryId)) {
+      ui.selectCategory('all');
+    } else {
+      ui.currentPage = 1;
+      ui.selectedSubCategoryId = null;
+    }
   };
 
   return {

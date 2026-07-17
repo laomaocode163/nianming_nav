@@ -138,13 +138,22 @@
 
   // 全局快捷键：⌘/Ctrl+K 或 /（非输入态）聚焦搜索框
   const onGlobalKeydown = (e: KeyboardEvent): void => {
+    // 模态（如偏好面板）打开时不抢占按键，避免干扰面板内交互
+    if (showPrefsPanel.value) return;
     const isShortcutK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
     const target = e.target as HTMLElement | null;
     const inEditable =
       !!target &&
       (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
-    const isSlash = e.key === '/' && !inEditable;
-    if (isShortcutK || isSlash) {
+    // ⌘/Ctrl+K 始终聚焦搜索（即便焦点在按钮上也允许），仅排除输入态
+    if (isShortcutK && !inEditable) {
+      e.preventDefault();
+      searchInputRef.value?.focus();
+      searchInputRef.value?.select();
+      return;
+    }
+    // 单独的 / 快捷键：排除输入态，且焦点在按钮上时也不抢占（避免键盘在按钮间导航被吞）
+    if (e.key === '/' && !inEditable && target?.tagName !== 'BUTTON') {
       e.preventDefault();
       searchInputRef.value?.focus();
       searchInputRef.value?.select();

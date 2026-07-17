@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, ref, onMounted } from 'vue';
+  import { computed, ref, onMounted, onUnmounted } from 'vue';
   import { useDataStore } from '../../stores/data';
   import { useUserPrefsStore } from '../../stores/userPrefs';
   import { getDefaultIcon } from '../../utils/constants';
@@ -31,6 +31,8 @@
   const iconLoaded = ref(false);
   // 图标地址由统一调度器解析（缓存命中同步、未命中异步竞速）
   const iconUrl = ref('');
+  // 卸载守卫：异步请求完成前组件可能被卸载（翻页/切换路由），用于放弃写状态
+  const cancelled = ref(false);
 
   onMounted(async () => {
     const domain = extractDomain(props.site.url);
@@ -45,11 +47,19 @@
     } else {
       iconUrl.value = getFaviconUrl(domain);
       try {
-        iconUrl.value = await requestFavicon(domain);
+        const url = await requestFavicon(domain);
+        // 组件可能在请求完成前被卸载，此时放弃写状态，避免写入已销毁实例
+        if (cancelled.value) return;
+        iconUrl.value = url;
       } catch {
+        if (cancelled.value) return;
         iconUrl.value = getDefaultIcon();
       }
     }
+  });
+
+  onUnmounted(() => {
+    cancelled.value = true;
   });
 
   const siteIcon = computed(() => {

@@ -3,11 +3,12 @@
 
   const currentTime = ref('');
   const currentDate = ref('');
-  const solarDate = ref('');
+  // 公历的中文写法（非农历）：如「七月十七」。命名 solar 易与「农历」混淆，故改为 gregorianCn。
+  const gregorianCn = ref('');
   const weekday = ref('');
 
-  /** 将公历日期映射为中文月份与日期 */
-  const getSolarDate = (date: Date): string => {
+  /** 将公历日期映射为中文月份与日期（注意：这是公历的中文表达，并非农历） */
+  const getGregorianCn = (date: Date): string => {
     const solarMonths = [
       '正月',
       '二月',
@@ -71,7 +72,7 @@
     const day = String(now.getDate()).padStart(2, '0');
     currentDate.value = `${year}年${month}月${day}日`;
     weekday.value = weekdays[now.getDay()];
-    solarDate.value = getSolarDate(now);
+    gregorianCn.value = getGregorianCn(now);
   };
 
   const updateDateTime = () => {
@@ -127,8 +128,8 @@
         <div class="date">{{ currentDate }} {{ weekday }}</div>
       </div>
     </div>
-    <div class="solar-section">
-      <div class="solar-date">{{ solarDate }}</div>
+    <div class="cn-date-section">
+      <div class="cn-date">{{ gregorianCn }}</div>
     </div>
   </div>
 </template>
@@ -187,7 +188,7 @@
     line-height: 1;
   }
 
-  .solar-section {
+  .cn-date-section {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -196,7 +197,7 @@
     border-left: 1px solid var(--color-border);
   }
 
-  .solar-date {
+  .cn-date {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-text);
@@ -219,7 +220,7 @@
       font-size: 0.7rem;
     }
 
-    .solar-date {
+    .cn-date {
       font-size: 0.8rem;
     }
   }

@@ -11,6 +11,7 @@
   import Pagination from '../components/ui/Pagination.vue';
   import { defineAsyncComponent } from 'vue';
   import type { Link } from '../types';
+  import { Search, Star, History, Inbox } from 'lucide-vue-next';
   const SiteCard = defineAsyncComponent(() => import('../components/ui/SiteCard.vue'));
 
   const dataStore = useDataStore();
@@ -93,15 +94,19 @@
 
     if (catId === '__favorites') {
       const favSet = new Set(userPrefs.state.favorites);
-      return applyInternalSearch(
-        dataStore.links.filter((l) => !l.hidden && favSet.has(l.url)),
-        query
-      );
+      const result = dataStore.links.filter((l) => !l.hidden && favSet.has(l.url));
+      // 与普通分类视图保持一致：按 order 排序，避免收藏顺序与分类视图割裂
+      result.sort((a, b) => (a.order || 0) - (b.order || 0));
+      return applyInternalSearch(result, query);
     }
     if (catId === '__recent') {
       const tsMap = new Map(userPrefs.state.recentVisits.map((v) => [v.url, v.ts]));
       const result = dataStore.links.filter((l) => !l.hidden && tsMap.has(l.url));
-      result.sort((a, b) => (tsMap.get(b.url) || 0) - (tsMap.get(a.url) || 0));
+      // 主排序为访问时间（最近优先），同时间戳回退到 order，保证与分类视图顺序一致
+      result.sort(
+        (a, b) =>
+          (tsMap.get(b.url) || 0) - (tsMap.get(a.url) || 0) || (a.order || 0) - (b.order || 0)
+      );
       return applyInternalSearch(result, query);
     }
 
@@ -171,7 +176,7 @@
     const query = uiStore.searchQuery.trim();
     if (query && uiStore.searchMode === 'internal') {
       return {
-        icon: '🔍',
+        icon: Search,
         title: '没有匹配的网站',
         description: `未找到与「${query}」相关的网站，换个关键词试试？`,
       };
@@ -179,19 +184,19 @@
     const id = uiStore.selectedCategoryId;
     if (id === '__favorites') {
       return {
-        icon: '⭐',
+        icon: Star,
         title: '还没有收藏',
         description: '点击网站卡片右上角的星标，把常用网站收藏到这里。',
       };
     }
     if (id === '__recent') {
       return {
-        icon: '🕘',
+        icon: History,
         title: '还没有访问记录',
         description: '访问过的网站会自动出现在这里，方便快速回访。',
       };
     }
-    return { icon: '📭', title: '暂无网站', description: '该分类下暂无网站' };
+    return { icon: Inbox, title: '暂无网站', description: '该分类下暂无网站' };
   });
 
   const handleKeydown = (event: KeyboardEvent) => {

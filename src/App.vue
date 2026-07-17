@@ -5,6 +5,7 @@
   import { useDataStore } from './stores/data';
   import { useUserPrefsStore } from './stores/userPrefs';
   import { extractDomain, prefetchUncachedFavicons } from './services/faviconService';
+  import { destroyResponsive } from './hooks/useResponsive';
   import ToastHost from './components/ui/ToastHost.vue';
 
   const themeStore = useThemeStore();
@@ -20,29 +21,45 @@
     bgPaused.value = document.hidden;
   };
 
+  /** 加载并校验全部配置（数据 / 搜索 / 设置），失败向上抛出由调用方处理 */
+  const loadAll = async (): Promise<void> => {
+    await dataStore.init();
+    // 空闲时预取未缓存的站点图标，缓解首屏 favicon 请求瀑布
+    const domains = [...new Set(dataStore.links.map((l) => extractDomain(l.url)).filter(Boolean))];
+    prefetchUncachedFavicons(domains);
+    await settingsStore.init();
+    settingsStore.apply();
+  };
+
+  /** 初始化失败后重试：清空错误态并重新加载，成功才置 ready */
+  const retry = async (): Promise<void> => {
+    error.value = null;
+    try {
+      await loadAll();
+      ready.value = true;
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '加载配置失败，请检查数据文件';
+    }
+  };
+
   onMounted(async () => {
     // 触发 userPrefs 初始化（含旧版裸 localStorage 键的一次性迁移）
     void userPrefsStore;
     document.addEventListener('visibilitychange', onVisibilityChange);
     themeStore.initTheme();
     try {
-      await dataStore.init();
-      // 空闲时预取未缓存的站点图标，缓解首屏 favicon 请求瀑布
-      const domains = [
-        ...new Set(dataStore.links.map((l) => extractDomain(l.url)).filter(Boolean)),
-      ];
-      prefetchUncachedFavicons(domains);
-      await settingsStore.init();
-      settingsStore.apply();
+      await loadAll();
       ready.value = true;
     } catch (e) {
       error.value = e instanceof Error ? e.message : '加载配置失败，请检查数据文件';
-      ready.value = true;
+      // 关键：失败时不置 ready=true，保留 splash 以持续展示错误信息，避免静默空白页
     }
   });
 
   onUnmounted(() => {
     document.removeEventListener('visibilitychange', onVisibilityChange);
+    // 应用卸载时移除全局 resize 监听，避免测试/热更新场景下的监听器泄漏
+    destroyResponsive();
   });
 </script>
 
@@ -62,6 +79,7 @@
     <div v-if="error" class="app-splash__error">
       <p class="app-splash__error-title">加载失败</p>
       <p class="app-splash__error-msg">{{ error }}</p>
+      <button class="app-splash__retry" type="button" @click="retry">重试</button>
     </div>
     <template v-else>
       <div class="app-splash__spinner"></div>
@@ -231,6 +249,31 @@
     font-size: 0.875rem;
     opacity: 0.7;
     word-break: break-word;
+  }
+
+  .app-splash__retry {
+    margin-top: 1.25rem;
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-lg, 12px);
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+    transition:
+      transform 150ms var(--ease-out-expo, ease),
+      filter 150ms ease;
+  }
+
+  .app-splash__retry:hover {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+  }
+
+  .app-splash__retry:active {
+    transform: translateY(0) scale(0.97);
   }
 
   @keyframes app-splash-spin {
