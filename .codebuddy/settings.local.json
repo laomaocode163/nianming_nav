@@ -1,0 +1,6 @@
+{
+  "enabledPlugins": {
+    "modern-webapp@cb_teams_marketplace": true,
+    "ardot-design-generator@cb_teams_marketplace": true
+  }
+}
