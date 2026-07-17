@@ -4,6 +4,7 @@ import { useUiStore } from '../../src/stores/ui';
 
 describe('uiStore', () => {
   beforeEach(() => {
+    localStorage.removeItem('nav_density');
     setActivePinia(createPinia());
   });
 
@@ -59,5 +60,20 @@ describe('uiStore', () => {
     expect(store.sidebarOpen).toBe(!initial);
     store.closeSidebar();
     expect(store.sidebarOpen).toBe(false);
+  });
+
+  it('density defaults to comfortable', () => {
+    const store = useUiStore();
+    expect(store.density).toBe('comfortable');
+  });
+
+  it('setDensity updates state and persists to localStorage', () => {
+    const store = useUiStore();
+    store.setDensity('compact');
+    expect(store.density).toBe('compact');
+    expect(localStorage.getItem('nav_density')).toBe('compact');
+    store.setDensity('comfortable');
+    expect(store.density).toBe('comfortable');
+    expect(localStorage.getItem('nav_density')).toBe('comfortable');
   });
 });

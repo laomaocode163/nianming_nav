@@ -28,6 +28,7 @@
   const userPrefs = useUserPrefsStore();
   const isCopied = ref(false);
   const failedIndex = ref(-1);
+  const iconLoaded = ref(false);
   const nameRef = ref<HTMLElement | null>(null);
   const isNameTruncated = ref(false);
 
@@ -59,6 +60,7 @@
   };
 
   const onIconLoad = (event: Event) => {
+    iconLoaded.value = true;
     const img = event.target as HTMLImageElement;
     const domain = extractDomain(props.site.url);
     if (domain) {
@@ -79,11 +81,12 @@
       cacheBrokenFavicon(domain);
       img.src = getDefaultIcon();
       img.onerror = null;
+      iconLoaded.value = true;
     }
   };
 
-  /** 复制网站地址到剪贴板，降级兼容不支持 Clipboard API 的环境 */
-  const copyName = async () => {
+  /** 复制网站链接到剪贴板，降级兼容不支持 Clipboard API 的环境 */
+  const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(props.site.url);
     } catch {
@@ -117,6 +120,7 @@
         :src="siteIcon"
         :alt="site.name"
         class="site-icon"
+        :class="{ loaded: iconLoaded }"
         loading="lazy"
         decoding="async"
         @load="onIconLoad"
@@ -157,8 +161,9 @@
         <button
           class="copy-btn"
           :class="{ copied: isCopied }"
-          title="复制名称"
-          @click.prevent.stop="copyName"
+          :title="isCopied ? '已复制链接' : '复制链接'"
+          aria-label="复制链接"
+          @click.prevent.stop="copyLink"
         >
           <svg
             v-if="!isCopied"
@@ -208,7 +213,7 @@
     padding: 1.25rem 1.5rem;
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     text-decoration: none;
     transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -226,18 +231,18 @@
   }
 
   .site-card:hover {
-    border-color: rgba(59, 130, 246, 0.4);
+    border-color: hsl(var(--hue-primary), var(--sat-primary), var(--lig-primary), 0.4);
     transform: translateY(-3px);
     background: var(--glass-bg-strong);
     box-shadow:
       0 12px 40px rgba(0, 0, 0, 0.1),
       inset 0 1px 0 rgba(255, 255, 255, 0.7),
-      0 0 0 1px rgba(59, 130, 246, 0.15);
+      0 0 0 1px hsl(var(--hue-primary), var(--sat-primary), var(--lig-primary), 0.15);
   }
 
   .dark .site-card:hover {
     background: var(--glass-bg-strong);
-    border-color: rgba(96, 165, 250, 0.4);
+    border-color: hsl(var(--hue-primary), var(--sat-primary), var(--lig-primary), 0.45);
     box-shadow:
       0 12px 40px rgba(0, 0, 0, 0.45),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -279,7 +284,15 @@
     width: 24px;
     height: 24px;
     object-fit: contain;
-    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transition:
+      opacity 240ms ease,
+      transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* 图标加载完成后淡入，避免多源 fallback 切换时的尺寸跳动 */
+  .site-icon.loaded {
+    opacity: 1;
   }
 
   .site-info {
@@ -454,14 +467,14 @@
     .site-card {
       padding: 0.75rem 0.875rem;
       gap: 0.75rem;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       min-height: 60px;
     }
 
     .site-icon-wrapper {
       width: 38px;
       height: 38px;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
     }
 
     .site-icon {

@@ -39,6 +39,9 @@
   const iconErrorMap = ref<Record<string, { url: string; ts: number }>>({});
   const showEngineMenu = ref(false);
   const engineSelectorRef = ref<HTMLElement | null>(null);
+  const searchInputRef = ref<HTMLInputElement | null>(null);
+  // 引擎下拉键盘导航高亮项索引（-1 表示无高亮）
+  const highlightedIndex = ref(-1);
   // 引擎名默认值：图标 fallback 首字母、名称展示、输入框占位统一使用
   const DEFAULT_ENGINE_NAME = '必应';
 
@@ -79,22 +82,83 @@
 
   const toggleEngineMenu = (): void => {
     showEngineMenu.value = !showEngineMenu.value;
+    if (showEngineMenu.value) {
+      // 打开时把高亮定位到当前选中引擎，方便方向键接续
+      highlightedIndex.value = searchEngines.value.findIndex(
+        (e) => e.id === selectedEngine.value?.id
+      );
+    }
   };
 
   const selectEngine = (engineId: string) => {
     dataStore.updateSearchConfig({ selectedSourceId: engineId });
     userPrefs.setSearchSource(engineId);
     showEngineMenu.value = false;
+    highlightedIndex.value = -1;
+  };
+
+  // 引擎选择器键盘导航：↑/↓ 移动高亮，Enter 选择，Esc 关闭
+  const onEngineKeydown = (e: KeyboardEvent): void => {
+    const list = searchEngines.value;
+    if (!list.length) return;
+    if (!showEngineMenu.value) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        toggleEngineMenu();
+      }
+      return;
+    }
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        highlightedIndex.value = (highlightedIndex.value + 1) % list.length;
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        highlightedIndex.value = (highlightedIndex.value - 1 + list.length) % list.length;
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (highlightedIndex.value >= 0) selectEngine(list[highlightedIndex.value].id);
+        break;
+      case 'Escape':
+        e.preventDefault();
+        showEngineMenu.value = false;
+        highlightedIndex.value = -1;
+        break;
+    }
   };
 
   const closeEngineMenu = (e: Event): void => {
     if (engineSelectorRef.value && !engineSelectorRef.value.contains(e.target as Node)) {
       showEngineMenu.value = false;
+      highlightedIndex.value = -1;
     }
   };
 
-  onMounted(() => document.addEventListener('click', closeEngineMenu));
-  onUnmounted(() => document.removeEventListener('click', closeEngineMenu));
+  // 全局快捷键：⌘/Ctrl+K 或 /（非输入态）聚焦搜索框
+  const onGlobalKeydown = (e: KeyboardEvent): void => {
+    const isShortcutK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+    const target = e.target as HTMLElement | null;
+    const inEditable =
+      !!target &&
+      (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+    const isSlash = e.key === '/' && !inEditable;
+    if (isShortcutK || isSlash) {
+      e.preventDefault();
+      searchInputRef.value?.focus();
+      searchInputRef.value?.select();
+    }
+  };
+
+  onMounted(() => {
+    document.addEventListener('click', closeEngineMenu);
+    document.addEventListener('keydown', onGlobalKeydown);
+  });
+  onUnmounted(() => {
+    document.removeEventListener('click', closeEngineMenu);
+    document.removeEventListener('keydown', onGlobalKeydown);
+  });
 
   // 本地输入模型 + 防抖：避免每次按键都驱动全量过滤，提升输入流畅度
   const searchText = ref(uiStore.searchQuery);
@@ -169,13 +233,26 @@
 
       <div class="search-wrapper">
         <!-- Search Mode Toggle -->
-        <div class="search-mode-toggle" @click="uiStore.toggleSearchMode()">
+        <button
+          type="button"
+          class="search-mode-toggle"
+          :class="{ 'is-external': uiStore.searchMode === 'external' }"
+          :title="
+            uiStore.searchMode === 'external'
+              ? '当前：网络搜索（点击切换到站内）'
+              : '当前：站内搜索（点击切换到网络）'
+          "
+          :aria-label="
+            uiStore.searchMode === 'external' ? '搜索模式：网络搜索' : '搜索模式：站内搜索'
+          "
+          @click="uiStore.toggleSearchMode()"
+        >
           <span class="mode-icon">
             <Globe v-if="uiStore.searchMode === 'external'" :size="16" :stroke-width="2" />
             <Search v-else :size="16" :stroke-width="2" />
           </span>
           <span class="mode-text">{{ uiStore.searchMode === 'external' ? '搜索' : '站内' }}</span>
-        </div>
+        </button>
 
         <!-- Search Engine Selector (only show in external mode) -->
         <div
@@ -183,7 +260,16 @@
           ref="engineSelectorRef"
           class="search-engine-selector"
         >
-          <div class="engine-selector-content" @click="toggleEngineMenu">
+          <div
+            class="engine-selector-content"
+            role="button"
+            tabindex="0"
+            aria-haspopup="listbox"
+            :aria-expanded="showEngineMenu"
+            aria-label="选择搜索引擎"
+            @click="toggleEngineMenu"
+            @keydown="onEngineKeydown"
+          >
             <!-- Favicon image with error fallback -->
             <div v-if="selectedEngineIcon" class="engine-icon-wrapper">
               <img
@@ -206,13 +292,19 @@
               aria-hidden="true"
             />
           </div>
-          <div v-if="showEngineMenu" class="engine-dropdown-menu">
+          <div v-if="showEngineMenu" class="engine-dropdown-menu" role="listbox">
             <div
-              v-for="engine in searchEngines"
+              v-for="(engine, idx) in searchEngines"
               :key="engine.id"
               class="engine-dropdown-item"
-              :class="{ selected: engine.id === selectedEngine?.id }"
+              :class="{
+                selected: engine.id === selectedEngine?.id,
+                highlighted: idx === highlightedIndex,
+              }"
+              role="option"
+              :aria-selected="engine.id === selectedEngine?.id"
               @click="selectEngine(engine.id)"
+              @mouseenter="highlightedIndex = idx"
             >
               <div v-if="getEngineDisplayIcon(engine)" class="dropdown-engine-icon-wrapper">
                 <img
@@ -232,13 +324,15 @@
 
         <!-- Search Input -->
         <input
+          ref="searchInputRef"
           class="search-input"
           type="text"
           :value="searchText"
+          :aria-label="uiStore.searchMode === 'external' ? '网络搜索输入框' : '站内网站搜索输入框'"
           :placeholder="
             uiStore.searchMode === 'external'
-              ? `在 ${selectedEngine?.name || DEFAULT_ENGINE_NAME} 搜索...`
-              : '搜索站内网站...'
+              ? `在 ${selectedEngine?.name || DEFAULT_ENGINE_NAME} 搜索...（按 / 或 ⌘K 聚焦）`
+              : '搜索站内网站...（按 / 或 ⌘K 聚焦）'
           "
           @input="onSearchInput(($event.target as HTMLInputElement).value)"
           @keyup.enter="handleSearch"
@@ -537,14 +631,26 @@
     padding: 0.375rem 0.625rem;
     margin-right: 0.375rem;
     cursor: pointer;
+    border: none;
     border-radius: var(--radius-sm);
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    color: var(--color-text-secondary);
+    /* 默认即以主色呈现，强化「这是当前搜索模式」的视觉权重 */
+    color: var(--color-primary);
+    background: hsl(var(--hue-primary), 15%, 96%);
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
+    font-family: inherit;
     position: relative;
-    background: transparent;
     white-space: nowrap;
+  }
+
+  .dark .search-mode-toggle {
+    background: hsl(var(--hue-primary), 20%, 18%);
+  }
+
+  .search-mode-toggle:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   /* 段落分割线：模式切换与后续内容之间 */
@@ -604,12 +710,14 @@
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .engine-dropdown-item:hover {
+  .engine-dropdown-item:hover,
+  .engine-dropdown-item.highlighted {
     background: hsl(var(--hue-primary), 15%, 96%);
     color: var(--color-primary);
   }
 
-  .dark .engine-dropdown-item:hover {
+  .dark .engine-dropdown-item:hover,
+  .dark .engine-dropdown-item.highlighted {
     background: hsl(var(--hue-primary), 20%, 18%);
   }
 

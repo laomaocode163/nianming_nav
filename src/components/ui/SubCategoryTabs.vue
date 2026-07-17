@@ -35,6 +35,25 @@
     el.scrollBy({ left: dir * Math.max(160, el.clientWidth * 0.6), behavior: 'smooth' });
   };
 
+  // 二级标签键盘导航：←/→ 在标签间移动焦点，Home/End 跳到首尾
+  const onTabsKeydown = (e: KeyboardEvent) => {
+    const el = scrollRef.value;
+    if (!el) return;
+    const keys = ['ArrowRight', 'ArrowLeft', 'Home', 'End'];
+    if (!keys.includes(e.key)) return;
+    const tabs = Array.from(el.querySelectorAll<HTMLButtonElement>('.tab-item'));
+    if (!tabs.length) return;
+    const current = tabs.findIndex((t) => t === document.activeElement);
+    let next = current;
+    if (e.key === 'ArrowRight') next = current < 0 ? 0 : (current + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft')
+      next = current < 0 ? tabs.length - 1 : (current - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = tabs.length - 1;
+    e.preventDefault();
+    tabs[next]?.focus();
+  };
+
   onMounted(async () => {
     await nextTick();
     updateScrollState();
@@ -67,7 +86,13 @@
       </svg>
     </button>
 
-    <div ref="scrollRef" class="sub-category-tabs" role="tablist" @scroll="updateScrollState">
+    <div
+      ref="scrollRef"
+      class="sub-category-tabs"
+      role="tablist"
+      @scroll="updateScrollState"
+      @keydown="onTabsKeydown"
+    >
       <button
         class="tab-item tab-item--all"
         :class="{ active: selectedId === null }"

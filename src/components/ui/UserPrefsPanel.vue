@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { ref, onMounted, onBeforeUnmount } from 'vue';
   import { useUserPrefsStore } from '../../stores/userPrefs';
+  import { useUiStore } from '../../stores/ui';
   import { useDataStore } from '../../stores/data';
   import { useSettingsStore } from '../../stores/settings';
   import { adminApi } from '../../services/adminApi';
@@ -19,6 +20,7 @@
   onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
   const userPrefs = useUserPrefsStore();
+  const uiStore = useUiStore();
   const dataStore = useDataStore();
   const settingsStore = useSettingsStore();
   const fileInput = ref<HTMLInputElement | null>(null);
@@ -127,6 +129,32 @@
             <span class="stat-value">{{ userPrefs.state.recentVisits.length }}</span>
             <span class="stat-label">最近访问</span>
           </div>
+        </div>
+      </div>
+
+      <div class="prefs-section">
+        <p class="prefs-section-title">显示密度</p>
+        <div class="density-toggle" role="radiogroup" aria-label="卡片显示密度">
+          <button
+            type="button"
+            class="density-option"
+            :class="{ active: uiStore.density === 'comfortable' }"
+            role="radio"
+            :aria-checked="uiStore.density === 'comfortable'"
+            @click="uiStore.setDensity('comfortable')"
+          >
+            舒适
+          </button>
+          <button
+            type="button"
+            class="density-option"
+            :class="{ active: uiStore.density === 'compact' }"
+            role="radio"
+            :aria-checked="uiStore.density === 'compact'"
+            @click="uiStore.setDensity('compact')"
+          >
+            紧凑
+          </button>
         </div>
       </div>
 
@@ -350,6 +378,41 @@
 
   .prefs-file-input {
     display: none;
+  }
+
+  .density-toggle {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .density-option {
+    flex: 1;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-text);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+
+  .density-option:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: hsl(var(--hue-primary), 12%, 96%);
+  }
+
+  .dark .density-option:hover {
+    background: hsl(var(--hue-primary), 20%, 18%);
+  }
+
+  .density-option.active {
+    border-color: var(--color-primary);
+    color: #fff;
+    background: var(--color-primary);
   }
 
   .prefs-hint {

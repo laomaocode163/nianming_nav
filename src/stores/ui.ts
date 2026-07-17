@@ -7,6 +7,20 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type { SearchMode } from '../types';
 
+/** 卡片密度：舒适（默认）/ 紧凑 */
+export type Density = 'comfortable' | 'compact';
+const DENSITY_KEY = 'nav_density';
+
+const readDensity = (): Density => {
+  try {
+    const saved = localStorage.getItem(DENSITY_KEY);
+    if (saved === 'compact' || saved === 'comfortable') return saved;
+  } catch {
+    /* 忽略隐私模式等读取失败 */
+  }
+  return 'comfortable';
+};
+
 export const useUiStore = defineStore('ui', () => {
   // 分类选择
   const selectedCategoryId = ref<string>('all');
@@ -23,6 +37,18 @@ export const useUiStore = defineStore('ui', () => {
   // 分页
   const currentPage = ref(1);
   const pageSize = ref(20);
+
+  // 卡片密度（持久化到 localStorage）
+  const density = ref<Density>(readDensity());
+
+  const setDensity = (value: Density): void => {
+    density.value = value;
+    try {
+      localStorage.setItem(DENSITY_KEY, value);
+    } catch {
+      /* 忽略写入失败 */
+    }
+  };
 
   const selectCategory = (categoryId: string): void => {
     selectedCategoryId.value = categoryId;
@@ -66,6 +92,8 @@ export const useUiStore = defineStore('ui', () => {
     sidebarCollapsed,
     currentPage,
     pageSize,
+    density,
+    setDensity,
     selectCategory,
     selectSubCategory,
     updateSearchQuery,

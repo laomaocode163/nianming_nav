@@ -25,8 +25,15 @@
   const HEADER_H = 69;
   const CATEGORY_H = 68;
   const PAGINATION_H = 60;
-  const CARD_H = 100; // 含 gap 的卡片最小高度
   const GRID_GAP = 24;
+  // 卡片最小宽度（用于列数估算）与含 gap 的卡片最小高度（随密度变化）
+  const CARD_MIN_W = 240;
+  const SECTION_PADDING = 48; // .sites-section 左右各 1.5rem
+  const SIDEBAR_W = 240;
+  const SIDEBAR_COLLAPSED_W = 72;
+
+  // 密度：紧凑模式下卡片更矮、每页可容纳更多
+  const cardHeight = computed(() => (uiStore.density === 'compact' ? 76 : 100));
 
   const categories = computed(() => dataStore.visibleCategories);
 
@@ -91,13 +98,23 @@
     );
   });
 
-  // 列数：根据窗口宽度推断（不依赖 DOM 查询，避免 ResizeObserver 反馈环）
-  const columns = computed(() => (windowWidth.value <= 1024 ? 2 : 4));
+  // 列数：根据「可用内容宽度」估算，使分页列数与实际渲染列数一致，
+  // 避免折叠侧边栏时网格列数与分页假设不符导致卡片被裁切。
+  const columns = computed(() => {
+    const w = windowWidth.value;
+    if (w <= 768) return 2; // 移动端
+    if (w <= 1024) return 2; // 平板固定 2 列
+    // 桌面：扣除侧边栏与内边距后按卡片最小宽度估算
+    const sidebar = isMobile.value ? 0 : uiStore.sidebarCollapsed ? SIDEBAR_COLLAPSED_W : SIDEBAR_W;
+    const available = w - sidebar - SECTION_PADDING;
+    const cols = Math.floor((available + GRID_GAP) / (CARD_MIN_W + GRID_GAP));
+    return Math.max(1, Math.min(cols, 6));
+  });
 
   // 动态每页数量：基于响应式窗口高度和固定常量推算，不测量 DOM
   const fitPageSize = computed(() => {
     const availableH = windowHeight.value - HEADER_H - CATEGORY_H - PAGINATION_H;
-    const rows = Math.max(1, Math.floor((availableH + GRID_GAP) / (CARD_H + GRID_GAP)));
+    const rows = Math.max(1, Math.floor((availableH + GRID_GAP) / (cardHeight.value + GRID_GAP)));
     return Math.max(columns.value, rows * columns.value);
   });
 
@@ -126,6 +143,34 @@
     if (id === '__favorites') return '我的常用';
     if (id === '__recent') return '最近访问';
     return currentCategory.value?.name || '未知分类';
+  });
+
+  // 空状态文案：针对搜索无结果、收藏、最近访问给出更贴心的引导
+  const emptyState = computed(() => {
+    const query = uiStore.searchQuery.trim();
+    if (query && uiStore.searchMode === 'internal') {
+      return {
+        icon: '🔍',
+        title: '没有匹配的网站',
+        description: `未找到与「${query}」相关的网站，换个关键词试试？`,
+      };
+    }
+    const id = uiStore.selectedCategoryId;
+    if (id === '__favorites') {
+      return {
+        icon: '⭐',
+        title: '还没有收藏',
+        description: '点击网站卡片右上角的星标，把常用网站收藏到这里。',
+      };
+    }
+    if (id === '__recent') {
+      return {
+        icon: '🕘',
+        title: '还没有访问记录',
+        description: '访问过的网站会自动出现在这里，方便快速回访。',
+      };
+    }
+    return { icon: '📭', title: '暂无网站', description: '该分类下暂无网站' };
   });
 
   const handleKeydown = (event: KeyboardEvent) => {
@@ -182,6 +227,7 @@
         'sidebar-closed': !uiStore.sidebarOpen,
         'sidebar-collapsed': uiStore.sidebarCollapsed,
         'is-mobile': isMobile,
+        'density-compact': uiStore.density === 'compact',
       }"
     >
       <!-- Header -->
@@ -212,7 +258,7 @@
         </div>
 
         <!-- 网站列表 -->
-        <div v-if="links.length > 0" class="sites-grid">
+        <div v-if="links.length > 0" class="sites-grid" :style="{ '--grid-cols': columns }">
           <SiteCard
             v-for="(site, index) in paginatedLinks"
             :key="`${gridKey}-${site.id}`"
@@ -224,9 +270,9 @@
 
         <EmptyState
           v-if="links.length === 0"
-          icon="📭"
-          title="暂无网站"
-          description="该分类下暂无网站"
+          :icon="emptyState.icon"
+          :title="emptyState.title"
+          :description="emptyState.description"
         />
       </div>
 
@@ -334,7 +380,9 @@
 
   .sites-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    /* 列数由 JS 按可用宽度估算并通过 --grid-cols 注入，
+       保证分页假设的列数与实际渲染列数始终一致，避免卡片被裁切 */
+    grid-template-columns: repeat(var(--grid-cols, 4), 1fr);
     gap: var(--space-lg);
     flex: 1;
     min-height: 0;
@@ -358,9 +406,15 @@
     }
   }
 
-  .main-content.sidebar-collapsed .sites-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: var(--space-lg);
+  /* 紧凑密度：缩小卡片内边距与高度，一屏容纳更多 */
+  .main-content.density-compact :deep(.site-card) {
+    padding: 0.75rem 1rem;
+    min-height: 60px;
+  }
+
+  .main-content.density-compact :deep(.site-icon-wrapper) {
+    width: 40px;
+    height: 40px;
   }
 
   .sidebar-overlay {
