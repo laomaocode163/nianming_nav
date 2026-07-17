@@ -160,7 +160,7 @@
 
       <div class="prefs-section">
         <p class="prefs-section-title">备份与恢复</p>
-        <div class="prefs-actions">
+        <div class="prefs-actions" :class="{ compact: uiStore.density === 'compact' }">
           <button class="prefs-action" type="button" @click="exportPrefs">
             <Download :size="16" :stroke-width="2" />
             <span>导出配置</span>
@@ -181,7 +181,7 @@
 
       <div class="prefs-section">
         <p class="prefs-section-title">数据管理</p>
-        <div class="prefs-actions">
+        <div class="prefs-actions" :class="{ compact: uiStore.density === 'compact' }">
           <button class="prefs-action danger" type="button" @click="clearFavorites">
             <Star :size="16" :stroke-width="2" />
             <span>清空收藏</span>
@@ -342,6 +342,17 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.625rem;
+  }
+
+  .prefs-actions.compact {
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
+  .prefs-actions.compact .prefs-action {
+    width: 100%;
+    justify-content: center;
+    padding: 0.4375rem 0.875rem;
   }
 
   .prefs-action {
