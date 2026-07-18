@@ -24,16 +24,3 @@ export const hexToRgbString = (hex: string): string => {
   const b = int & 255;
   return `${r} ${g} ${b}`;
 };
-
-/** 常用主色预设（hex），供后台色板快速选择 */
-export const ACCENT_PRESETS: string[] = [
-  '#0EA5E9', // 天蓝（默认）
-  '#6366F1', // 靛紫
-  '#8B5CF6', // 紫
-  '#EC4899', // 粉
-  '#EF4444', // 红
-  '#F59E0B', // 琥珀
-  '#10B981', // 翠绿
-  '#14B8A6', // 青
-  '#0F172A', // 石墨
-];
