@@ -7,13 +7,13 @@
   import Sidebar from '../components/layout/Sidebar.vue';
   import MainHeader from '../components/layout/MainHeader.vue';
   import EmptyState from '../components/ui/EmptyState.vue';
-  import SubCategoryTabs from '../components/ui/SubCategoryTabs.vue';
+  import SubCategoryMenu from '../components/ui/SubCategoryMenu.vue';
   import Pagination from '../components/ui/Pagination.vue';
   import { defineAsyncComponent } from 'vue';
   import type { Link } from '../types';
   import { Search, Star, History, Inbox } from 'lucide-vue-next';
   import { byOrder } from '@/utils/sort';
-  import { matchesLinkQuery, filterLinksByQuery } from '@/utils/search';
+  import { filterLinksByQuery } from '@/utils/search';
   const SiteCard = defineAsyncComponent(() => import('../components/ui/SiteCard.vue'));
 
   const dataStore = useDataStore();
@@ -32,7 +32,10 @@
   const GRID_GAP = 24;
   const SECTION_BOTTOM_PADDING = 32; // .sites-section padding-bottom: 2rem
   const GRID_PADDING_V = 48; // .sites-grid padding-top + padding-bottom: 24px*2
-  const SUB_CATEGORY_H = 64; // 二级标签栏近似高度（折叠/移动端显示时）
+  const SUB_CATEGORY_H = 64; // 二级标签栏近似高度（初始/测量前的兜底值）
+  // 二级菜单真实渲染高度（由 SubCategoryMenu 的 ResizeObserver 上报），
+  // 初始用兜底值，挂载后被实际测量值覆盖，参与 fitPageSize 扣减。
+  const subCategoryActualH = ref(SUB_CATEGORY_H);
   // 卡片最小宽度（用于列数估算）与含 gap 的卡片最小高度（随密度变化）
   const CARD_MIN_W = 240;
   const SECTION_PADDING = 48; // .sites-section 左右各 1.5rem
@@ -50,23 +53,6 @@
 
   const hasSubCategories = computed(() => {
     return subCategories.value.length > 0;
-  });
-
-  // 每个二级分类下的链接数量，用于标签栏计数徽标。
-  // 单趟遍历 visibleLinks：仅统计当前分类、匹配搜索词的链接，按二级分类计数（O(n)），
-  // 替代原先对每个二级分类调用 getLinksByCategory（含过滤 + 新建数组）的 O(n×m) 做法。
-  const subCounts = computed<Record<string, number>>(() => {
-    const map: Record<string, number> = {};
-    const catId = uiStore.selectedCategoryId;
-    const query = uiStore.searchMode === 'internal' ? uiStore.searchQuery : '';
-    for (const link of dataStore.visibleLinks) {
-      if (link.categoryId !== catId) continue;
-      if (!matchesLinkQuery(link, query)) continue;
-      const subId = link.subCategoryId;
-      if (!subId) continue;
-      map[subId] = (map[subId] || 0) + 1;
-    }
-    return map;
   });
 
   const links = computed<Link[]>(() => {
@@ -114,9 +100,11 @@
     let availableH = windowHeight.value - HEADER_H - CATEGORY_H - PAGINATION_H;
     // 扣除 section 底边距与 grid 上下内边距，避免算出的行数放不下而被裁切
     availableH -= SECTION_BOTTOM_PADDING + GRID_PADDING_V;
-    // 二级分类标签栏常驻内容区顶部，始终扣除其近似高度
+    // 二级分类菜单常驻内容区顶部：换行后高度为 1~N 行（动态），
+    // 使用 ResizeObserver 上报的真实高度（subCategoryActualH）扣减，
+    // 避免多行时卡片被底部裁切。无反馈环：菜单高度仅取决于项数/容器宽度，与 pageSize 无关。
     if (hasSubCategories.value) {
-      availableH -= SUB_CATEGORY_H;
+      availableH -= subCategoryActualH.value;
     }
     const rows = Math.max(1, Math.floor((availableH + GRID_GAP) / (cardHeight.value + GRID_GAP)));
     return Math.max(columns.value, rows * columns.value);
@@ -247,12 +235,11 @@
 
       <!-- 二级分类标签：点击一级导航后在此顶部横向平铺，点击即可快速切换 -->
       <div v-if="hasSubCategories" class="sub-category-wrapper">
-        <SubCategoryTabs
+        <SubCategoryMenu
           :sub-categories="subCategories"
           :selected-id="uiStore.selectedSubCategoryId"
-          :total-count="links.length"
-          :counts="subCounts"
           @select="uiStore.selectSubCategory"
+          @resize="subCategoryActualH = $event"
         />
       </div>
 

@@ -37,7 +37,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     Sidebar: typeof import('./components/layout/Sidebar.vue')['default']
     SiteCard: typeof import('./components/ui/SiteCard.vue')['default']
-    SubCategoryTabs: typeof import('./components/ui/SubCategoryTabs.vue')['default']
+    SubCategoryMenu: typeof import('./components/ui/SubCategoryMenu.vue')['default']
     TimeDateComponent: typeof import('./components/ui/TimeDateComponent.vue')['default']
     ToastHost: typeof import('./components/ui/ToastHost.vue')['default']
     UserPrefsPanel: typeof import('./components/ui/UserPrefsPanel.vue')['default']
