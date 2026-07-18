@@ -2,6 +2,7 @@
   import { computed, reactive, ref } from 'vue';
   import { useAdminStore } from '../../stores/admin';
   import { showToast } from '../../composables/useToast';
+  import { handleAdminError } from '../../composables/useAdminToast';
   import { searchSourceSchema } from '../../config/schema';
   import type { SearchSource } from '../../types';
   import { Search, Plus, Star } from 'lucide-vue-next';
@@ -19,7 +20,7 @@
         externalSources: sources.value,
       });
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '保存失败', 2500);
+      handleAdminError(e, '保存失败');
     }
   };
 

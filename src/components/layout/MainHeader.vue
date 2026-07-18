@@ -219,7 +219,7 @@
 </script>
 
 <template>
-  <header class="main-header">
+  <header class="main-header glass-surface">
     <div class="header-left">
       <!-- 移动端汉堡菜单按钮 -->
       <button
@@ -301,7 +301,7 @@
               aria-hidden="true"
             />
           </div>
-          <div v-if="showEngineMenu" class="engine-dropdown-menu" role="listbox">
+          <div v-if="showEngineMenu" class="engine-dropdown-menu glass-surface" role="listbox">
             <div
               v-for="(engine, idx) in searchEngines"
               :key="engine.id"
@@ -363,7 +363,7 @@
 
     <div class="header-right">
       <button
-        class="prefs-btn"
+        class="icon-btn"
         type="button"
         title="我的偏好（收藏 / 最近 / 导入导出）"
         aria-label="打开偏好设置"
@@ -373,7 +373,7 @@
       </button>
       <button
         v-if="isDev"
-        class="admin-btn"
+        class="icon-btn"
         type="button"
         title="管理后台"
         aria-label="打开管理后台"
@@ -382,7 +382,7 @@
         <Settings class="admin-icon" :size="20" :stroke-width="2" />
       </button>
       <button
-        class="theme-btn"
+        class="icon-btn"
         type="button"
         :title="themeStore.isDark ? '切换到亮色模式' : '切换到暗色模式'"
         :aria-pressed="themeStore.isDark"
@@ -407,8 +407,6 @@
     justify-content: space-between;
     padding: var(--space-md) var(--space-lg);
     background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
     border-bottom: none;
     position: sticky;
     top: 0;
@@ -501,101 +499,11 @@
     background: var(--color-primary);
   }
 
-  .theme-btn {
-    width: var(--header-module-h);
-    height: var(--header-module-h);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: transparent;
-    cursor: pointer;
-    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-secondary);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .theme-btn:hover {
-    border-color: var(--color-primary);
-    background: hsl(var(--hue-primary), 10%, 96%);
-    color: var(--color-primary);
-    box-shadow: var(--shadow-md);
-  }
-
-  .dark .theme-btn:hover {
-    background: hsl(var(--hue-primary), 20%, 18%);
-  }
-
-  .theme-btn:active {
-    transform: scale(0.95);
-  }
-
-  .admin-btn {
-    width: var(--header-module-h);
-    height: var(--header-module-h);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: transparent;
-    cursor: pointer;
-    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-secondary);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .admin-btn:hover {
-    border-color: var(--color-primary);
-    background: hsl(var(--hue-primary), 10%, 96%);
-    color: var(--color-primary);
-    box-shadow: var(--shadow-md);
-  }
-
-  .dark .admin-btn:hover {
-    background: hsl(var(--hue-primary), 20%, 18%);
-  }
-
-  .admin-btn:active {
-    transform: scale(0.95);
-  }
-
-  .prefs-btn {
-    width: var(--header-module-h);
-    height: var(--header-module-h);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: transparent;
-    cursor: pointer;
-    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-secondary);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .prefs-btn:hover {
-    border-color: var(--color-primary);
-    background: hsl(var(--hue-primary), 10%, 96%);
-    color: var(--color-primary);
-    box-shadow: var(--shadow-md);
-  }
-
-  .dark .prefs-btn:hover {
-    background: hsl(var(--hue-primary), 20%, 18%);
-  }
-
-  .prefs-btn:active {
-    transform: scale(0.95);
-  }
-
   .admin-icon {
     transition: transform 500ms var(--ease-in-out-quint);
   }
 
-  .admin-btn:hover .admin-icon {
+  .icon-btn:hover .admin-icon {
     transform: rotate(90deg);
   }
 
@@ -605,7 +513,7 @@
     transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  .theme-btn:hover .theme-icon {
+  .icon-btn:hover .theme-icon {
     transform: rotate(20deg) scale(1.1);
   }
 
@@ -698,8 +606,6 @@
     min-width: 12rem;
     padding: 0.375rem;
     background: var(--glass-bg-strong);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);

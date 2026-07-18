@@ -2,6 +2,9 @@
   import { computed, reactive, ref } from 'vue';
   import { useAdminStore } from '../../stores/admin';
   import { showToast } from '../../composables/useToast';
+  import { byOrder } from '@/utils/sort';
+  import { handleAdminError } from '../../composables/useAdminToast';
+  import { reorderById } from '@/utils/drag';
   import { categorySchema, subCategorySchema } from '../../config/schema';
   import type { Category, SubCategory } from '../../types';
   import EmojiPicker from '../ui/EmojiPicker.vue';
@@ -13,12 +16,9 @@
   const expanded = reactive<Record<string, boolean>>({});
   const loading = computed(() => adminStore.loading && adminStore.categories.length === 0);
 
-  const sortedCategories = computed<Category[]>(() =>
-    [...adminStore.categories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-  );
+  const sortedCategories = computed<Category[]>(() => [...adminStore.categories].sort(byOrder));
 
-  const sortedSubs = (cat: Category): SubCategory[] =>
-    [...(cat.subCategories ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const sortedSubs = (cat: Category): SubCategory[] => [...(cat.subCategories ?? [])].sort(byOrder);
 
   const toggleExpand = (id: string): void => {
     expanded[id] = !expanded[id];
@@ -83,7 +83,7 @@
       }
       catModal.value = false;
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '操作失败', 2500);
+      handleAdminError(e);
     }
   };
 
@@ -93,7 +93,7 @@
       await adminStore.deleteCategory(cat.id);
       showToast('已删除分类');
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '删除失败', 2500);
+      handleAdminError(e, '删除失败');
     }
   };
 
@@ -162,7 +162,7 @@
       }
       subModal.value = false;
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '操作失败', 2500);
+      handleAdminError(e);
     }
   };
 
@@ -172,7 +172,7 @@
       await adminStore.deleteSub(categoryId, sub.id);
       showToast('已删除二级分类');
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '删除失败', 2500);
+      handleAdminError(e, '删除失败');
     }
   };
 
@@ -187,15 +187,16 @@
     const from = dragCatId.value;
     dragCatId.value = null;
     if (!from || from === targetId) return;
-    const ids = sortedCategories.value.map((c) => c.id).filter((id) => id !== from);
-    const idx = ids.indexOf(targetId);
-    if (idx < 0) return;
-    ids.splice(idx, 0, from);
+    const ids = reorderById(
+      sortedCategories.value.map((c) => c.id),
+      from,
+      targetId
+    );
     try {
       await adminStore.reorderCategories(ids);
       showToast('已调整分类顺序');
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '排序失败', 2500);
+      handleAdminError(e, '排序失败');
     }
   };
 
@@ -210,17 +211,16 @@
     if (dragCat !== categoryId || dragSubId === targetSubId) return;
     const cat = adminStore.categories.find((c) => c.id === categoryId);
     if (!cat) return;
-    const ids = sortedSubs(cat)
-      .map((s) => s.id)
-      .filter((id) => id !== dragSubId);
-    const idx = ids.indexOf(targetSubId);
-    if (idx < 0) return;
-    ids.splice(idx, 0, dragSubId);
+    const ids = reorderById(
+      sortedSubs(cat).map((s) => s.id),
+      dragSubId,
+      targetSubId
+    );
     try {
       await adminStore.reorderSubCategories(categoryId, ids);
       showToast('已调整子分类顺序');
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '排序失败', 2500);
+      handleAdminError(e, '排序失败');
     }
   };
 </script>

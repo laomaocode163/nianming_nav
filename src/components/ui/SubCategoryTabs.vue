@@ -70,7 +70,7 @@
     <button
       v-show="canScrollLeft"
       type="button"
-      class="scroll-arrow scroll-arrow--left"
+      class="scroll-arrow scroll-arrow--left glass-surface"
       aria-label="向左滚动"
       @click="scrollByAmount(-1)"
     >
@@ -94,7 +94,7 @@
       @keydown="onTabsKeydown"
     >
       <button
-        class="tab-item tab-item--all"
+        class="tab-item tab-item--all glass-surface"
         :class="{ active: selectedId === null }"
         role="tab"
         :aria-selected="selectedId === null"
@@ -106,7 +106,7 @@
       <button
         v-for="sub in subCategories"
         :key="sub.id"
-        class="tab-item"
+        class="tab-item glass-surface"
         :class="{ active: selectedId === sub.id }"
         :title="sub.name"
         role="tab"
@@ -123,7 +123,7 @@
     <button
       v-show="canScrollRight"
       type="button"
-      class="scroll-arrow scroll-arrow--right"
+      class="scroll-arrow scroll-arrow--right glass-surface"
       aria-label="向右滚动"
       @click="scrollByAmount(1)"
     >
@@ -159,8 +159,6 @@
     border-radius: 50%;
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
     color: var(--color-text-secondary);
     cursor: pointer;
     box-shadow: var(--shadow-sm);
@@ -218,8 +216,6 @@
     border-radius: 20px;
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
     color: var(--color-text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;

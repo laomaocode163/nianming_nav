@@ -7,6 +7,7 @@
   import AdminSettings from '../components/admin/AdminSettings.vue';
   import IntegrityCheck from '../components/admin/IntegrityCheck.vue';
   import { Link, Folder, Search, Palette, ShieldCheck } from 'lucide-vue-next';
+  import { byOrder } from '@/utils/sort';
   import '../components/admin/admin.css';
 
   const adminStore = useAdminStore();
@@ -21,14 +22,12 @@
   };
 
   const filterCats = computed(() =>
-    [...adminStore.categories]
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-      .map((c) => ({
-        id: c.id,
-        name: c.name,
-        icon: c.icon,
-        count: adminStore.links.filter((l) => l.categoryId === c.id).length,
-      }))
+    [...adminStore.categories].sort(byOrder).map((c) => ({
+      id: c.id,
+      name: c.name,
+      icon: c.icon,
+      count: adminStore.links.filter((l) => l.categoryId === c.id).length,
+    }))
   );
 
   // 切到「分类」页时清空网址筛选，回到「网址」从「全部」开始

@@ -181,3 +181,41 @@ body {
     backdrop-filter: none !important;
   }
 }
+
+/* 玻璃拟态工具类：统一 backdrop-filter 配对（含 -webkit- 前缀），
+   供 .main-header / .sidebar / .site-card 等玻璃元素复用，避免重复声明 */
+.glass-surface {
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+/* 玻璃图标按钮基类：头部/侧栏的方形图标按钮共享（主题切换、管理入口、偏好等） */
+.icon-btn {
+  width: var(--header-module-h, 52px);
+  height: var(--header-module-h, 52px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  cursor: pointer;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.icon-btn:hover {
+  border-color: var(--color-primary);
+  background: hsl(var(--hue-primary), 10%, 96%);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.dark .icon-btn:hover {
+  background: hsl(var(--hue-primary), 20%, 18%);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}

@@ -2,12 +2,9 @@
  * 本地开发期管理后台 API（仅 dev server 注册，生产构建不含）。
  * 提供 categories / links / subcategories 的 CRUD，以及触发 favicon 抓取。
  * 校验复用 src/config/schema 的 Zod schema 与 loadConfig 的 validateReferentialIntegrity，
- * 保证与运行时一致、无逻辑漂移。
+ * 保证与运行时一致、无逻辑漂移。JSON 读写与路径常量见 ./lib/configIo。
  */
-import { readFile, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { ZodError } from 'zod';
 import {
@@ -22,60 +19,20 @@ import {
   type Link,
   type SearchConfig,
   type SiteSettings,
-  type SubCategory,
 } from '../src/config/schema';
 import { validateReferentialIntegrity } from '../src/config/loadConfig';
 import { nextLinkId } from '../src/config/linkId';
-
-const here = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(here, '..');
-const CATEGORIES_PATH = resolve(ROOT, 'src/config/data/categories.json');
-const LINKS_PATH = resolve(ROOT, 'src/config/data/links.json');
-const SEARCH_PATH = resolve(ROOT, 'src/config/data/search.json');
-const SETTINGS_PATH = resolve(ROOT, 'src/config/data/settings.json');
-const FAVICONS_SCRIPT = resolve(ROOT, 'scripts/fetch-favicons.mjs');
-
-const readJson = async <T>(p: string): Promise<T> => JSON.parse(await readFile(p, 'utf8')) as T;
-const repValue = (v: unknown, indent: string): string => {
-  if (Array.isArray(v)) {
-    if (v.length === 0) return '[ ]';
-    const child = indent + '  ';
-    const items = v.map((it) => child + repValue(it, child)).join(',\n');
-    return `[\n${items}\n${indent}]`;
-  }
-  if (v && typeof v === 'object') {
-    return repObj(v as Record<string, unknown>, indent);
-  }
-  return JSON.stringify(v);
-};
-
-const repObj = (obj: Record<string, unknown>, indent: string): string => {
-  const inner = indent + '  ';
-  const parts = Object.entries(obj).map(([k, v]) => `${JSON.stringify(k)}: ${repValue(v, inner)}`);
-  return `{ ${parts.join(', ')} }`;
-};
-
-// 序列化时复刻仓库既有 JSON 风格（顶层 2 空格缩进、对象单行紧凑、
-// 对象数组多行），从而整文件重写也只产生最小 diff。
-const repoStringify = (data: unknown): string => {
-  if (Array.isArray(data)) {
-    if (data.length === 0) return '[ ]';
-    const items = data.map((it) => '  ' + repValue(it, '  ')).join(',\n');
-    return `[\n${items}\n]`;
-  }
-  return repObj(data as Record<string, unknown>, '');
-};
-
-const writeJson = async (p: string, data: unknown): Promise<void> => {
-  await writeFile(p, repoStringify(data) + '\n', 'utf8');
-};
-
-const flattenSubs = (
-  categories: Category[]
-): Array<SubCategory & { categoryId: string; categoryName: string }> =>
-  categories.flatMap((c) =>
-    (c.subCategories ?? []).map((s) => ({ categoryId: c.id, categoryName: c.name, ...s }))
-  );
+import {
+  CATEGORIES_PATH,
+  LINKS_PATH,
+  SEARCH_PATH,
+  SETTINGS_PATH,
+  FAVICONS_SCRIPT,
+  ROOT,
+  readJson,
+  writeJson,
+  flattenSubs,
+} from './lib/configIo';
 
 class HttpError extends Error {
   constructor(

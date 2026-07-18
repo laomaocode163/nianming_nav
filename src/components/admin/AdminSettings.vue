@@ -3,6 +3,7 @@
   import { useAdminStore } from '../../stores/admin';
   import { useSettingsStore } from '../../stores/settings';
   import { showToast } from '../../composables/useToast';
+  import { handleAdminError } from '../../composables/useAdminToast';
   import { ACCENT_PRESETS, hexToRgbString, rgbStringToHex } from '../../utils/color';
   import { Palette } from 'lucide-vue-next';
   import '../../components/admin/admin.css';
@@ -41,7 +42,7 @@
       savedRgb.value = hexToRgbString(hex.value);
       showToast('已保存主题色');
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '保存失败', 2500);
+      handleAdminError(e, '保存失败');
     }
   };
 

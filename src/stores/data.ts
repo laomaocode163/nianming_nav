@@ -10,6 +10,8 @@ import { extractDomain, getCachedFavicon } from '../services/faviconService';
 import { useUserPrefsStore } from './userPrefs';
 import { useUiStore } from './ui';
 import type { Link, Category, SubCategory, SearchConfig, SearchMode } from '../types';
+import { byOrder } from '@/utils/sort';
+import { filterLinksByQuery } from '@/utils/search';
 
 export const useDataStore = defineStore('data', () => {
   const ready = ref(false);
@@ -46,9 +48,7 @@ export const useDataStore = defineStore('data', () => {
   };
 
   // 预排序、过滤隐藏的链接（一次计算，多处复用）
-  const visibleLinks = computed(() =>
-    links.value.filter((l) => !l.hidden).sort((a, b) => (a.order || 0) - (b.order || 0))
-  );
+  const visibleLinks = computed(() => links.value.filter((l) => !l.hidden).sort(byOrder));
 
   // Map<categoryId, Link[]> — 按一级分类预分组（已排序）
   const linksByCategoryId = computed(() => {
@@ -92,14 +92,8 @@ export const useDataStore = defineStore('data', () => {
     }
 
     // 站内搜索（实时过滤）
-    if (searchMode === 'internal' && searchQuery && searchQuery.trim()) {
-      const searchTerm = searchQuery.toLowerCase().trim();
-      filteredLinks = filteredLinks.filter(
-        (link) =>
-          link.name.toLowerCase().includes(searchTerm) ||
-          (link.description && link.description.toLowerCase().includes(searchTerm)) ||
-          link.url.toLowerCase().includes(searchTerm)
-      );
+    if (searchMode === 'internal') {
+      filteredLinks = filterLinksByQuery(filteredLinks, searchQuery ?? '');
     }
 
     return filteredLinks;
@@ -108,7 +102,7 @@ export const useDataStore = defineStore('data', () => {
   // 获取指定分类下的二级分类列表
   const getSubCategories = (categoryId: string): SubCategory[] => {
     const category = categories.value.find((cat) => cat.id === categoryId);
-    return category?.subCategories?.sort((a, b) => (a.order || 0) - (b.order || 0)) || [];
+    return category?.subCategories?.sort(byOrder) || [];
   };
 
   const visibleCategories = computed(() => {

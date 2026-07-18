@@ -12,6 +12,8 @@
   import { defineAsyncComponent } from 'vue';
   import type { Link } from '../types';
   import { Search, Star, History, Inbox } from 'lucide-vue-next';
+  import { byOrder } from '@/utils/sort';
+  import { matchesLinkQuery, filterLinksByQuery } from '@/utils/search';
   const SiteCard = defineAsyncComponent(() => import('../components/ui/SiteCard.vue'));
 
   const dataStore = useDataStore();
@@ -56,37 +58,16 @@
   const subCounts = computed<Record<string, number>>(() => {
     const map: Record<string, number> = {};
     const catId = uiStore.selectedCategoryId;
-    const query = uiStore.searchMode === 'internal' ? uiStore.searchQuery.trim().toLowerCase() : '';
+    const query = uiStore.searchMode === 'internal' ? uiStore.searchQuery : '';
     for (const link of dataStore.visibleLinks) {
       if (link.categoryId !== catId) continue;
-      if (
-        query &&
-        !(
-          link.name.toLowerCase().includes(query) ||
-          (link.description && link.description.toLowerCase().includes(query)) ||
-          link.url.toLowerCase().includes(query)
-        )
-      ) {
-        continue;
-      }
+      if (!matchesLinkQuery(link, query)) continue;
       const subId = link.subCategoryId;
       if (!subId) continue;
       map[subId] = (map[subId] || 0) + 1;
     }
     return map;
   });
-
-  // 站内搜索过滤（虚拟分类复用，与 getLinksByCategory 内部逻辑保持一致）
-  const applyInternalSearch = (list: Link[], term: string): Link[] => {
-    const q = term.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter(
-      (l) =>
-        l.name.toLowerCase().includes(q) ||
-        (l.description && l.description.toLowerCase().includes(q)) ||
-        l.url.toLowerCase().includes(q)
-    );
-  };
 
   const links = computed<Link[]>(() => {
     const catId = uiStore.selectedCategoryId;
@@ -96,18 +77,15 @@
       const favSet = new Set(userPrefs.state.favorites);
       const result = dataStore.links.filter((l) => !l.hidden && favSet.has(l.url));
       // 与普通分类视图保持一致：按 order 排序，避免收藏顺序与分类视图割裂
-      result.sort((a, b) => (a.order || 0) - (b.order || 0));
-      return applyInternalSearch(result, query);
+      result.sort(byOrder);
+      return filterLinksByQuery(result, query);
     }
     if (catId === '__recent') {
       const tsMap = new Map(userPrefs.state.recentVisits.map((v) => [v.url, v.ts]));
       const result = dataStore.links.filter((l) => !l.hidden && tsMap.has(l.url));
       // 主排序为访问时间（最近优先），同时间戳回退到 order，保证与分类视图顺序一致
-      result.sort(
-        (a, b) =>
-          (tsMap.get(b.url) || 0) - (tsMap.get(a.url) || 0) || (a.order || 0) - (b.order || 0)
-      );
-      return applyInternalSearch(result, query);
+      result.sort((a, b) => (tsMap.get(b.url) || 0) - (tsMap.get(a.url) || 0) || byOrder(a, b));
+      return filterLinksByQuery(result, query);
     }
 
     return dataStore.getLinksByCategory(
@@ -316,11 +294,13 @@
     </div>
 
     <!-- Mobile Overlay -->
-    <div
+    <button
       v-if="isMobile && uiStore.sidebarOpen"
+      type="button"
       class="sidebar-overlay"
+      aria-label="关闭侧边栏"
       @click="uiStore.closeSidebar"
-    ></div>
+    ></button>
   </div>
 </template>
 
@@ -452,6 +432,11 @@
     z-index: 90;
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
   }
 
   /* Staggered animation for site cards */

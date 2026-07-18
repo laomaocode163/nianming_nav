@@ -2,6 +2,9 @@
   import { computed, reactive, ref } from 'vue';
   import { useAdminStore } from '../../stores/admin';
   import { showToast } from '../../composables/useToast';
+  import { handleAdminError } from '../../composables/useAdminToast';
+  import { byOrder } from '@/utils/sort';
+  import { reorderById } from '@/utils/drag';
   import { linkSchema } from '../../config/schema';
   import { nextLinkId } from '../../config/linkId';
   import type { Category, Link, SubCategory } from '../../types';
@@ -15,9 +18,7 @@
   const editingId = ref<string | null>(null);
   const search = ref('');
 
-  const sortedCategories = computed<Category[]>(() =>
-    [...adminStore.categories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-  );
+  const sortedCategories = computed<Category[]>(() => [...adminStore.categories].sort(byOrder));
 
   interface LinkSubGroup {
     sub: SubCategory;
@@ -201,7 +202,7 @@
         showToast('已抓取 favicon');
       }
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '操作失败', 2500);
+      handleAdminError(e);
     }
   };
 
@@ -211,7 +212,7 @@
       await adminStore.deleteLink(link.id);
       showToast('已删除链接');
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '删除失败', 2500);
+      handleAdminError(e, '删除失败');
     }
   };
 
@@ -220,7 +221,7 @@
       await adminStore.runFetchFavicons(false);
       showToast('已抓取 favicon');
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '抓取失败', 2500);
+      handleAdminError(e, '抓取失败');
     }
   };
 
@@ -253,15 +254,12 @@
     if (from.categoryId !== categoryId || (from.subCategoryId ?? '') !== (subCategoryId ?? ''))
       return;
     if (from.id === targetId) return;
-    const ids = groupLinkIds(categoryId, subCategoryId).filter((id) => id !== from.id);
-    const idx = ids.indexOf(targetId);
-    if (idx < 0) return;
-    ids.splice(idx, 0, from.id);
+    const ids = reorderById(groupLinkIds(categoryId, subCategoryId), from.id, targetId);
     try {
       await adminStore.reorderLinks(categoryId, subCategoryId, ids);
       showToast('已调整链接顺序');
     } catch (e) {
-      showToast(e instanceof Error ? e.message : '排序失败', 2500);
+      handleAdminError(e, '排序失败');
     }
   };
 </script>

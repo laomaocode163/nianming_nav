@@ -59,13 +59,18 @@
 
 <template>
   <nav v-if="totalPages > 1" class="pager" aria-label="分页导航">
-    <button class="pager-btn" aria-label="上一页" :disabled="currentPage <= 1" @click="prev">
+    <button
+      class="pager-btn glass-surface"
+      aria-label="上一页"
+      :disabled="currentPage <= 1"
+      @click="prev"
+    >
       ‹
     </button>
     <button
       v-for="p in pages"
       :key="p"
-      class="pager-btn"
+      class="pager-btn glass-surface"
       :class="{ active: p === currentPage }"
       :aria-current="p === currentPage ? 'page' : undefined"
       @click="go(p)"
@@ -73,7 +78,7 @@
       {{ p }}
     </button>
     <button
-      class="pager-btn"
+      class="pager-btn glass-surface"
       aria-label="下一页"
       :disabled="currentPage >= totalPages"
       @click="next"
@@ -82,7 +87,7 @@
     </button>
 
     <!-- 跳转：页面数超过导航栏上限时显示，直达任意页 -->
-    <span v-if="totalPages > maxVisible" class="pager-jump">
+    <span v-if="totalPages > maxVisible" class="pager-jump glass-surface">
       <span class="pager-jump-label">前往</span>
       <input
         v-model.number="jumpValue"
@@ -94,7 +99,12 @@
         :aria-label="`跳转到第 1 至 ${totalPages} 页中的某一页`"
         @keyup.enter="submitJump"
       />
-      <button class="pager-btn pager-jump-btn" type="button" aria-label="跳转" @click="submitJump">
+      <button
+        class="pager-btn pager-jump-btn glass-surface"
+        type="button"
+        aria-label="跳转"
+        @click="submitJump"
+      >
         <ArrowRight class="pager-jump-icon" />
       </button>
     </span>
@@ -115,8 +125,6 @@
     border-radius: 8px;
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
     color: var(--color-text-secondary);
     font-size: 0.875rem;
     cursor: pointer;
@@ -153,8 +161,6 @@
     border-radius: 10px;
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
   }
 
   .pager-jump-label {

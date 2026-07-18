@@ -107,7 +107,7 @@
 
 <template>
   <aside
-    class="sidebar"
+    class="sidebar glass-surface"
     :class="{ 'sidebar-open': isOpen, 'sidebar-collapsed': collapsed, 'is-mobile': isMobile }"
   >
     <!-- Logo Section -->
@@ -258,8 +258,6 @@
     width: var(--sidebar-width, 240px);
     height: 100vh;
     background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(var(--glass-blur));
-    backdrop-filter: blur(var(--glass-blur));
     border-right: none;
     display: flex;
     flex-direction: column;
@@ -319,22 +317,22 @@
     /* Enhanced mobile nav items */
     .nav-item {
       min-height: 50px;
-      padding: 0.75rem 0.75rem !important;
-      border-radius: 12px !important;
-      margin: 0 !important;
+      padding: 0.75rem 0.75rem;
+      border-radius: 12px;
+      margin: 0;
     }
 
     .nav-icon {
-      font-size: 1.375rem !important;
-      width: 36px !important;
-      height: 36px !important;
+      font-size: 1.375rem;
+      width: 36px;
+      height: 36px;
       flex-shrink: 0;
-      background: transparent !important;
-      color: var(--color-text-secondary) !important;
+      background: transparent;
+      color: var(--color-text-secondary);
     }
 
     .nav-name {
-      font-size: 1rem !important;
+      font-size: 1rem;
       flex: 1;
       font-weight: 500;
     }
@@ -452,17 +450,17 @@
   }
 
   .collapse-btn {
-    width: 30px !important;
-    height: 30px !important;
-    padding: 0 !important;
-    border-radius: 50% !important;
-    background: transparent !important;
-    border: 1px solid transparent !important;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid transparent;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     position: relative;
     margin: 0 auto;
@@ -471,15 +469,15 @@
   }
 
   .collapse-btn:hover {
-    background: var(--gradient-primary) !important;
-    border-color: transparent !important;
-    color: #fff !important;
-    box-shadow: var(--shadow-glow) !important;
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: var(--shadow-glow);
     transform: translateX(-1px);
   }
 
   .dark .collapse-btn:hover {
-    background: var(--gradient-primary) !important;
+    background: var(--gradient-primary);
   }
 
   .collapse-btn:active {
@@ -489,7 +487,7 @@
   .collapse-btn:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
-    border-color: var(--color-primary) !important;
+    border-color: var(--color-primary);
   }
 
   .collapse-icon {
@@ -568,20 +566,20 @@
 
   /* Nav Item */
   .nav-item {
-    display: flex !important;
+    display: flex;
     align-items: center;
     gap: var(--space-md);
-    padding: 0.75rem 1rem !important;
-    color: var(--color-text-secondary) !important;
-    font-size: 1rem !important;
-    border-radius: 10px !important;
+    padding: 0.75rem 1rem;
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    border-radius: 10px;
     text-align: left;
-    width: calc(100% - 1rem) !important;
-    margin: 0.25rem auto !important;
+    width: calc(100% - 1rem);
+    margin: 0.25rem auto;
     white-space: nowrap;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+    background: transparent;
+    border: none;
+    box-shadow: none;
     transition:
       background 150ms var(--ease-out-expo),
       color 150ms var(--ease-out-expo),
@@ -600,16 +598,16 @@
   }
 
   .sidebar-collapsed .nav-item {
-    justify-content: center !important;
-    width: 44px !important;
-    height: 44px !important;
-    min-height: 44px !important;
-    padding: 0 !important;
-    gap: 0 !important;
-    margin: 0.375rem auto !important;
-    border-radius: 14px !important;
-    overflow: hidden !important;
-    background: transparent !important;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    gap: 0;
+    margin: 0.375rem auto;
+    border-radius: 14px;
+    overflow: hidden;
+    background: transparent;
     animation: navItemIn 320ms var(--ease-out-expo) backwards;
     animation-delay: calc(var(--item-index, 0) * 28ms);
   }
@@ -627,29 +625,29 @@
 
   .sidebar-collapsed .nav-icon {
     margin: 0;
-    width: 24px !important;
-    height: 24px !important;
-    font-size: 1.2rem !important;
+    width: 24px;
+    height: 24px;
+    font-size: 1.2rem;
   }
 
   .sidebar-collapsed .nav-item:hover {
-    background: hsl(var(--hue-primary), 12%, 95%) !important;
-    color: var(--color-primary) !important;
+    background: hsl(var(--hue-primary), 12%, 95%);
+    color: var(--color-primary);
     transform: scale(1.04);
   }
 
   .dark .sidebar-collapsed .nav-item:hover {
-    background: hsl(var(--hue-primary), 20%, 20%) !important;
+    background: hsl(var(--hue-primary), 20%, 20%);
   }
 
   .sidebar-collapsed .nav-item.active {
-    background: transparent !important;
-    color: var(--color-primary) !important;
-    box-shadow: var(--shadow-glow) !important;
+    background: transparent;
+    color: var(--color-primary);
+    box-shadow: var(--shadow-glow);
   }
 
   .sidebar-collapsed .nav-item.active .nav-icon {
-    color: var(--color-primary) !important;
+    color: var(--color-primary);
   }
 
   .sidebar-collapsed .nav-item:active {
@@ -657,12 +655,12 @@
   }
 
   .nav-item:hover {
-    background: hsl(var(--hue-primary), 10%, 96%) !important;
-    color: var(--color-primary) !important;
+    background: hsl(var(--hue-primary), 10%, 96%);
+    color: var(--color-primary);
   }
 
   .dark .nav-item:hover {
-    background: hsl(var(--hue-primary), 20%, 18%) !important;
+    background: hsl(var(--hue-primary), 20%, 18%);
   }
 
   .sidebar-collapsed .nav-item:hover {
@@ -670,7 +668,7 @@
   }
 
   .nav-item.active {
-    color: var(--color-primary) !important;
+    color: var(--color-primary);
     font-weight: 600;
   }
 
@@ -743,9 +741,9 @@
     }
 
     .nav-item {
-      padding: 0.625rem 0.75rem !important;
-      font-size: 0.8125rem !important;
-      border-radius: 10px !important;
+      padding: 0.625rem 0.75rem;
+      font-size: 0.8125rem;
+      border-radius: 10px;
       min-height: 46px;
     }
 
@@ -766,20 +764,20 @@
   @media (hover: none) and (pointer: coarse) {
     .nav-item:hover {
       transform: none;
-      background: transparent !important;
+      background: transparent;
       box-shadow: none;
     }
 
     .nav-item:active {
       transform: scale(0.98);
-      background: hsl(var(--hue-primary), 20%, 94%) !important;
+      background: hsl(var(--hue-primary), 20%, 94%);
       box-shadow:
         inset 0 0 0 1px rgba(14, 165, 233, 0.2),
         0 2px 8px rgba(14, 165, 233, 0.1);
     }
 
     .dark .nav-item:active {
-      background: hsl(var(--hue-primary), 20%, 18%) !important;
+      background: hsl(var(--hue-primary), 20%, 18%);
     }
 
     .collapse-btn:active {

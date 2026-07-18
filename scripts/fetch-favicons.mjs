@@ -15,12 +15,14 @@ import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { extractDomain } from './lib/domain.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const LINKS_PATH = join(ROOT, 'src/config/data/links.json');
 const OUT_DIR = join(ROOT, 'public/favicons');
 const MANIFEST_PATH = join(ROOT, 'src/config/faviconManifest.json');
+const MANUAL_PATH = join(OUT_DIR, '.manual');
 
 const FORCE = process.argv.includes('--force');
 const CONCURRENCY = 8;
@@ -40,17 +42,28 @@ const EXT_BY_TYPE = {
 /** 取单个域名的图标候选地址（按优先级） */
 const candidatesFor = (domain) => [
   `https://${domain}/favicon.ico`,
-  `https://favicon.im/${domain}`,
   `https://icon.horse/icon/${domain}`,
+  `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+  `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
 ];
 
-const extractDomain = (url) => {
-  try {
-    const u = url.startsWith('http') ? url : `https://${url}`;
-    return new URL(u).hostname;
-  } catch {
-    return '';
-  }
+/**
+ * 占位图识别：聚合源对抓不到图标的域名可能返回「灰圆 + 字母」的占位 SVG
+ * （如已移除的 favicon.im）。这类图是有效 image/svg+xml，但非真实图标，
+ * 写入后会一直被运行时当有效图标显示、降级链永不触发。此处做特征检测拒写。
+ * 仅审查 SVG；ico/png 等保留原体积校验。
+ */
+const isLikelyPlaceholder = (buf, type) => {
+  if (!type.includes('svg')) return false;
+  const s = buf.toString('utf8').toLowerCase();
+  const circleCount = (s.match(/<circle/g) || []).length;
+  const rectCount = (s.match(/<rect/g) || []).length;
+  const hasText = /<text/.test(s);
+  // 典型字母头像：单圆/矩形 + 文字，且体积较小
+  if (s.length < 600 && hasText && (circleCount >= 1 || rectCount >= 1)) return true;
+  // 已知占位签名
+  if (/placeholder|favicon\.im|letter\s*avatar|initial/i.test(s)) return true;
+  return false;
 };
 
 const uniqueDomains = async () => {
@@ -73,6 +86,25 @@ const fileExists = async (p) => {
   }
 };
 
+/**
+ * 读取手工图标保护清单（public/favicons/.manual，每行一个域名）。
+ * 清单内的域名视为「人工修正过」，无论增量还是 --force 都不重新下载，
+ * 避免覆盖手工写入的真实图标（如 www.google.cn 的 Chrome logo）。
+ */
+const readManual = async () => {
+  try {
+    const raw = await readFile(MANUAL_PATH, 'utf8');
+    return new Set(
+      raw
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean)
+    );
+  } catch {
+    return new Set();
+  }
+};
+
 /** 尝试下载某个域名的图标，成功返回文件名，否则返回 null */
 const FETCH_TIMEOUT_MS = 8000;
 const downloadDomain = async (domain) => {
@@ -87,6 +119,7 @@ const downloadDomain = async (domain) => {
       if (!type.startsWith('image/')) continue;
       const buf = Buffer.from(await res.arrayBuffer());
       if (buf.length < 32) continue; // 过小的多半是错误页
+      if (isLikelyPlaceholder(buf, type)) continue; // 占位图：视为该候选失败，尝试下一个
       const ext = EXT_BY_TYPE[type.split(';')[0]] || extname(url) || '.ico';
       const fileName = `${domain}${ext}`;
       await writeFile(join(OUT_DIR, fileName), buf);
@@ -111,6 +144,7 @@ const run = async () => {
   }
 
   const domains = await uniqueDomains();
+  const manual = await readManual();
   const results = { ok: 0, skip: 0, fail: 0 };
   let index = 0;
 
@@ -120,6 +154,16 @@ const run = async () => {
       const target = join(OUT_DIR, manifest[domain] || `${domain}.ico`);
       if (!FORCE && (await fileExists(target)) && manifest[domain]) {
         results.skip++;
+        continue;
+      }
+      // 手工修正的图标：无论增量还是 --force 都跳过，避免覆盖（如 www.google.cn 的 Chrome logo）
+      if (manual.has(domain)) {
+        if (manifest[domain] && (await fileExists(target))) {
+          results.skip++;
+        } else {
+          console.warn(`  ⚠ 手工图标文件缺失，跳过下载: ${domain}`);
+          results.skip++;
+        }
         continue;
       }
       const fileName = await downloadDomain(domain);
