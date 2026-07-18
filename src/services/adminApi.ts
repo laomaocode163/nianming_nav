@@ -1,18 +1,12 @@
 /**
  * 管理后台 API 客户端（仅本地开发可用，对应 plugins/devAdminApi.ts 的 dev 中间件）。
- * 所有方法在失败时抛出带中文信息的 Error。
+ * 只读面板：仅提供 GET 读取方法，失败时抛出带中文信息的 Error。
  */
-import type { Category, Link, SearchConfig, SiteConfig, SiteSettings, SubCategory } from '@/types';
+import type { Category, Link, SearchConfig, SiteSettings, SubCategory } from '@/types';
 
 export interface SubCategoryView extends SubCategory {
   categoryId: string;
   categoryName: string;
-}
-
-export interface FetchResult {
-  ok: boolean;
-  code: number;
-  output: string;
 }
 
 const BASE = '/api/admin';
@@ -26,12 +20,8 @@ class AdminApiError extends Error {
   }
 }
 
-const request = async <T>(path: string, method: string, body?: unknown): Promise<T> => {
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+const request = async <T>(path: string, method: string): Promise<T> => {
+  const res = await fetch(`${BASE}${path}`, { method });
   const text = await res.text();
   const data: Record<string, unknown> = text ? (JSON.parse(text) as Record<string, unknown>) : {};
   if (!res.ok) {
@@ -44,79 +34,12 @@ const request = async <T>(path: string, method: string, body?: unknown): Promise
 export const adminApi = {
   getCategories: (): Promise<Category[]> => request<Category[]>('/categories', 'GET'),
 
-  createCategory: (category: Category): Promise<Category> =>
-    request<Category>('/categories', 'POST', category),
-
-  updateCategory: (id: string, category: Category): Promise<Category> =>
-    request<Category>(`/categories/${encodeURIComponent(id)}`, 'PUT', category),
-
-  deleteCategory: (id: string): Promise<{ ok: true }> =>
-    request<{ ok: true }>(`/categories/${encodeURIComponent(id)}`, 'DELETE'),
-
   getLinks: (): Promise<Link[]> => request<Link[]>('/links', 'GET'),
-
-  createLink: (link: Link): Promise<Link> => request<Link>('/links', 'POST', link),
-
-  updateLink: (id: string, link: Link): Promise<Link> =>
-    request<Link>(`/links/${encodeURIComponent(id)}`, 'PUT', link),
-
-  deleteLink: (id: string): Promise<{ ok: true }> =>
-    request<{ ok: true }>(`/links/${encodeURIComponent(id)}`, 'DELETE'),
 
   getSubCategories: (): Promise<SubCategoryView[]> =>
     request<SubCategoryView[]>('/subcategories', 'GET'),
 
-  createSubCategory: (categoryId: string, sub: SubCategory): Promise<SubCategoryView> =>
-    request<SubCategoryView>('/subcategories', 'POST', { categoryId, ...sub }),
-
-  updateSubCategory: (
-    categoryId: string,
-    subId: string,
-    sub: SubCategory
-  ): Promise<SubCategoryView> =>
-    request<SubCategoryView>(
-      `/subcategories/${encodeURIComponent(categoryId)}/${encodeURIComponent(subId)}`,
-      'PUT',
-      { categoryId, ...sub }
-    ),
-
-  deleteSubCategory: (categoryId: string, subId: string): Promise<{ ok: true }> =>
-    request<{ ok: true }>(
-      `/subcategories/${encodeURIComponent(categoryId)}/${encodeURIComponent(subId)}`,
-      'DELETE'
-    ),
-
-  fetchFavicons: (force = false): Promise<FetchResult> =>
-    request<FetchResult>('/fetch-favicons', 'POST', { force }),
-
-  /* ---------- 设置（accentColor 等） ---------- */
   getSettings: (): Promise<SiteSettings> => request<SiteSettings>('/settings', 'GET'),
 
-  updateSettings: (settings: SiteSettings): Promise<SiteSettings> =>
-    request<SiteSettings>('/settings', 'PUT', settings),
-
-  /* ---------- 搜索源配置 ---------- */
   getSearchConfig: (): Promise<SearchConfig> => request<SearchConfig>('/search', 'GET'),
-
-  updateSearchConfig: (config: SearchConfig): Promise<SearchConfig> =>
-    request<SearchConfig>('/search', 'PUT', config),
-
-  /* ---------- 重排（仅重算 order） ---------- */
-  reorderCategories: (ids: string[]): Promise<{ ok: true }> =>
-    request<{ ok: true }>('/categories/reorder', 'POST', { ids }),
-
-  reorderSubCategories: (categoryId: string, ids: string[]): Promise<{ ok: true }> =>
-    request<{ ok: true }>(`/categories/${encodeURIComponent(categoryId)}/subs/reorder`, 'POST', {
-      ids,
-    }),
-
-  reorderLinks: (
-    categoryId: string,
-    subCategoryId: string | undefined,
-    ids: string[]
-  ): Promise<{ ok: true }> =>
-    request<{ ok: true }>('/links/reorder', 'POST', { categoryId, subCategoryId, ids }),
-
-  restoreAll: (config: SiteConfig): Promise<{ ok: true }> =>
-    request<{ ok: true }>('/restore', 'POST', config),
 };

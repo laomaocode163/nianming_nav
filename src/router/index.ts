@@ -33,19 +33,19 @@ if (import.meta.env.DEV) {
         path: 'links',
         name: 'admin-links',
         component: () => import('../components/admin/AdminLinksTable.vue'),
-        meta: { title: '链接管理', group: 'content' },
+        meta: { title: '链接查看', group: 'content' },
       },
       {
         path: 'categories',
         name: 'admin-categories',
         component: () => import('../components/admin/AdminCategories.vue'),
-        meta: { title: '分类管理', group: 'content' },
+        meta: { title: '分类查看', group: 'content' },
       },
       {
         path: 'settings',
         name: 'admin-settings',
         component: () => import('../components/admin/AdminSettings.vue'),
-        meta: { title: '设置', group: 'system' },
+        meta: { title: '设置查看', group: 'system' },
       },
     ],
   });

@@ -1,9 +1,7 @@
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
+  import { computed } from 'vue';
   import { useRouter } from 'vue-router';
   import { useAdminStore } from '../../stores/admin';
-  import { showToast } from '../../composables/useToast';
-  import { handleAdminError } from '../../composables/useAdminToast';
   import AdminCard from './ui/AdminCard.vue';
   import AdminStatCard from './ui/AdminStatCard.vue';
   import AdminBarChart from './ui/AdminBarChart.vue';
@@ -14,9 +12,6 @@
     FolderTree,
     Layers,
     Star,
-    Plus,
-    FolderPlus,
-    RefreshCw,
     CheckCircle2,
     AlertTriangle,
     ArrowRight,
@@ -25,7 +20,6 @@
 
   const adminStore = useAdminStore();
   const router = useRouter();
-  const faviconBusy = ref(false);
 
   const loading = computed(() => adminStore.loading && adminStore.links.length === 0);
 
@@ -72,18 +66,6 @@
     ];
   });
 
-  const fetchFavicons = async (): Promise<void> => {
-    faviconBusy.value = true;
-    try {
-      await adminStore.runFetchFavicons(false);
-      showToast('已抓取 favicon');
-    } catch (e) {
-      handleAdminError(e, '抓取失败');
-    } finally {
-      faviconBusy.value = false;
-    }
-  };
-
   const monogram = (name: string): string => name.trim().charAt(0).toUpperCase() || '?';
 </script>
 
@@ -93,14 +75,6 @@
       <div>
         <h1 class="adm-page__title">数据看板</h1>
         <p class="adm-page__subtitle">站点内容总览与运行状态一览</p>
-      </div>
-      <div class="adm-toolbar" style="margin: 0">
-        <button class="admin-btn admin-btn-primary" @click="router.push('/admin/links')">
-          <Plus :size="16" :stroke-width="1.6" /> 新增链接
-        </button>
-        <button class="admin-btn" @click="router.push('/admin/categories')">
-          <FolderPlus :size="16" :stroke-width="1.6" /> 新增分类
-        </button>
       </div>
     </div>
 
@@ -208,21 +182,15 @@
         </div>
       </AdminCard>
 
-      <AdminCard title="快捷操作" subtitle="常用维护任务">
+      <AdminCard title="快捷导航" subtitle="快速跳转查看">
         <div class="adm-quick">
           <button class="adm-quick__item" @click="router.push('/admin/links')">
             <span class="adm-quick__icon"><LinkIcon :size="18" :stroke-width="1.6" /></span>
-            管理链接
+            查看链接
           </button>
           <button class="adm-quick__item" @click="router.push('/admin/categories')">
             <span class="adm-quick__icon"><FolderTree :size="18" :stroke-width="1.6" /></span>
-            管理分类
-          </button>
-          <button class="adm-quick__item" :disabled="faviconBusy" @click="fetchFavicons">
-            <span class="adm-quick__icon"
-              ><RefreshCw :size="18" :stroke-width="1.6" :class="{ 'is-spinning': faviconBusy }"
-            /></span>
-            抓取 favicon
+            查看分类
           </button>
         </div>
       </AdminCard>

@@ -4,7 +4,6 @@
   import { useUiStore } from '../../stores/ui';
   import { useDataStore } from '../../stores/data';
   import { useSettingsStore } from '../../stores/settings';
-  import { adminApi } from '../../services/adminApi';
   import { showToast } from '../../composables/useToast';
   import { buildExportPayload, parseImportPayload } from '../../utils/configIo';
   import type { SearchConfig, SiteConfig } from '../../types';
@@ -48,8 +47,8 @@
     fileInput.value?.click();
   };
 
-  /** 将导入的站点配置应用到运行时内存；DEV 模式额外写盘持久化 */
-  const applyImportedSiteConfig = async (cfg: SiteConfig): Promise<void> => {
+  /** 将导入的站点配置应用到运行时内存（仅当前会话，不写盘） */
+  const applyImportedSiteConfig = (cfg: SiteConfig): void => {
     dataStore.applySiteConfig({
       categories: cfg.categories,
       links: cfg.links,
@@ -59,16 +58,7 @@
       Object.assign(settingsStore.settings, cfg.settings);
       settingsStore.apply();
     }
-    if (import.meta.env.DEV) {
-      try {
-        await adminApi.restoreAll(cfg);
-        showToast('已导入并保存到磁盘', 2000);
-      } catch {
-        showToast('已应用到当前会话（写盘失败）', 2000);
-      }
-    } else {
-      showToast('站点配置已应用到当前会话', 2000);
-    }
+    showToast('站点配置已应用到当前会话', 2000);
   };
 
   const onFileChange = async (e: Event): Promise<void> => {
@@ -80,7 +70,7 @@
       const { prefs, siteConfig } = parseImportPayload(text);
       if (userPrefs.importData(JSON.stringify(prefs))) {
         if (siteConfig) {
-          await applyImportedSiteConfig(siteConfig);
+          applyImportedSiteConfig(siteConfig);
         } else {
           showToast('已导入偏好配置', 1500);
         }

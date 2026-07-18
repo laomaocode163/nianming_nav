@@ -1,13 +1,10 @@
 <script setup lang="ts">
-  import { computed, reactive, ref } from 'vue';
+  import { computed, ref } from 'vue';
   import { useAdminStore } from '../../stores/admin';
-  import { showToast } from '../../composables/useToast';
-  import { handleAdminError } from '../../composables/useAdminToast';
   import { byOrder } from '@/utils/sort';
-  import { categorySchema, subCategorySchema } from '../../config/schema';
-  import type { Category, SubCategory } from '../../types';
-  import { Plus, FolderPlus, Pencil, Trash2, ChevronRight, Folder, Layers } from 'lucide-vue-next';
-  import AdminModal from './ui/AdminModal.vue';
+  import { exportJson, exportCsv } from '@/utils/exportData';
+  import type { Category } from '../../types';
+  import { ChevronRight, Folder, Layers, Download } from 'lucide-vue-next';
   import AdminBadge from './ui/AdminBadge.vue';
   import AdminEmpty from './ui/AdminEmpty.vue';
   import AdminSkeleton from './ui/AdminSkeleton.vue';
@@ -37,140 +34,50 @@
     expanded.value[id] = !expanded.value[id];
   };
 
-  /* ---------- 分类弹窗 ---------- */
-  const catModal = ref(false);
-  const editingCatId = ref<string | null>(null);
-  const catForm = reactive({ id: '', name: '', icon: '', order: 0, hidden: false });
-
-  const openCreateCat = (): void => {
-    Object.assign(catForm, {
-      id: '',
-      name: '',
-      icon: '',
-      order: adminStore.categories.length,
-      hidden: false,
-    });
-    editingCatId.value = null;
-    catModal.value = true;
+  /* ---------- 只读导出（导出当前筛选结果） ---------- */
+  const exportAsJson = (): void => {
+    exportJson('categories', filteredCats.value);
   };
-  const openEditCat = (cat: Category): void => {
-    Object.assign(catForm, {
-      id: cat.id,
-      name: cat.name,
-      icon: cat.icon,
-      order: cat.order ?? 0,
-      hidden: cat.hidden ?? false,
-    });
-    editingCatId.value = cat.id;
-    catModal.value = true;
-  };
-  const saveCat = async (): Promise<void> => {
-    if (!editingCatId.value && !catForm.id.trim()) {
-      showToast('请填写分类 ID（英文 slug）');
-      return;
+  const exportAsCsv = (): void => {
+    interface CatCsvRow {
+      分类ID: string;
+      分类名称: string;
+      链接数: number;
+      排序: number;
+      隐藏: string;
+      二级分类ID: string;
+      二级分类名称: string;
+      二级分类链接数: number | string;
     }
-    const category: Category = {
-      id: catForm.id.trim(),
-      name: catForm.name.trim(),
-      icon: catForm.icon.trim(),
-      order: Number(catForm.order) || 0,
-      hidden: catForm.hidden,
-    };
-    const parsed = categorySchema.safeParse(category);
-    if (!parsed.success) {
-      showToast(parsed.error.issues[0]?.message ?? '校验失败', 2500);
-      return;
-    }
-    try {
-      if (editingCatId.value) {
-        await adminStore.updateCategory(editingCatId.value, category);
-        showToast('已更新分类');
-      } else {
-        await adminStore.createCategory(category);
-        showToast('已添加分类');
+    const rows: CatCsvRow[] = filteredCats.value.flatMap<CatCsvRow>((c) => {
+      const base = {
+        分类ID: c.id,
+        分类名称: c.name,
+        链接数: linkCount(c.id),
+        排序: c.order ?? 0,
+        隐藏: c.hidden ? '是' : '否',
+      };
+      const subs = [...(c.subCategories ?? [])].sort(byOrder);
+      if (subs.length === 0) {
+        return [{ ...base, 二级分类ID: '', 二级分类名称: '', 二级分类链接数: '' }];
       }
-      catModal.value = false;
-    } catch (e) {
-      handleAdminError(e);
-    }
-  };
-  const removeCat = async (cat: Category): Promise<void> => {
-    if (!window.confirm(`确定删除分类「${cat.name}」？其下链接需先迁移/删除`)) return;
-    try {
-      await adminStore.deleteCategory(cat.id);
-      showToast('已删除分类');
-    } catch (e) {
-      handleAdminError(e, '删除失败');
-    }
-  };
-
-  /* ---------- 二级分类弹窗 ---------- */
-  const subModal = ref(false);
-  const editingSubCatId = ref<string | null>(null);
-  const editingSubId = ref<string | null>(null);
-  const subForm = reactive({ categoryId: '', id: '', name: '', icon: '', order: 0 });
-
-  const openCreateSub = (categoryId?: string): void => {
-    Object.assign(subForm, {
-      categoryId: categoryId ?? adminStore.categories[0]?.id ?? '',
-      id: '',
-      name: '',
-      icon: '',
-      order: 0,
+      return subs.map((s) => ({
+        ...base,
+        二级分类ID: s.id,
+        二级分类名称: s.name,
+        二级分类链接数: subLinkCount(c.id, s.id),
+      }));
     });
-    editingSubCatId.value = null;
-    editingSubId.value = null;
-    subModal.value = true;
-  };
-  const openEditSub = (categoryId: string, sub: SubCategory): void => {
-    Object.assign(subForm, {
-      categoryId,
-      id: sub.id,
-      name: sub.name,
-      icon: sub.icon ?? '',
-      order: sub.order ?? 0,
-    });
-    editingSubCatId.value = categoryId;
-    editingSubId.value = sub.id;
-    subModal.value = true;
-  };
-  const saveSub = async (): Promise<void> => {
-    if (!subForm.categoryId) {
-      showToast('请选择父分类');
-      return;
-    }
-    const sub: SubCategory = {
-      id: subForm.id.trim(),
-      name: subForm.name.trim(),
-      icon: subForm.icon.trim() || undefined,
-      order: Number(subForm.order) || undefined,
-    };
-    const parsed = subCategorySchema.safeParse(sub);
-    if (!parsed.success) {
-      showToast(parsed.error.issues[0]?.message ?? '校验失败', 2500);
-      return;
-    }
-    try {
-      if (editingSubCatId.value && editingSubId.value) {
-        await adminStore.updateSub(editingSubCatId.value, editingSubId.value, sub);
-        showToast('已更新二级分类');
-      } else {
-        await adminStore.createSub(subForm.categoryId, sub);
-        showToast('已添加二级分类');
-      }
-      subModal.value = false;
-    } catch (e) {
-      handleAdminError(e);
-    }
-  };
-  const removeSub = async (categoryId: string, sub: SubCategory): Promise<void> => {
-    if (!window.confirm(`确定删除二级分类「${sub.name}」？其下链接需先迁移/删除`)) return;
-    try {
-      await adminStore.deleteSub(categoryId, sub.id);
-      showToast('已删除二级分类');
-    } catch (e) {
-      handleAdminError(e, '删除失败');
-    }
+    exportCsv('categories', rows, [
+      { header: '分类ID', value: (r) => r.分类ID },
+      { header: '分类名称', value: (r) => r.分类名称 },
+      { header: '链接数', value: (r) => r.链接数 },
+      { header: '排序', value: (r) => r.排序 },
+      { header: '隐藏', value: (r) => r.隐藏 },
+      { header: '二级分类ID', value: (r) => r.二级分类ID },
+      { header: '二级分类名称', value: (r) => r.二级分类名称 },
+      { header: '二级分类链接数', value: (r) => r.二级分类链接数 },
+    ]);
   };
 
   const loading = computed(() => adminStore.loading && adminStore.categories.length === 0);
@@ -180,8 +87,8 @@
   <div class="adm-page">
     <div class="adm-page__head">
       <div>
-        <h1 class="adm-page__title">分类管理</h1>
-        <p class="adm-page__subtitle">管理一级分类与二级分类，可展开查看子分类与链接分布</p>
+        <h1 class="adm-page__title">分类查看</h1>
+        <p class="adm-page__subtitle">只读浏览一级分类与二级分类，可展开查看子分类与链接分布</p>
       </div>
     </div>
 
@@ -196,11 +103,16 @@
         />
       </div>
       <span class="adm-toolbar__spacer"></span>
-      <button class="admin-btn" @click="openCreateSub()">
-        <FolderPlus :size="16" :stroke-width="1.6" /> 新增子分类
+      <span class="adm-toolbar__count">共 {{ filteredCats.length }} 个分类</span>
+      <button class="admin-btn" :disabled="!filteredCats.length" @click="exportAsCsv">
+        <Download :size="16" :stroke-width="1.6" /> 导出 CSV
       </button>
-      <button class="admin-btn admin-btn-primary" @click="openCreateCat">
-        <Plus :size="16" :stroke-width="1.6" /> 新增分类
+      <button
+        class="admin-btn admin-btn-primary"
+        :disabled="!filteredCats.length"
+        @click="exportAsJson"
+      >
+        <Download :size="16" :stroke-width="1.6" /> 导出 JSON
       </button>
     </div>
 
@@ -213,7 +125,6 @@
             <th>二级分类</th>
             <th>排序</th>
             <th>状态</th>
-            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -222,7 +133,6 @@
             <td><AdminSkeleton width="40%" /></td>
             <td><AdminSkeleton width="40%" /></td>
             <td><AdminSkeleton width="30%" /></td>
-            <td></td>
             <td></td>
           </tr>
         </tbody>
@@ -233,14 +143,8 @@
       v-else-if="filteredCats.length === 0"
       :icon="Folder"
       title="暂无分类"
-      description="点击右上角「新增分类」创建第一个分类"
-    >
-      <template #action>
-        <button class="admin-btn admin-btn-primary" @click="openCreateCat">
-          <Plus :size="16" :stroke-width="1.6" /> 新增分类
-        </button>
-      </template>
-    </AdminEmpty>
+      :description="search ? '试试调整搜索条件' : '当前没有可展示的分类'"
+    />
 
     <div v-else class="adm-table-wrap">
       <table class="adm-table">
@@ -252,7 +156,6 @@
             <th>二级分类</th>
             <th>排序</th>
             <th>状态</th>
-            <th style="text-align: right">操作</th>
           </tr>
         </thead>
         <tbody>
@@ -283,25 +186,12 @@
                 <AdminBadge v-if="cat.hidden" variant="muted">隐藏</AdminBadge>
                 <span v-else class="adm-muted">—</span>
               </td>
-              <td>
-                <div class="adm-row-actions">
-                  <button class="admin-link-btn" @click="openCreateSub(cat.id)">＋子分类</button>
-                  <button class="admin-link-btn" @click="openEditCat(cat)">
-                    <Pencil :size="14" :stroke-width="1.6" /> 编辑
-                  </button>
-                  <button class="admin-link-btn danger" @click="removeCat(cat)">
-                    <Trash2 :size="14" :stroke-width="1.6" /> 删除
-                  </button>
-                </div>
-              </td>
             </tr>
             <tr v-if="expanded[cat.id]">
               <td></td>
-              <td colspan="6" class="adm-subcell">
+              <td colspan="5" class="adm-subcell">
                 <div v-if="(cat.subCategories ?? []).length === 0" class="adm-subempty">
-                  暂无二级分类，<button class="admin-link-btn" @click="openCreateSub(cat.id)">
-                    点击添加
-                  </button>
+                  暂无二级分类
                 </div>
                 <table v-else class="adm-subtable">
                   <tbody>
@@ -314,16 +204,6 @@
                       <td class="adm-link-cell__name">{{ sub.name }}</td>
                       <td class="adm-muted">{{ subLinkCount(cat.id, sub.id) }} 链接</td>
                       <td class="adm-muted mono">{{ sub.order ?? 0 }}</td>
-                      <td>
-                        <div class="adm-row-actions">
-                          <button class="admin-link-btn" @click="openEditSub(cat.id, sub)">
-                            <Pencil :size="14" :stroke-width="1.6" /> 编辑
-                          </button>
-                          <button class="admin-link-btn danger" @click="removeSub(cat.id, sub)">
-                            <Trash2 :size="14" :stroke-width="1.6" /> 删除
-                          </button>
-                        </div>
-                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -333,99 +213,6 @@
         </tbody>
       </table>
     </div>
-
-    <!-- 分类弹窗 -->
-    <AdminModal v-model="catModal" :title="editingCatId ? '编辑分类' : '新增分类'">
-      <div class="admin-section">
-        <div class="adm-form-row">
-          <div class="admin-field">
-            <label class="admin-label">ID *（英文 slug）</label>
-            <input
-              v-model="catForm.id"
-              class="admin-input"
-              type="text"
-              :disabled="!!editingCatId"
-              placeholder="如 dev"
-            />
-          </div>
-          <div class="admin-field">
-            <label class="admin-label">排序</label>
-            <input v-model.number="catForm.order" class="admin-input" type="number" />
-          </div>
-        </div>
-        <div class="adm-form-row">
-          <div class="admin-field">
-            <label class="admin-label">名称 *</label>
-            <input
-              v-model="catForm.name"
-              class="admin-input"
-              type="text"
-              placeholder="如 开发工具"
-            />
-          </div>
-          <div class="admin-field">
-            <label class="admin-label">图标名</label>
-            <input v-model="catForm.icon" class="admin-input" type="text" placeholder="如 code" />
-          </div>
-        </div>
-        <label class="admin-check"
-          ><input v-model="catForm.hidden" type="checkbox" /> 隐藏该分类</label
-        >
-      </div>
-      <template #actions>
-        <button class="admin-btn admin-btn-ghost" @click="catModal = false">取消</button>
-        <button class="admin-btn admin-btn-primary" @click="saveCat">保存</button>
-      </template>
-    </AdminModal>
-
-    <!-- 子分类弹窗 -->
-    <AdminModal v-model="subModal" :title="editingSubId ? '编辑二级分类' : '新增二级分类'">
-      <div class="admin-section">
-        <div class="admin-field">
-          <label class="admin-label">父分类 *</label>
-          <select v-model="subForm.categoryId" class="admin-select">
-            <option v-for="c in [...adminStore.categories].sort(byOrder)" :key="c.id" :value="c.id">
-              {{ c.name }}
-            </option>
-          </select>
-        </div>
-        <div class="adm-form-row">
-          <div class="admin-field">
-            <label class="admin-label">ID *（英文 slug）</label>
-            <input
-              v-model="subForm.id"
-              class="admin-input"
-              type="text"
-              :disabled="!!editingSubId"
-              placeholder="如 dev-proxy"
-            />
-          </div>
-          <div class="admin-field">
-            <label class="admin-label">排序</label>
-            <input v-model.number="subForm.order" class="admin-input" type="number" />
-          </div>
-        </div>
-        <div class="adm-form-row">
-          <div class="admin-field">
-            <label class="admin-label">名称 *</label>
-            <input
-              v-model="subForm.name"
-              class="admin-input"
-              type="text"
-              placeholder="如 科学上网"
-            />
-          </div>
-          <div class="admin-field">
-            <label class="admin-label">图标名</label>
-            <input v-model="subForm.icon" class="admin-input" type="text" placeholder="可选" />
-          </div>
-        </div>
-      </div>
-      <template #actions>
-        <button class="admin-btn admin-btn-ghost" @click="subModal = false">取消</button>
-        <button class="admin-btn admin-btn-primary" @click="saveSub">保存</button>
-      </template>
-    </AdminModal>
   </div>
 </template>
 
