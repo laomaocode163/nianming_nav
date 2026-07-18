@@ -51,7 +51,7 @@ describe('faviconService', () => {
   describe('getFaviconUrl', () => {
     it('should return local same-origin path for domains present in the manifest', () => {
       // github.com 已由 fetch-favicons 下载到本地，命中清单
-      expect(getFaviconUrl('github.com')).toBe('/favicons/github.com.ico');
+      expect(getFaviconUrl('github.com')).toBe('/favicons/github.com.png');
     });
 
     it("should fall back to the site's own favicon for domains not in the manifest", () => {

@@ -1,0 +1,9 @@
+# Cloudflare Pages 缓存策略
+# 本地 favicon 文件名基于域名（非内容哈希），但极少变动，可安全设为永久强缓存，
+# 使二次访问图标零下载；配合 immutable 避免重复校验。
+/favicons/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Vite 构建产物带内容哈希，可永久强缓存
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
