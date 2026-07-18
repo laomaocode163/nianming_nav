@@ -12,6 +12,7 @@
     "lint:check": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx",
     "fetch-favicons": "node scripts/fetch-favicons.mjs",
     "renumber-links": "node scripts/renumber-links.mjs",
+    "next-link-id": "node scripts/next-link-id.mjs",
     "format": "prettier --write .",
     "commit": "git cz",
     "prepare": "husky install",

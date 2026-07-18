@@ -44,8 +44,8 @@ node scripts/renumber-links.mjs
 ### 2. 单条新增时取段位 id（写盘前用）
 
 ```bash
-node .codebuddy/skills/add-nav-site/scripts/next_link_id.mjs <categoryId>
-# 例：node .codebuddy/skills/add-nav-site/scripts/next_link_id.mjs ai  → 1001
+node scripts/next-link-id.mjs <categoryId>
+# 例：node scripts/next-link-id.mjs ai  → 1001   （亦可 npm run next-link-id -- ai）
 ```
 省略参数仅用于未知/遗留分类（退回全局 max+1）。新增条目应插入到「同分类（同二级分类）末尾」以保持聚合，而非追加到文件尾。
 
@@ -70,6 +70,6 @@ npm run typecheck && npm run lint:check && npx vitest run && npm run build
 
 - `src/config/linkId.ts` — 段位映射 `CATEGORY_ID_RANGES` 与 `nextLinkId()`（唯一事实来源）
 - `scripts/renumber-links.mjs` — 重排 + 重编号脚本
-- `.codebuddy/skills/add-nav-site/scripts/next_link_id.mjs` — 单条段位 id 计算
+- `scripts/next-link-id.mjs` — 单条段位 id 计算（已提交，npm run next-link-id）
 - `src/config/data/links.json` — 被改写的数据源
 - `plugins/devAdminApi.ts` — dev 后台 POST 链接时按段位生成 id 并插入到同分类块末尾

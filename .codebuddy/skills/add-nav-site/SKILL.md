@@ -38,7 +38,8 @@ segment** (each category owns a 1000-wide numeric range, e.g. `ai` → `1001..19
 "last entry + 1":
 
 ```bash
-node .codebuddy/skills/add-nav-site/scripts/next_link_id.mjs ai
+node scripts/next-link-id.mjs ai
+# 或：npm run next-link-id -- ai
 ```
 
 It prints the next id for that category segment (e.g. `1001`) to stdout. Use it as the

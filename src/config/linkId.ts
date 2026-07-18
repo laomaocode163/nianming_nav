@@ -7,7 +7,7 @@
  * 每个分类最多容纳 999 条链接，足够个人导航站长期使用。
  *
  * 维护约定（务必与 scripts/renumber-links.mjs、
- * .codebuddy/skills/add-nav-site/scripts/next_link_id.mjs 保持一致）：
+ * scripts/next-link-id.mjs 保持一致）：
  * - 新增分类时，在 CATEGORY_ID_RANGES 末尾追加「当前最大 base + 1000」，
  *   不要改动已有 base，否则已存在链接的 id 段位会错位。
  * - 不要对已有区间重新排序。
