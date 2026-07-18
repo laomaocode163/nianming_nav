@@ -49,6 +49,7 @@
     Github,
     Clock,
     Network,
+    Package,
     Server,
     type LucideIcon,
   } from 'lucide-vue-next';
@@ -113,6 +114,7 @@
     github: Github,
     clock: Clock,
     network: Network,
+    package: Package,
     server: Server,
   };
 

@@ -6,19 +6,18 @@
       { "id": "ai-agent", "name": "AI智能体", "icon": "bot", "order": 4 },
       { "id": "ai-coding", "name": "代码编程", "icon": "braces", "order": 5 },
       { "id": "ai-mcp", "name": "MCP Tools", "icon": "plug", "order": 6 },
-      { "id": "ai-skills", "name": "Agent Skills", "icon": "sparkles", "order": 7 },
-      { "id": "ai-image", "name": "智能体多模态", "icon": "blocks", "order": 8 }
+      { "id": "ai-skills", "name": "Agent Skills", "icon": "sparkles", "order": 7 }
     ] },
   { "id": "dev", "name": "开发工具", "icon": "terminal", "subCategories": [
       { "id": "dev-proxy", "name": "科学上网", "icon": "network", "order": 1 },
       { "id": "dev-hosting", "name": "平台托管", "icon": "server", "order": 2 },
       { "id": "dev-editors", "name": "文本编辑器", "icon": "file-text", "order": 3 },
       { "id": "dev-ides", "name": "集成开发环境", "icon": "monitor", "order": 4 },
-      { "id": "dev-devops", "name": "测试运维工具", "icon": "shield-check", "order": 5 },
-      { "id": "dev-online", "name": "在线开发工具", "icon": "globe", "order": 6 },
-      { "id": "dev-other", "name": "其他辅助工具", "icon": "wrench", "order": 7 },
-      { "id": "dev-extensions", "name": "浏览器插件工具", "icon": "puzzle", "order": 8 },
-      { "id": "dev-creator", "name": "自媒体创作工具", "icon": "pen-line", "order": 9 }
+      { "id": "dev-devops", "name": "测试运维", "icon": "shield-check", "order": 5 },
+      { "id": "dev-online", "name": "在线开发", "icon": "globe", "order": 6 },
+      { "id": "dev-other", "name": "其他工具", "icon": "wrench", "order": 7 },
+      { "id": "dev-extensions", "name": "浏览器插件", "icon": "puzzle", "order": 8 },
+      { "id": "dev-creator", "name": "自媒体创作", "icon": "pen-line", "order": 9 }
     ] },
   { "id": "frontend-dev", "name": "前端开发", "icon": "book-open", "subCategories": [
       { "id": "frontend-frameworks", "name": "前端框架", "icon": "zap", "order": 1 },
@@ -31,7 +30,8 @@
       { "id": "backend-spring", "name": "Spring", "icon": "leaf", "order": 2 },
       { "id": "backend-python", "name": "Python", "icon": "braces", "order": 3 },
       { "id": "backend-langchain", "name": "Langchain", "icon": "link", "order": 4 },
-      { "id": "backend-scaffolds", "name": "开发脚手架", "icon": "hammer", "order": 5 }
+      { "id": "backend-scaffolds", "name": "开发脚手架", "icon": "hammer", "order": 5 },
+      { "id": "backend-docs", "name": "技术文档", "icon": "file-text", "order": 6 }
     ] },
   { "id": "interview", "name": "招聘面试", "icon": "briefcase", "subCategories": [
       { "id": "interview-sites", "name": "招聘网站", "icon": "search", "order": 1 },
@@ -61,8 +61,9 @@
       { "id": "ent-books", "name": "书籍", "icon": "library", "order": 4 }
     ] },
   { "id": "software", "name": "软件安装", "icon": "download", "subCategories": [
-      { "id": "software-oss", "name": "开源软件下载", "icon": "github", "order": 1 },
-      { "id": "software-mac", "name": "Mac软件下载", "icon": "apple", "order": 2 },
-      { "id": "software-windows", "name": "Windows软件下载", "icon": "monitor", "order": 3 }
+      { "id": "software-official", "name": "官方软件", "icon": "package", "order": 1 },
+      { "id": "software-oss", "name": "开源软件", "icon": "github", "order": 2 },
+      { "id": "software-mac", "name": "Mac软件", "icon": "apple", "order": 3 },
+      { "id": "software-windows", "name": "Windows软件", "icon": "monitor", "order": 4 }
     ] }
 ]

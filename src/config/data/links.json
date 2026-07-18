@@ -39,8 +39,10 @@
   { "id": "1038", "name": "Agent Skills", "url": "https://agent-skills.cc/", "categoryId": "ai", "subCategoryId": "ai-skills", "description": "63000+ 免费 AI Agent Skills 合集" },
   { "id": "1039", "name": "ClawHub 中国镜像", "url": "https://cn.clawhub-mirror.com/", "categoryId": "ai", "subCategoryId": "ai-skills", "description": "OpenClaw Skills 国内高速镜像，全量实时同步官方技能包与节点库" },
   { "id": "1040", "name": "SkillsBot", "url": "https://www.skillsbot.cn/", "categoryId": "ai", "subCategoryId": "ai-skills", "description": "OpenClaw 中文社区与 ClawHub 中文技能库，3万+技能中文分类教程" },
-  { "id": "1041", "name": "Midjourney", "url": "https://www.midjourney.com", "categoryId": "ai", "subCategoryId": "ai-image", "description": "AI图像生成工具" },
-  { "id": "1042", "name": "即梦 AI", "url": "https://jimeng.jianying.com/ai-tool/home", "categoryId": "ai", "subCategoryId": "ai-image", "description": "字节跳动一站式 AI 创作平台：AI 图像/视频生成、灵感挖掘与资产管理，支持 Agent 自动创意模式" },
+  { "id": "1041", "name": "Midjourney", "url": "https://www.midjourney.com", "categoryId": "ai", "subCategoryId": "ai-agent", "description": "AI图像生成工具" },
+  { "id": "1042", "name": "即梦 AI", "url": "https://jimeng.jianying.com/ai-tool/home", "categoryId": "ai", "subCategoryId": "ai-agent", "description": "字节跳动一站式 AI 创作平台：AI 图像/视频生成、灵感挖掘与资产管理，支持 Agent 自动创意模式" },
+  { "id": "1043", "name": "Ollama", "url": "https://ollama.com/", "categoryId": "ai", "subCategoryId": "ai-model-platform", "description": "本地大模型运行框架：一行命令在本地拉取、运行与管理 Llama、Qwen、DeepSeek 等开源大模型，提供 REST API 与跨平台桌面客户端" },
+  { "id": "1044", "name": "腾讯 Agent", "url": "https://agent.qq.com/", "categoryId": "ai", "subCategoryId": "ai-agent", "description": "腾讯智能体开发平台：提供大模型 Agent 编排、知识库接入、工具调用与多场景应用搭建，支持低代码可视化开发" },
   { "id": "2001", "name": "Clash Verge", "url": "https://www.clashverge.dev/index.html", "categoryId": "dev", "subCategoryId": "dev-proxy", "description": "基于 Clash Meta 的开源跨平台代理客户端" },
   { "id": "2002", "name": "ClashParty", "url": "https://clashparty.org/", "categoryId": "dev", "subCategoryId": "dev-proxy", "description": "Clash 代理订阅管理与节点分享社区" },
   { "id": "2003", "name": "Clash Razord", "url": "https://clash.razord.top/", "categoryId": "dev", "subCategoryId": "dev-proxy", "description": "Clash 订阅管理与配置面板，支持节点筛选与延迟测试" },
@@ -55,7 +57,7 @@
   { "id": "2012", "name": "WinSSH", "url": "https://winssh.net/", "categoryId": "dev", "subCategoryId": "dev-devops", "description": "SSH 在线连接工具" },
   { "id": "2013", "name": "Mux0", "url": "https://mux0.com/", "categoryId": "dev", "subCategoryId": "dev-devops", "description": "macOS 原生 AI 终端模拟器，GPU 渲染" },
   { "id": "2014", "name": "WezTerm", "url": "https://wezterm.org/", "categoryId": "dev", "subCategoryId": "dev-devops", "description": "跨平台 GPU 加速终端模拟器与多路复用器" },
-  { "id": "2015", "name": "腾讯云 EdgeOne", "url": "https://edgeone.ai/zh", "categoryId": "dev", "subCategoryId": "dev-devops", "description": "腾讯云边缘安全加速平台：CDN 加速、DDoS/WAF 防护与边缘 Serverless 开发，支持 AI Agent 托管" },
+  { "id": "2015", "name": "腾讯云 EdgeOne", "url": "https://edgeone.ai/zh", "categoryId": "dev", "subCategoryId": "dev-hosting", "description": "腾讯云边缘安全加速平台：CDN 加速、DDoS/WAF 防护与边缘 Serverless 开发，支持 AI Agent 托管" },
   { "id": "2016", "name": "HexHub", "url": "https://www.hexhub.cn/", "categoryId": "dev", "subCategoryId": "dev-devops", "description": "数据库、SSH、SFTP、Docker 与 AI 一体化开发运维桌面客户端：内置 AI 工具链，支持 MySQL/PostgreSQL/Redis 等数据库与容器协作" },
   { "id": "2017", "name": "HTTP Request", "url": "https://www.httprequest.net/zh/", "categoryId": "dev", "subCategoryId": "dev-online", "description": "HTTP 请求调试工具" },
   { "id": "2018", "name": "科技lion Shell", "url": "https://kejilion.pro/kejilion_shell/", "categoryId": "dev", "subCategoryId": "dev-other", "description": "Linux运维管理一键脚本" },
@@ -100,6 +102,7 @@
   { "id": "4012", "name": "Langchain 官网", "url": "https://www.langchain.com/", "categoryId": "backend-dev", "subCategoryId": "backend-langchain", "description": "Langchain 官方网站" },
   { "id": "4013", "name": "Langchain 文档", "url": "https://docs.langchain.com/", "categoryId": "backend-dev", "subCategoryId": "backend-langchain", "description": "Langchain 官方文档" },
   { "id": "4014", "name": "Spring Initializr", "url": "https://start.spring.io/", "categoryId": "backend-dev", "subCategoryId": "backend-scaffolds", "description": "Spring 项目脚手架" },
+  { "id": "4015", "name": "菜鸟教程", "url": "https://www.runoob.com/", "categoryId": "backend-dev", "subCategoryId": "backend-docs", "description": "菜鸟教程：面向初学者的编程技术教程站，涵盖 HTML/CSS/JS、Java、Python、数据库、Linux 等大量基础与实战内容" },
   { "id": "5001", "name": "小林coding", "url": "https://xiaolincoding.com/", "categoryId": "interview", "subCategoryId": "interview-backend", "description": "小林coding 原创技术博客：以图解方式讲解计算机网络、操作系统、MySQL、Redis 等计算机基础与后端面试八股文" },
   { "id": "5002", "name": "JavaGuide", "url": "https://javaguide.cn/", "categoryId": "interview", "subCategoryId": "interview-backend", "description": "GitHub 156K+ Star 的 Java 面试与后端知识体系：覆盖 Java 基础、并发、JVM、Spring、MySQL、Redis、分布式、高并发、系统设计与 AI 应用开发" },
   { "id": "5003", "name": "Java 全栈知识体系", "url": "https://pdai.tech/", "categoryId": "interview", "subCategoryId": "interview-backend", "description": "pdai.tech 的 Java 全栈技术知识库：涵盖 Java 基础、JVM、Spring 全家桶、数据库、分布式、中间件与 DevOps，帮助系统化构建后端知识体系" },
@@ -168,5 +171,7 @@
   { "id": "9008", "name": "Neat Download Manager", "url": "https://www.neatdownloadmanager.com/index.php/en/", "categoryId": "software", "subCategoryId": "software-oss", "description": "免费下载管理器：多线程加速、浏览器集成，支持 Windows 与 macOS" },
   { "id": "9009", "name": "ScreenKite", "url": "https://www.screenkite.com/zh-CN", "categoryId": "software", "subCategoryId": "software-mac", "description": "免费 macOS 原生屏幕录制工具，AI 驱动编辑、Metal 硬件加速" },
   { "id": "9010", "name": "Better365", "url": "https://www.better365.cn/", "categoryId": "software", "subCategoryId": "software-mac", "description": "免费在线工具箱：PDF、图片、格式转换等效率工具集合" },
-  { "id": "9011", "name": "PixPin", "url": "https://pixpin.cn/", "categoryId": "software", "subCategoryId": "software-windows", "description": "Windows 截图贴图工具：支持长截图、滚动截图、标注与 OCR 文字识别" }
+  { "id": "9011", "name": "PixPin", "url": "https://pixpin.cn/", "categoryId": "software", "subCategoryId": "software-windows", "description": "Windows 截图贴图工具：支持长截图、滚动截图、标注与 OCR 文字识别" },
+  { "id": "9012", "name": "Chrome 浏览器", "url": "https://www.google.cn/intl/zh-CN/chrome/", "categoryId": "software", "subCategoryId": "software-official", "description": "Google Chrome 官方下载页（中国版）：获取 Chrome 浏览器安装包，支持 Windows、Mac 与 Linux 多平台" },
+  { "id": "9013", "name": "Firefox 浏览器", "url": "https://www.firefox.com/zh-CN/", "categoryId": "software", "subCategoryId": "software-official", "description": "Mozilla Firefox 官方站点（中文）：开源跨平台浏览器，注重隐私保护与定制化，提供桌面与移动端下载" }
 ]

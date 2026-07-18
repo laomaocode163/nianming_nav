@@ -185,9 +185,14 @@ export const getCachedFavicon = (domain: string): string => {
   const store = loadPersistentCache();
   const entry = store.get(domain);
   if (entry && Date.now() - entry.ts < CACHE_TTL) {
-    memoryCache.set(domain, entry.url);
-    evictMemoryIfNeeded();
-    return entry.url;
+    // 清单已为该域名指定本地文件时，若缓存值与最新清单不一致（如旧坏图标被改指向新文件），
+    // 判定缓存失效，改用最新 manifest 解析值，避免旧坏图标长期遮蔽正确图标。
+    const expected = manifest[domain] ? `/favicons/${manifest[domain]}` : null;
+    if (!expected || entry.url === expected) {
+      memoryCache.set(domain, entry.url);
+      evictMemoryIfNeeded();
+      return entry.url;
+    }
   }
   return getFaviconUrl(domain);
 };
@@ -197,7 +202,11 @@ export const isFaviconCached = (domain: string): boolean => {
   if (!domain) return false;
   if (memoryCache.has(domain)) return true;
   const entry = loadPersistentCache().get(domain);
-  return !!(entry && Date.now() - entry.ts < CACHE_TTL);
+  if (!entry || Date.now() - entry.ts >= CACHE_TTL) return false;
+  // 清单已指定本地文件但缓存值与最新清单不一致时，视为未命中，触发重新解析
+  const expected = manifest[domain] ? `/favicons/${manifest[domain]}` : null;
+  if (expected && entry.url !== expected) return false;
+  return true;
 };
 
 /**
