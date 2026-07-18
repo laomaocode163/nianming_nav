@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -16,8 +16,44 @@ const routes: RouteRecordRaw[] = [
 if (import.meta.env.DEV) {
   routes.push({
     path: '/admin',
-    name: 'admin',
     component: () => import('../views/AdminView.vue'),
+    redirect: '/admin/dashboard',
+    children: [
+      {
+        path: '',
+        redirect: '/admin/dashboard',
+      },
+      {
+        path: 'dashboard',
+        name: 'admin-dashboard',
+        component: () => import('../components/admin/AdminDashboard.vue'),
+        meta: { title: '概览', group: 'overview' },
+      },
+      {
+        path: 'links',
+        name: 'admin-links',
+        component: () => import('../components/admin/AdminLinksTable.vue'),
+        meta: { title: '链接管理', group: 'content' },
+      },
+      {
+        path: 'categories',
+        name: 'admin-categories',
+        component: () => import('../components/admin/AdminCategories.vue'),
+        meta: { title: '分类管理', group: 'content' },
+      },
+      {
+        path: 'roles',
+        name: 'admin-roles',
+        component: () => import('../components/admin/AdminRoles.vue'),
+        meta: { title: '角色与权限', group: 'system' },
+      },
+      {
+        path: 'settings',
+        name: 'admin-settings',
+        component: () => import('../components/admin/AdminSettings.vue'),
+        meta: { title: '设置', group: 'system' },
+      },
+    ],
   });
 } else {
   routes.push({ path: '/:pathMatch(.*)*', redirect: '/' });

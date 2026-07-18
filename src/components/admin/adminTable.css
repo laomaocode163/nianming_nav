@@ -1,0 +1,210 @@
+/* 数据表格、工具条与表单辅助类（后台通用）。
+   复用 admin.css 的 .admin-btn / .admin-input / .admin-field / .admin-label / .admin-select / .admin-check / .admin-section / .admin-chip。 */
+
+.adm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+  flex-wrap: wrap;
+}
+
+.adm-toolbar__spacer {
+  flex: 1 1 auto;
+}
+
+.adm-toolbar__count {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.adm-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-card);
+  box-shadow: var(--shadow-md);
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  min-width: 720px;
+}
+
+.adm-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-bg);
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-text-secondary);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.adm-table tbody td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.adm-table tbody tr {
+  transition: background var(--transition-fast);
+}
+
+.adm-table tbody tr:hover {
+  background: hsl(var(--hue-primary), 80%, 55%, 0.05);
+}
+
+.adm-table tbody tr.is-selected {
+  background: hsl(var(--hue-primary), 80%, 55%, 0.1);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.adm-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.adm-th-sort {
+  cursor: pointer;
+  user-select: none;
+}
+
+.adm-th-sort:hover {
+  color: var(--color-primary);
+}
+
+.adm-th-sort__arrow {
+  margin-left: 0.25rem;
+  opacity: 0.5;
+}
+
+.adm-th-sort.is-active .adm-th-sort__arrow {
+  opacity: 1;
+  color: var(--color-primary);
+}
+
+.adm-check-cell {
+  width: 44px;
+  text-align: center;
+}
+
+.adm-check {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.adm-link-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.adm-link-cell__icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--hue-primary), 30%, 96%);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.dark .adm-link-cell__icon {
+  background: hsl(var(--hue-primary), 20%, 22%);
+}
+
+.adm-link-cell__icon img {
+  width: 18px;
+  height: 18px;
+}
+
+.adm-link-cell__name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adm-link-cell__url {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.adm-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
+.adm-row-actions .admin-link-btn {
+  padding: 0.3rem 0.5rem;
+}
+
+.adm-muted {
+  color: var(--color-text-secondary);
+}
+
+.adm-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+/* 表单行 */
+.adm-form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.adm-form-row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 560px) {
+  .adm-form-row {
+    flex-direction: column;
+  }
+}
+
+/* 批量操作条 */
+.adm-bulkbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-lg);
+  background: hsl(var(--hue-primary), 80%, 55%, 0.1);
+  border: 1px solid hsl(var(--hue-primary), 80%, 55%, 0.3);
+  font-size: 0.875rem;
+}
+
+.adm-bulkbar__count {
+  font-weight: 700;
+  color: var(--color-primary);
+}
