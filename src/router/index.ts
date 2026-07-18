@@ -42,12 +42,6 @@ if (import.meta.env.DEV) {
         meta: { title: '分类管理', group: 'content' },
       },
       {
-        path: 'roles',
-        name: 'admin-roles',
-        component: () => import('../components/admin/AdminRoles.vue'),
-        meta: { title: '角色与权限', group: 'system' },
-      },
-      {
         path: 'settings',
         name: 'admin-settings',
         component: () => import('../components/admin/AdminSettings.vue'),

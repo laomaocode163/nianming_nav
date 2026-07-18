@@ -218,10 +218,6 @@
             <span class="adm-quick__icon"><FolderTree :size="18" :stroke-width="1.6" /></span>
             管理分类
           </button>
-          <button class="adm-quick__item" @click="router.push('/admin/roles')">
-            <span class="adm-quick__icon"><Star :size="18" :stroke-width="1.6" /></span>
-            角色权限
-          </button>
           <button class="adm-quick__item" :disabled="faviconBusy" @click="fetchFavicons">
             <span class="adm-quick__icon"
               ><RefreshCw :size="18" :stroke-width="1.6" :class="{ 'is-spinning': faviconBusy }"
