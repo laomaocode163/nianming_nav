@@ -50,9 +50,23 @@ export const searchConfigSchema = z.object({
   externalSources: z.array(searchSourceSchema),
 });
 
+/** 导航页背景配置：default=弥散光斑（默认）；solid/gradient/image 自定义 */
+export const backgroundSchema = z.object({
+  type: z.enum(['default', 'solid', 'gradient', 'image']).default('default'),
+  /** solid=十六进制色；gradient=完整 CSS 渐变字符串；image=图片 URL */
+  value: z.string().optional(),
+  /** 仅 image 生效：cover / contain / repeat */
+  fit: z.enum(['cover', 'contain', 'repeat']).default('cover'),
+  /** 是否显示弥散光斑层（default 类型下默认 true） */
+  showBlobs: z.boolean().default(true),
+});
+
 export const siteSettingsSchema = z.object({
   accentColor: z.string().optional(),
+  background: backgroundSchema.optional(),
 });
+
+export type BackgroundConfig = z.infer<typeof backgroundSchema>;
 
 export const categoriesSchema = z.array(categorySchema);
 export const linksSchema = z.array(linkSchema);

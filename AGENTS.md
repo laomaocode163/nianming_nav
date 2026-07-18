@@ -33,7 +33,7 @@ The husky pre-commit hook runs `npx lint-staged` + `npx vitest run`, so **every 
 - Single route `/` → `HomeView`. Layout = Sidebar (category nav) + MainHeader (search, time, theme toggle) + site-card grid.
 - Data flow: JSON → lazy loader `src/config/loadConfig.ts` (`loadSiteConfig()`, Zod-validated incl. categoryId/subCategoryId referential integrity) → Pinia `data` store (`src/stores/data.ts`, async `init()` populates static data + getters) and `ui` store (`src/stores/ui.ts`, interaction state: selected category, search query/mode, sidebar, pagination) → components. Theme is managed by `src/stores/theme.ts`. `App.vue` gates render on `dataStore.init()` + `settingsStore.init()` behind a splash skeleton.
 - Favicons are resolved by `src/services/faviconService.ts` with an in-memory + localStorage cache (versioned key, 30-day TTL, 200-entry eviction) and a fallback chain (`favicon.im` → `icon.horse` → `faviconextractor` → DuckDuckGo → Google S2). The primary source is the site's own `/favicon.ico` (after the local same-origin files above).
-- Runtime settings are applied by `src/stores/settings.ts`: `settings.json` `accentColor` → primary HSL CSS variables. This closes the config → UI loop. (Background image / card-style settings are **not** implemented — do not add references to them.)
+- Runtime settings are applied by `src/stores/settings.ts`: `settings.json` `accentColor` → primary HSL CSS variables, and `background` (type `default`/`solid`/`gradient`/`image` + `showBlobs`) → `--app-bg-color` / `--app-bg-image` / `--app-bg-fit` CSS variables consumed by `App.vue`. This closes the config → UI loop. Background is edited in the admin **背景** tab (`AdminSettings.vue`). (Card-style settings are **not** implemented.)
 
 ## Deployment
 

@@ -6,7 +6,7 @@
 import { defineStore } from 'pinia';
 import { reactive, ref, watch } from 'vue';
 import { loadSiteConfig } from '../config/loadConfig';
-import type { SiteSettings } from '../types';
+import type { BackgroundConfig, SiteSettings } from '../types';
 
 const rgbToHsl = (r: number, g: number, b: number): { h: number; s: number; l: number } => {
   const rn = r / 255;
@@ -47,7 +47,7 @@ export const useSettingsStore = defineStore('settings', () => {
     ready.value = true;
   };
 
-  const apply = (): void => {
+  const applyAccent = (): void => {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
 
@@ -62,12 +62,46 @@ export const useSettingsStore = defineStore('settings', () => {
     }
   };
 
-  // accentColor 变化时自动 re-apply（admin 改色等场景即时生效）
+  /** 将导航页背景配置写入 CSS 变量，由 App.vue 的 .app-container / .app-bg 消费 */
+  const applyBackground = (): void => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    root.style.removeProperty('--app-bg-color');
+    root.style.removeProperty('--app-bg-image');
+    root.style.removeProperty('--app-bg-fit');
+
+    const bg = settings.background as BackgroundConfig | undefined;
+    if (!bg || bg.type === 'default') return;
+
+    if (bg.type === 'solid') {
+      root.style.setProperty('--app-bg-color', bg.value ?? '');
+    } else if (bg.type === 'gradient') {
+      root.style.setProperty('--app-bg-image', bg.value ?? '');
+    } else if (bg.type === 'image') {
+      const url = bg.value ?? '';
+      root.style.setProperty('--app-bg-image', url ? `url("${url}")` : 'none');
+      root.style.setProperty('--app-bg-fit', bg.fit ?? 'cover');
+    }
+  };
+
+  const apply = (): void => {
+    applyAccent();
+    applyBackground();
+  };
+
+  // accentColor / background 变化时自动 re-apply（admin 改设置等场景即时生效）
   watch(
     () => settings.accentColor,
     () => {
-      apply();
+      applyAccent();
     }
+  );
+  watch(
+    () => settings.background,
+    () => {
+      applyBackground();
+    },
+    { deep: true }
   );
 
   return { ready, init, settings, apply };

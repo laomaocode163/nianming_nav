@@ -6,6 +6,7 @@ export type {
   SearchSource,
   SearchConfig,
   SiteSettings,
+  BackgroundConfig,
 } from '../config/schema';
 
 // 站点完整配置（分类 + 链接 + 搜索 + 设置），由 loadConfig 聚合

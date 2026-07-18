@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { onMounted, onUnmounted, ref } from 'vue';
+  import { computed, onMounted, onUnmounted, ref } from 'vue';
   import { useThemeStore } from './stores/theme';
   import { useSettingsStore } from './stores/settings';
   import { useDataStore } from './stores/data';
@@ -20,6 +20,8 @@
   const onVisibilityChange = () => {
     bgPaused.value = document.hidden;
   };
+  // 背景配置关闭弥散光斑时隐藏该层（default 类型默认显示）
+  const showBlobs = computed(() => settingsStore.settings.background?.showBlobs !== false);
 
   /** 加载并校验全部配置（数据 / 搜索 / 设置），失败向上抛出由调用方处理 */
   const loadAll = async (): Promise<void> => {
@@ -65,7 +67,11 @@
 
 <template>
   <div class="app-container">
-    <div class="app-bg" :class="{ 'is-paused': bgPaused }" aria-hidden="true">
+    <div
+      class="app-bg"
+      :class="{ 'is-paused': bgPaused, 'app-bg--hidden': !showBlobs }"
+      aria-hidden="true"
+    >
       <span class="app-bg__blob app-bg__blob--1"></span>
       <span class="app-bg__blob app-bg__blob--2"></span>
       <span class="app-bg__blob app-bg__blob--3"></span>
@@ -91,9 +97,9 @@
 <style scoped>
   .app-container {
     min-height: 100vh;
-    background-color: transparent;
+    background-color: var(--app-bg-color, transparent);
     background-image: var(--app-bg-image, none);
-    background-size: cover;
+    background-size: var(--app-bg-fit, cover);
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: var(--app-bg-attachment, scroll);
@@ -110,6 +116,11 @@
     z-index: -1;
     overflow: hidden;
     pointer-events: none;
+  }
+
+  /* 背景配置关闭弥散光斑时隐藏该层 */
+  .app-bg--hidden {
+    display: none;
   }
 
   .app-bg__blob {
