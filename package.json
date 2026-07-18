@@ -11,6 +11,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx --fix",
     "lint:check": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx",
     "fetch-favicons": "node scripts/fetch-favicons.mjs",
+    "compress-favicons": "node scripts/compress-favicons.mjs",
     "renumber-links": "node scripts/renumber-links.mjs",
     "next-link-id": "node scripts/next-link-id.mjs",
     "check-duplicate-link": "node scripts/check-duplicate-link.mjs",

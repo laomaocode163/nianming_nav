@@ -125,14 +125,22 @@ All icon names resolve through `src/components/ui/CategoryIcon.vue`:
    to the `Star` icon — avoid that by registering.
 3. Pick an icon name from the Lucide set; prefer one already registered to avoid edits.
 
-### 7. Fetch favicons
+### 7. Fetch favicons（自动压缩）
 
 ```bash
 npm run fetch-favicons
 ```
 
 Downloads new site icons into `public/favicons/` and regenerates
-`src/config/faviconManifest.json`. Run after any link addition.
+`src/config/faviconManifest.json`. **抓取完成后会自动把图标压缩到 48×48 的 PNG**
+（用 macOS 自带 `sips`，非 macOS 环境自动跳过并告警），确保新增图片不会拖慢首屏——
+站点原始 favicon 多为 256/512px 大图，而卡片只显示 24px，压缩后目录体积通常下降 ~80%。
+
+若手动改动了 `public/favicons/` 或想重新压缩全部图标，可单独运行：
+
+```bash
+npm run compress-favicons
+```
 
 ### 8. Typecheck
 
@@ -150,7 +158,7 @@ Strict `vue-tsc --noEmit`. Fix any referential-integrity or type errors before r
 - [ ] `categoryId` exists in `categories.json`.
 - [ ] `subCategoryId` (if present) exists under that `categoryId`.
 - [ ] New icons registered in `CategoryIcon.vue` (or reused an existing name).
-- [ ] `npm run fetch-favicons` ran.
+- [ ] `npm run fetch-favicons` ran（新增图标已自动压缩为 48px PNG）.
 - [ ] `npm run typecheck` passed.
 
 ## Related

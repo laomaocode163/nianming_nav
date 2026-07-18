@@ -16,6 +16,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { extractDomain } from './lib/domain.js';
+import { compressFavicons } from './lib/compressFavicons.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -186,6 +187,13 @@ const run = async () => {
     `\n完成：成功 ${results.ok}，跳过 ${results.skip}，失败 ${results.fail}，共 ${domains.length} 个域名`
   );
   console.log(`清单已写入 ${MANIFEST_PATH}`);
+
+  // 自动压缩新增图标，避免大图拖慢首屏（仅 macOS 可用 sips，其他平台跳过并告警）
+  try {
+    await compressFavicons();
+  } catch (e) {
+    console.warn('  ⚠ 图标压缩出错（不影响抓取结果）：', e.message);
+  }
 };
 
 run().catch((err) => {
