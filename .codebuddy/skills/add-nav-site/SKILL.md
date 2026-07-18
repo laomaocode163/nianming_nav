@@ -28,7 +28,31 @@ Determine which of these the user wants:
 - **New sub-category** → add to an existing category's `subCategories` array.
 
 If the user only gives a URL, infer `name`/`description` from the page (use firecrawl/web
-scrape if needed) and ask which category it belongs to before writing.
+scrape if needed); the target category is then auto-suggested by the smart-grouping step
+(1.5) below — confirm it with the user instead of asking freely.
+
+### 1.5 智能归类建议（新增推荐）
+
+在拿到候选的 `name`/`url`/`description` 后、**取 id 之前**，用配套脚本算出最匹配的功能
+分组（基于 name/description/url 文本的关键词，TF-IDF + 余弦相似度），把结果交给用户确认：
+
+```bash
+node scripts/suggest-category.mjs "<name>" "<url>" "<description>"
+# 或：npm run suggest-category -- "<name>" "<url>" "<description>"
+```
+
+脚本输出三种情形，按结果处理：
+
+- **匹配（退出码 0）** → 打印 `最匹配分组` 与建议归入的 `categoryId`/`subCategoryId`（含相似度分数）。
+  把该建议呈现给用户确认；用户认可后，将 `categoryId`/`subCategoryId` 用于后续步骤 3 取 id 与步骤 4 写入。
+- **无匹配（退出码 1）** → 最高相似度低于阈值，脚本给出「建议新建二级分类」的父级 `categoryId`
+  （即最接近分组的所属顶级分类）。**不要自动创建**：向用户确认新二级分类的名称与图标，
+  确认后再走步骤 5 编辑 `categories.json` 新建该 subCategory，并把它用于写入。
+- **`--json` 模式**：`node scripts/suggest-category.mjs "<name>" "<url>" "<description>" --json`
+  输出结构化 JSON（含 `best`/`secondBest`/`belowThreshold`/`suggestedNewParent`），便于程序化解析。
+
+> 该脚本只读 `links.json`/`categories.json`，绝不写入数据；归类逻辑在 `scripts/lib/similarity.mjs`，
+> 阈值与停用词等可调参数集中于此，便于后续扩展。
 
 ### 2. Check for duplicates (新增前必做)
 
@@ -121,6 +145,7 @@ Strict `vue-tsc --noEmit`. Fix any referential-integrity or type errors before r
 ## Checklist before finishing
 
 - [ ] **Duplicate check ran first** (`check-duplicate-link.mjs`) and returned `OK` or a confirmed non-duplicate `WARN-SAME-HOST` — no `DUPLICATE-EXACT`.
+- [ ] **智能归类建议已运行**（`suggest-category.mjs`）并交由用户确认；无匹配时已确认新建分类的名称/图标，未自动写入。
 - [ ] Link id is unique and collision-free (from the script).
 - [ ] `categoryId` exists in `categories.json`.
 - [ ] `subCategoryId` (if present) exists under that `categoryId`.

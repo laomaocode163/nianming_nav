@@ -14,6 +14,7 @@
     "renumber-links": "node scripts/renumber-links.mjs",
     "next-link-id": "node scripts/next-link-id.mjs",
     "check-duplicate-link": "node scripts/check-duplicate-link.mjs",
+    "suggest-category": "node scripts/suggest-category.mjs",
     "format": "prettier --write .",
     "commit": "git cz",
     "prepare": "husky install",
