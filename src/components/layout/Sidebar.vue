@@ -1,7 +1,6 @@
 <script setup lang="ts">
-  import { computed, ref, watch } from 'vue';
+  import { computed } from 'vue';
   import { useDataStore } from '../../stores/data';
-  import { useUiStore } from '../../stores/ui';
   import { useResponsive } from '../../hooks/useResponsive';
 
   const props = withDefaults(
@@ -24,70 +23,18 @@
   }>();
 
   const dataStore = useDataStore();
-  const uiStore = useUiStore();
   const { isMobile } = useResponsive();
 
   const categories = computed(() => dataStore.visibleCategories);
 
-  // 已展开（显示二级分类）的一级分类集合；默认展开当前选中的有子分类项
-  const expandedCats = ref<Set<string>>(new Set());
-
-  // 计算某一级分类的展开集合：含二级分类时展开自身，否则全部收起
-  const expandSetFor = (catId: string): Set<string> => {
-    const cat = dataStore.categories.find((c) => c.id === catId);
-    return cat?.subCategories?.length ? new Set([catId]) : new Set();
-  };
-
-  // 手风琴式展开：同一时刻仅展开当前选中的、含二级分类的一级分类，其余收起
-  watch(
-    () => uiStore.selectedCategoryId,
-    (catId) => {
-      expandedCats.value = expandSetFor(catId);
-    },
-    { immediate: true }
-  );
-
-  // 收起侧边栏时一并收起所有二级分类；重新展开时恢复当前分类的二级树
-  watch(
-    () => props.collapsed,
-    (isCollapsed) => {
-      expandedCats.value = isCollapsed ? new Set() : expandSetFor(uiStore.selectedCategoryId);
-    }
-  );
-
-  const isExpanded = (categoryId: string) => expandedCats.value.has(categoryId);
-
-  // 父级导航激活判定：
-  // - 展开态：仅当选中该分类且处于“全部”（未选子分类）时高亮；
-  // - 收起态：子树不可见，选中其任意子分类时仍高亮父级瓷砖。
+  // 父级导航激活：选中该分类即高亮。
+  // 二级分类已移至主内容区顶部横向标签栏，左侧仅保留一级导航，无需展开态判定。
   const isNavActive = (categoryId: string): boolean => {
-    if (props.selectedCategory !== categoryId) return false;
-    return props.collapsed || !uiStore.selectedSubCategoryId;
-  };
-
-  const toggleExpand = (categoryId: string) => {
-    const next = new Set(expandedCats.value);
-    if (next.has(categoryId)) {
-      // 再次点击当前已展开项 → 收起
-      next.delete(categoryId);
-    } else {
-      // 展开新项时收起其他项，保持手风琴行为
-      next.clear();
-      next.add(categoryId);
-    }
-    expandedCats.value = next;
+    return props.selectedCategory === categoryId;
   };
 
   const handleSelect = (categoryId: string) => {
     emit('select', categoryId);
-    if (isMobile.value) {
-      emit('close');
-    }
-  };
-
-  // 直接选择二级分类（保留父级选中，不关闭嵌套）
-  const handleSelectSub = (subId: string) => {
-    uiStore.selectSubCategory(subId);
     if (isMobile.value) {
       emit('close');
     }
@@ -207,46 +154,7 @@
           >
             <span class="nav-icon"><CategoryIcon :name="category.icon" /></span>
             <span class="nav-name">{{ category.name }}</span>
-            <span
-              v-if="!collapsed && category.subCategories?.length"
-              class="nav-expand"
-              :class="{ expanded: isExpanded(category.id) }"
-              role="button"
-              tabindex="-1"
-              :aria-label="isExpanded(category.id) ? '收起子分类' : '展开子分类'"
-              @click.stop="toggleExpand(category.id)"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                width="14"
-                height="14"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </span>
           </button>
-
-          <!-- 二级分类树 -->
-          <div
-            v-if="!collapsed && category.subCategories?.length && isExpanded(category.id)"
-            class="sidebar-sub"
-          >
-            <button
-              v-for="sub in dataStore.getSubCategories(category.id)"
-              :key="sub.id"
-              type="button"
-              class="sub-item"
-              :class="{ active: uiStore.selectedSubCategoryId === sub.id }"
-              @click="handleSelectSub(sub.id)"
-            >
-              <span v-if="sub.icon" class="sub-icon"><CategoryIcon :name="sub.icon" /></span>
-              <span v-else class="sub-icon sub-icon--placeholder"></span>
-              <span class="sub-name">{{ sub.name }}</span>
-            </button>
-          </div>
         </template>
       </nav>
     </div>
@@ -819,178 +727,5 @@
   .sidebar-nav::-webkit-scrollbar-thumb {
     background: var(--color-border);
     border-radius: 2px;
-  }
-
-  /* 二级分类展开箭头 */
-  .nav-expand {
-    margin-left: auto;
-    width: 22px;
-    height: 22px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    color: var(--color-text-secondary);
-    flex-shrink: 0;
-    transition:
-      transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
-      background 150ms cubic-bezier(0.4, 0, 0.2, 1),
-      color 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-  }
-
-  .nav-expand:hover {
-    background: hsl(var(--hue-primary), 15%, 92%);
-    color: var(--color-primary);
-  }
-
-  .dark .nav-expand:hover {
-    background: hsl(var(--hue-primary), 20%, 22%);
-  }
-
-  .nav-expand svg {
-    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .nav-expand.expanded svg {
-    transform: rotate(90deg);
-  }
-
-  .nav-item.active .nav-expand {
-    color: var(--color-primary);
-  }
-
-  /* 二级分类树 */
-  .sidebar-sub {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    margin: 0 0.5rem 0.25rem 0.5rem;
-    padding-left: 1.25rem;
-    border-left: 1px solid var(--color-border);
-    animation: subTreeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  @keyframes subTreeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-4px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .sub-item {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-    min-height: 38px;
-    width: 100%;
-    border: none;
-    background: transparent;
-    border-radius: 8px;
-    color: var(--color-text-secondary);
-    font-size: 0.875rem;
-    font-weight: 500;
-    font-family: inherit;
-    text-align: left;
-    cursor: pointer;
-    position: relative;
-    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .sub-item::before {
-    content: '';
-    position: absolute;
-    left: -1.25rem;
-    top: 50%;
-    width: 0.875rem;
-    height: 1px;
-    background: var(--color-border);
-  }
-
-  .sub-item:hover {
-    background: var(--glass-bg);
-    color: var(--color-primary);
-  }
-
-  .sub-item.active {
-    color: var(--color-primary);
-    font-weight: 600;
-  }
-
-  .sub-item.active::before {
-    background: var(--glass-border);
-  }
-
-  /* 命中态保留分类树边框线上的蓝色小圆点作为指示，外圈描边与玻璃侧边栏底色协调 */
-  .sub-item.active::after {
-    content: '';
-    position: absolute;
-    left: -1.25rem;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-bg);
-    z-index: 1;
-  }
-
-  .dark .sub-item.active::after {
-    box-shadow: 0 0 0 3px #1e293b;
-  }
-
-  .sub-icon {
-    font-size: 0.95rem;
-    width: 20px;
-    height: 20px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    line-height: 1;
-  }
-
-  .sub-icon--placeholder {
-    position: relative;
-  }
-
-  .sub-icon--placeholder::after {
-    content: '';
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    opacity: 0.4;
-  }
-
-  .sub-name {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  @media (max-width: 480px) {
-    .sub-item {
-      min-height: 42px;
-      font-size: 0.8125rem;
-    }
-  }
-
-  @media (hover: none) and (pointer: coarse) {
-    .sub-item:active {
-      transform: scale(0.98);
-      background: hsl(var(--hue-primary), 20%, 94%);
-    }
-
-    .dark .sub-item:active {
-      background: hsl(var(--hue-primary), 20%, 18%);
-    }
   }
 </style>

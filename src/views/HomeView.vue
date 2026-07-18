@@ -114,8 +114,8 @@
     let availableH = windowHeight.value - HEADER_H - CATEGORY_H - PAGINATION_H;
     // 扣除 section 底边距与 grid 上下内边距，避免算出的行数放不下而被裁切
     availableH -= SECTION_BOTTOM_PADDING + GRID_PADDING_V;
-    // 折叠/移动端在主内容区额外渲染二级分类标签，再扣除其近似高度
-    if (hasSubCategories.value && (uiStore.sidebarCollapsed || isMobile.value)) {
+    // 二级分类标签栏常驻内容区顶部，始终扣除其近似高度
+    if (hasSubCategories.value) {
       availableH -= SUB_CATEGORY_H;
     }
     const rows = Math.max(1, Math.floor((availableH + GRID_GAP) / (cardHeight.value + GRID_GAP)));
@@ -245,22 +245,19 @@
         <span class="site-count">{{ links.length }} 个网站</span>
       </div>
 
+      <!-- 二级分类标签：点击一级导航后在此顶部横向平铺，点击即可快速切换 -->
+      <div v-if="hasSubCategories" class="sub-category-wrapper">
+        <SubCategoryTabs
+          :sub-categories="subCategories"
+          :selected-id="uiStore.selectedSubCategoryId"
+          :total-count="links.length"
+          :counts="subCounts"
+          @select="uiStore.selectSubCategory"
+        />
+      </div>
+
       <!-- Sites Grid -->
       <div ref="sitesSectionRef" class="sites-section">
-        <!-- 二级分类标签：侧边栏展开（桌面）时已由侧边栏树提供导航，此处仅在折叠/移动端显示 -->
-        <div
-          v-if="hasSubCategories && (uiStore.sidebarCollapsed || isMobile)"
-          class="sub-category-wrapper"
-        >
-          <SubCategoryTabs
-            :sub-categories="subCategories"
-            :selected-id="uiStore.selectedSubCategoryId"
-            :total-count="links.length"
-            :counts="subCounts"
-            @select="uiStore.selectSubCategory"
-          />
-        </div>
-
         <!-- 网站列表 -->
         <div v-if="links.length > 0" class="sites-grid" :style="{ '--grid-cols': columns }">
           <SiteCard
@@ -340,6 +337,7 @@
 
   .sub-category-wrapper {
     flex-shrink: 0;
+    padding: 0 1.5rem;
   }
 
   .category-header {
@@ -484,6 +482,10 @@
     .site-count {
       font-size: 0.75rem;
       padding: 0.25rem 0.5rem;
+    }
+
+    .sub-category-wrapper {
+      padding: 0 1rem;
     }
 
     .sites-grid {
