@@ -10,13 +10,15 @@
       { "id": "ai-image", "name": "智能体多模态", "icon": "blocks", "order": 8 }
     ] },
   { "id": "dev", "name": "开发工具", "icon": "terminal", "subCategories": [
-      { "id": "dev-editors", "name": "文本编辑器", "icon": "file-text", "order": 1 },
-      { "id": "dev-ides", "name": "集成开发环境", "icon": "monitor", "order": 2 },
-      { "id": "dev-devops", "name": "测试运维工具", "icon": "shield-check", "order": 3 },
-      { "id": "dev-online", "name": "在线开发工具", "icon": "globe", "order": 5 },
-      { "id": "dev-other", "name": "其他辅助工具", "icon": "wrench", "order": 6 },
-      { "id": "dev-extensions", "name": "浏览器插件工具", "icon": "puzzle", "order": 7 },
-      { "id": "dev-creator", "name": "自媒体创作工具", "icon": "pen-line", "order": 8 }
+      { "id": "dev-proxy", "name": "科学上网", "icon": "network", "order": 1 },
+      { "id": "dev-hosting", "name": "平台托管", "icon": "server", "order": 2 },
+      { "id": "dev-editors", "name": "文本编辑器", "icon": "file-text", "order": 3 },
+      { "id": "dev-ides", "name": "集成开发环境", "icon": "monitor", "order": 4 },
+      { "id": "dev-devops", "name": "测试运维工具", "icon": "shield-check", "order": 5 },
+      { "id": "dev-online", "name": "在线开发工具", "icon": "globe", "order": 6 },
+      { "id": "dev-other", "name": "其他辅助工具", "icon": "wrench", "order": 7 },
+      { "id": "dev-extensions", "name": "浏览器插件工具", "icon": "puzzle", "order": 8 },
+      { "id": "dev-creator", "name": "自媒体创作工具", "icon": "pen-line", "order": 9 }
     ] },
   { "id": "frontend-dev", "name": "前端开发", "icon": "book-open", "subCategories": [
       { "id": "frontend-frameworks", "name": "前端框架", "icon": "zap", "order": 1 },

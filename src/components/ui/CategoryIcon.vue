@@ -48,6 +48,8 @@
     Apple,
     Github,
     Clock,
+    Network,
+    Server,
     type LucideIcon,
   } from 'lucide-vue-next';
 
@@ -110,6 +112,8 @@
     apple: Apple,
     github: Github,
     clock: Clock,
+    network: Network,
+    server: Server,
   };
 
   const icon = computed(() => iconMap[props.name] ?? Star);

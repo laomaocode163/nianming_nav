@@ -56,7 +56,8 @@
               .filter((l) => l.subCategoryId === sub.id)
               .filter((l) => matchLink(l, q)),
           }))
-          .filter((g) => g.links.length > 0);
+          // 搜索时只保留含匹配链接的子分类；否则保留全部（含 0 链接），便于管理空二级分类
+          .filter((g) => !q || g.links.length > 0);
         return { cat, directLinks, subs };
       })
       .filter((g) => g.directLinks.length > 0 || g.subs.length > 0);
