@@ -66,7 +66,6 @@
   { "id": "2021", "name": "TempMail.ing", "url": "https://tempmail.ing/", "categoryId": "dev", "subCategoryId": "dev-other", "description": "安全私密临时邮箱，过期自动删除，无需注册" },
   { "id": "2022", "name": "高德地图", "url": "https://ditu.amap.com/", "categoryId": "dev", "subCategoryId": "dev-other", "description": "数字地图、导航与位置服务，提供路线规划与实时交通" },
   { "id": "2023", "name": "厚浪云", "url": "https://houlang.cloud/zh-CN/", "categoryId": "dev", "subCategoryId": "dev-other", "description": "开源服务聚合平台：提供免费二级域名分发、ZEROCAT 编程社区、班级作业板、Docker/Pixiv 镜像站等轻量级工具" },
-  { "id": "2024", "name": "Chrome 浏览器", "url": "https://www.google.cn/intl/zh-CN/chrome/", "categoryId": "dev", "subCategoryId": "dev-other", "description": "Google Chrome 浏览器官方下载页（中文）：快速、安全、稳定的跨平台浏览器，支持扩展与同步" },
   { "id": "2025", "name": "XMind", "url": "https://xmind.cn/", "categoryId": "dev", "subCategoryId": "dev-other", "description": "XMind 思维导图与头脑风暴软件：支持逻辑图、树状图、时间轴等多种结构，跨平台（Windows/macOS/Linux/移动端）" },
   { "id": "2026", "name": "uTools", "url": "https://www.u-tools.cn/", "categoryId": "dev", "subCategoryId": "dev-other", "description": "uTools 跨平台效率启动器：插件化快速启动、文件搜索、剪贴板管理与聚合各类小工具，支持 Windows/macOS" },
   { "id": "2027", "name": "FeHelper", "url": "https://fehelper.com/", "categoryId": "dev", "subCategoryId": "dev-extensions", "description": "WEB前端助手浏览器插件" },

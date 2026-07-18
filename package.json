@@ -13,6 +13,7 @@
     "fetch-favicons": "node scripts/fetch-favicons.mjs",
     "renumber-links": "node scripts/renumber-links.mjs",
     "next-link-id": "node scripts/next-link-id.mjs",
+    "check-duplicate-link": "node scripts/check-duplicate-link.mjs",
     "format": "prettier --write .",
     "commit": "git cz",
     "prepare": "husky install",
