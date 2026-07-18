@@ -178,5 +178,12 @@
   "ccswitch.io": "ccswitch.io.ico",
   "anthropic.skilljar.com": "anthropic.skilljar.com.ico",
   "claudecode.tangshuang.net": "claudecode.tangshuang.net.svg",
-  "code.claude.com": "code.claude.com.png"
+  "code.claude.com": "code.claude.com.png",
+  "developer.aliyun.com": "developer.aliyun.com.ico",
+  "mirrors.ustc.edu.cn": "mirrors.ustc.edu.cn.png",
+  "mirrors.huaweicloud.com": "mirrors.huaweicloud.com.ico",
+  "mirrors.163.com": "mirrors.163.com.ico",
+  "mirrors.tuna.tsinghua.edu.cn": "mirrors.tuna.tsinghua.edu.cn.png",
+  "mirrors.cloud.tencent.com": "mirrors.cloud.tencent.com.png",
+  "www.cloudflare.com": "www.cloudflare.com.ico"
 }
