@@ -27,9 +27,8 @@
     ] },
   { "id": "frontend-dev", "name": "前端开发", "icon": "book-open", "subCategories": [
       { "id": "frontend-frameworks", "name": "前端框架", "icon": "zap", "order": 1 },
-      { "id": "frontend-deploy", "name": "前端部署", "icon": "rocket", "order": 2 },
-      { "id": "frontend-blog", "name": "前端博客", "icon": "rss", "order": 3 },
-      { "id": "frontend-scaffolds", "name": "前端脚手架", "icon": "blocks", "order": 4 }
+      { "id": "frontend-blog", "name": "前端博客", "icon": "rss", "order": 2 },
+      { "id": "frontend-scaffolds", "name": "前端脚手架", "icon": "blocks", "order": 3 }
     ] },
   { "id": "backend-dev", "name": "后端开发", "icon": "file-code", "subCategories": [
       { "id": "backend-java", "name": "Java", "icon": "coffee", "order": 1 },
